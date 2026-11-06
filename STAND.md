@@ -19,11 +19,10 @@ Letzte Aktualisierung: 06.11.2026
 - Import-Gerüst: Excel hochladen → Probelauf (zeigt Blätter, Zeilen, Probleme) → „Daten übernehmen“
   (vorher Sicherung, danach Protokoll). Echte Blätter werden in Etappe 1 angebunden.
 - 55 automatische Tests, alle grün.
+- Auf GitHub: `chris21cl85-ops/Pfalz-Werk-` (privat), Zweig `main`.
 
 ### Offen in Etappe 0
 - Abnahme durch Chris (Klickwege siehe unten).
-- Upload nach GitHub: Projekt `chris21cl85-ops/Pfalz-Werk` muss von Chris angelegt werden
-  (Claude hat keine Berechtigung zum Anlegen).
 
 ### So testest du es
 1. Doppelklick `PFALZ-WERK starten.bat` → Chef-Zugang anlegen → Browser öffnet die Anmeldung → anmelden.
