@@ -1,0 +1,5 @@
+{% extends "basis.html" %}
+{% block titel %}Kein Zugriff{% endblock %}
+{% block inhalt %}<div class="karte"><h1>Kein Zugriff</h1>
+<p>Für diese Seite fehlt Ihnen die Berechtigung. Bitte wenden Sie sich an den Chef oder Admin.</p>
+<p><a class="knopf" href="{% url 'startseite' %}">Zur Startseite</a></p></div>{% endblock %}

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titel %}PFALZ-WERK{% endblock %}</title>
+<style>
+  :root { --holz:#8a5a2b; --holz-dunkel:#5e3c1c; --hell:#faf7f2; --text:#222; --grau:#6b6b6b;
+          --rand:#ddd3c4; --gruen:#2e7d32; --rot:#c62828; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: system-ui, "Segoe UI", Arial, sans-serif; font-size:18px;
+         background:var(--hell); color:var(--text); }
+  header { background:var(--holz-dunkel); color:#fff; padding:12px 20px; display:flex;
+           align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  header a { color:#fff; text-decoration:none; }
+  header .marke { font-weight:700; font-size:22px; letter-spacing:1px; }
+  header .wer { font-size:16px; }
+  header form { display:inline; }
+  main { max-width:1100px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:28px; margin:8px 0 20px; }
+  h2 { font-size:22px; margin-top:32px; }
+  .knopf { display:inline-block; background:var(--holz); color:#fff; border:0; border-radius:8px;
+           padding:12px 22px; font-size:18px; cursor:pointer; text-decoration:none; }
+  .knopf:hover { background:var(--holz-dunkel); }
+  .knopf.leise { background:transparent; color:#fff; border:1px solid #fff; padding:6px 14px; font-size:16px; }
+  .kacheln { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px; }
+  .kachel { display:block; background:#fff; border:1px solid var(--rand); border-radius:10px;
+            padding:18px; color:var(--text); text-decoration:none; min-height:110px; }
+  a.kachel:hover { border-color:var(--holz); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  .kachel b { display:block; font-size:20px; margin-bottom:6px; color:var(--holz-dunkel); }
+  .kachel span { color:var(--grau); font-size:16px; }
+  .kachel.geplant { opacity:.6; }
+  .kachel .etappe { display:inline-block; margin-top:8px; font-size:14px; background:#eee5d8;
+                    border-radius:4px; padding:2px 8px; color:var(--holz-dunkel); }
+  .meldung { padding:12px 16px; border-radius:8px; margin-bottom:16px; }
+  .meldung.success { background:#e8f5e9; border:1px solid var(--gruen); }
+  .meldung.error { background:#ffebee; border:1px solid var(--rot); }
+  table { width:100%; border-collapse:collapse; background:#fff; font-size:16px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--rand); vertical-align:top; }
+  th { background:#f1ebe2; }
+  .karte { background:#fff; border:1px solid var(--rand); border-radius:10px; padding:20px; margin-bottom:20px; }
+  input[type=text], input[type=password], input[type=file] { font-size:18px; padding:10px; width:100%;
+         max-width:420px; border:1px solid #bbb; border-radius:6px; }
+  label { display:block; margin:12px 0 4px; font-weight:600; }
+  .fehler { color:var(--rot); }
+  .grau { color:var(--grau); }
+  .tabelle-rahmen { overflow-x:auto; }
+</style>
+</head>
+<body>
+<header>
+  <a class="marke" href="{% url 'startseite' %}">PFALZ-WERK</a>
+  {% if user.is_authenticated %}
+  <div class="wer">
+    {{ user.get_full_name|default:user.username }} · {{ user.get_rolle_display }}
+    &nbsp;<a class="knopf leise" href="{% url 'passwort' %}">Passwort</a>
+    <form method="post" action="{% url 'abmelden' %}">{% csrf_token %}
+      <button class="knopf leise" type="submit">Abmelden</button></form>
+  </div>
+  {% endif %}
+</header>
+<main>
+  {% for m in messages %}<div class="meldung {{ m.tags }}">{{ m }}</div>{% endfor %}
+  {% block inhalt %}{% endblock %}
+</main>
+</body>
+</html>

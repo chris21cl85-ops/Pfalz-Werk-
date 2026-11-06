@@ -1,0 +1,7 @@
+# FEHLER – bekannte Fehler und Einschränkungen
+
+| Nr | Datum | Bereich | Beschreibung | Status |
+|----|-------|---------|--------------|--------|
+| 1 | 06.11.2026 | Rechte | Ein Admin kann auch den Chef-Zugang bearbeiten (Rolle, Passwort). Klären, ob das gewollt ist. | offen – Entscheidung Chris |
+| 2 | 06.11.2026 | Start | Start per Doppelklick braucht installiertes Python 3.12+ unter Windows; ein Installer ohne Python folgt mit der Verkaufsfassung (Etappe 4). | bekannt |
+| 3 | 06.11.2026 | Sicherung | Sicherungen liegen auf demselben Rechner. Für echten Schutz den Ordner `lokal/sicherungen` zusätzlich auf USB/NAS kopieren lassen (später automatisieren). | offen |

@@ -1,0 +1,16 @@
+{% extends "basis.html" %}
+{% block titel %}Protokoll{% endblock %}
+{% block inhalt %}
+<h1>Protokoll</h1>
+<p class="grau">Alle Einträge sind unveränderbar.</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Zeit</th><th>Benutzer</th><th>Vorgang</th><th>Gegenstand</th></tr>
+  {% for e in seite %}
+  <tr><td>{{ e.zeitpunkt|date:"d.m.Y H:i:s" }}</td><td>{{ e.benutzername|default:"–" }}</td>
+      <td>{{ e.aktion }}</td><td>{{ e.gegenstand }}</td></tr>
+  {% empty %}<tr><td colspan="4">Noch keine Einträge.</td></tr>{% endfor %}
+</table></div>
+<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}">← neuer</a>{% endif %}
+   Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+   {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}">älter →</a>{% endif %}</p>
+{% endblock %}

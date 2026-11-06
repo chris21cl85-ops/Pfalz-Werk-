@@ -1,0 +1,17 @@
+{% extends "basis.html" %}
+{% block titel %}Sicherung{% endblock %}
+{% block inhalt %}
+<h1>Datensicherung</h1>
+<div class="karte">
+  <p>Beim Start des Programms wird einmal täglich automatisch gesichert, außerdem vor jedem Import.
+     Alte Sicherungen werden nicht gelöscht.</p>
+  <form method="post" action="{% url 'sicherung:anlegen' %}">{% csrf_token %}
+    <button class="knopf" type="submit">Jetzt sichern</button></form>
+</div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Datei</th><th>Zeitpunkt</th><th>Größe</th></tr>
+  {% for s in sicherungen %}
+  <tr><td>{{ s.name }}</td><td>{{ s.zeitpunkt|date:"d.m.Y H:i" }}</td><td>{{ s.groesse_mb }} MB</td></tr>
+  {% empty %}<tr><td colspan="3">Noch keine Sicherung vorhanden.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

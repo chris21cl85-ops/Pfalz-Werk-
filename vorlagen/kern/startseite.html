@@ -1,0 +1,20 @@
+{% extends "basis.html" %}
+{% block inhalt %}
+<h1>Guten Tag, {{ user.first_name|default:user.username }}</h1>
+{% if fertig %}
+<div class="kacheln">
+  {% for m in fertig %}
+  <a class="kachel" href="{% url m.url %}"><b>{{ m.titel }}</b><span>{{ m.text }}</span></a>
+  {% endfor %}
+</div>
+{% endif %}
+{% if geplant %}
+<h2>Kommt in den nächsten Etappen</h2>
+<div class="kacheln">
+  {% for m in geplant %}
+  <div class="kachel geplant"><b>{{ m.titel }}</b><span>{{ m.text }}</span><br>
+    <span class="etappe">Etappe {{ m.etappe }}</span></div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

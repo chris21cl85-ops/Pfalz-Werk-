@@ -1,0 +1,28 @@
+{% extends "basis.html" %}
+{% block titel %}Excel-Import{% endblock %}
+{% block inhalt %}
+<h1>Excel-Import</h1>
+<div class="karte">
+  <p>Wählen Sie die Excel-Datei der alten PFALZ-WERK-Fassung. Es wird zuerst nur <b>geprüft</b>
+     (Probelauf), noch nichts übernommen.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <input type="file" name="datei" accept=".xlsx,.xlsm" required>
+    <p><button class="knopf" type="submit">Datei prüfen</button></p>
+  </form>
+</div>
+<h2>Was übernommen werden kann</h2>
+{% if importer %}
+<ul>{% for i in importer %}<li>Blatt „{{ i.blatt }}“ → {{ i.titel }}</li>{% endfor %}</ul>
+{% else %}
+<p class="grau">Noch keine Tabellenblätter angebunden. Kunden, Projekte, Material, Lieferanten und
+   Mitarbeiter folgen in Etappe 1. Der Probelauf zeigt aber schon, welche Blätter die Datei enthält.</p>
+{% endif %}
+<h2>Letzte Importe</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Zeit</th><th>Datei</th><th>Status</th></tr>
+  {% for l in laeufe %}
+  <tr><td>{{ l.zeitpunkt|date:"d.m.Y H:i" }}</td><td><a href="{% url 'importe:lauf' l.pk %}">{{ l.dateiname }}</a></td>
+      <td>{{ l.get_status_display }}</td></tr>
+  {% empty %}<tr><td colspan="3">Noch keine Importe.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

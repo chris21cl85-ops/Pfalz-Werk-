@@ -1,0 +1,7 @@
+# Nur auf diesem Rechner: Datenbank, Schlüssel, Sicherungen, Importdateien
+lokal/
+.umgebung/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.sqlite3

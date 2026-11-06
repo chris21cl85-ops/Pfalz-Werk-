@@ -1,0 +1,14 @@
+{% extends "basis.html" %}
+{% block titel %}Passwort ändern{% endblock %}
+{% block inhalt %}
+<div class="karte" style="max-width:520px">
+  <h1>Passwort ändern</h1>
+  <form method="post">{% csrf_token %}
+    {% for feld in form %}
+      <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}
+      {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+    {% endfor %}
+    <p><button class="knopf" type="submit">Speichern</button></p>
+  </form>
+</div>
+{% endblock %}
