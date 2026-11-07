@@ -46,3 +46,7 @@ def test_chef_kann_chef_rolle_vergeben(chef_client):
 
 def test_passwortseite_des_chefs_fuer_admin_gesperrt(admin_client, chef):
     assert admin_client.get(reverse("admin:auth_user_password_change", args=[chef.pk])).status_code == 403
+
+
+def test_gruppen_sind_ausgeblendet(chef_client):
+    assert "Gruppen" not in chef_client.get(reverse("admin:index")).content.decode()

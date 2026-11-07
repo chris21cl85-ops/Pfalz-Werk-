@@ -45,3 +45,9 @@ class BenutzerAdmin(UserAdmin):
     def has_delete_permission(self, request, obj=None):
         # Benutzer werden deaktiviert, nicht gelöscht (Nachvollziehbarkeit)
         return False
+
+
+# Gruppen werden nicht genutzt (Rechte laufen über die Rolle) – ausblenden, damit nichts verwirrt
+from django.contrib.auth.models import Group  # noqa: E402
+
+admin.site.unregister(Group)

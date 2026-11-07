@@ -29,7 +29,7 @@ Letzte Aktualisierung: 07.11.2026
   Beschädigung geprüft; alte Sicherungen werden nie gelöscht.
 - Import-Gerüst: Excel hochladen → Probelauf (zeigt Blätter, Zeilen, Probleme) → „Daten übernehmen“
   (vorher Sicherung, danach Protokoll). Echte Blätter werden in Etappe 1 angebunden.
-- 63 automatische Tests, alle grün.
+- 64 automatische Tests, alle grün.
 - Auf GitHub: `chris21cl85-ops/Pfalz-Werk-` (privat), Zweig `main`.
 
 ### Offen in Etappe 0
