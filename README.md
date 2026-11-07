@@ -4,6 +4,8 @@ Betriebsprogramm für die Schreinerei – Neubau der Excel/VBA-Fassung als Brows
 (Python + Django, SQLite).
 
 ## Starten
+Ausführliche Anleitung für Einsteiger: **ANLEITUNG.md**
+
 - **Windows:** Doppelklick auf `PFALZ-WERK starten.bat` (Python 3.12 oder neuer muss installiert sein).
 - **Mac/Linux:** `./starten.sh`
 

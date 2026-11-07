@@ -1,6 +1,12 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 06.11.2026
+Letzte Aktualisierung: 07.11.2026
+
+## Arbeitsweise mit Chris (immer beachten)
+- Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
+  welche Seite/welcher Ordner, welcher Knopf, was getippt wird, was danach zu sehen ist.
+- Keine Fachbegriffe ohne Erklärung. Nichts voraussetzen (auch nicht Herunterladen, Entpacken, Starten).
+- Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
 ## Etappe 0 – Fundament: gebaut, wartet auf Abnahme durch Chris
 
@@ -25,6 +31,7 @@ Letzte Aktualisierung: 06.11.2026
 - Abnahme durch Chris (Klickwege siehe unten).
 
 ### So testest du es
+Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 1. Doppelklick `PFALZ-WERK starten.bat` → Chef-Zugang anlegen → Browser öffnet die Anmeldung → anmelden.
 2. Kachel „Benutzer“ → „Benutzer hinzufügen“ → z. B. „max“ als Mitarbeiter anlegen → abmelden,
    als max anmelden → nur Werkstatt-Kacheln, keine Verwaltung.
