@@ -13,8 +13,8 @@ Beim ersten Start wird die Umgebung eingerichtet und der Chef-Zugang abgefragt.
 Danach öffnet sich der Browser unter http://127.0.0.1:8000/. Das schwarze Fenster offen lassen.
 
 ## Wo liegen die Daten?
-Alles Betriebliche liegt im Ordner `lokal/` (nicht in GitHub):
-Datenbank, geheimer Schlüssel, Sicherungen (`lokal/sicherungen/`), hochgeladene Importdateien.
+Alles Betriebliche liegt im Ordner `Dokumente/PFALZ-WERK-Daten` (nicht in GitHub, bleibt bei Updates erhalten):
+Datenbank, geheimer Schlüssel, Sicherungen (`sicherungen/`), hochgeladene Importdateien.
 
 ## Tests
 ```

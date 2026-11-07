@@ -1,6 +1,8 @@
 """Einstellungen für PFALZ-WERK.
 
-Geheimer Schlüssel und Datenbank liegen im Ordner ``lokal/`` (nicht im Git).
+Datenbank, geheimer Schlüssel und Sicherungen liegen im Datenordner
+(Standard: Dokumente/PFALZ-WERK-Daten) – getrennt vom Programm, damit ein Update
+die Daten nie berührt. Nichts davon kommt ins Git.
 """
 import os
 import secrets
@@ -8,8 +10,21 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+
+def _datenordner() -> Path:
+    """Fester Datenordner außerhalb des Programmordners."""
+    if os.environ.get("PFALZWERK_LOKAL"):
+        return Path(os.environ["PFALZWERK_LOKAL"])
+    alt = BASE_DIR / "lokal"  # frühere Ablage im Programmordner weiter nutzen, falls vorhanden
+    if (alt / "pfalzwerk.sqlite3").exists():
+        return alt
+    dokumente = Path.home() / "Documents"
+    return (dokumente if dokumente.is_dir() else Path.home()) / "PFALZ-WERK-Daten"
+
+
 # Ordner für alles, was nur auf diesem Rechner liegt (Datenbank, Schlüssel, Sicherungen)
-LOKAL_DIR = Path(os.environ.get("PFALZWERK_LOKAL", BASE_DIR / "lokal"))
+LOKAL_DIR = _datenordner()
 LOKAL_DIR.mkdir(parents=True, exist_ok=True)
 SICHERUNG_DIR = Path(os.environ.get("PFALZWERK_SICHERUNG", LOKAL_DIR / "sicherungen"))
 IMPORT_DIR = LOKAL_DIR / "importe"

@@ -34,9 +34,9 @@ Das machst du jedes Mal, wenn Claude eine neue Fassung hochgeladen hat.
 
 **Tipp:** Verschiebe diesen Ordner z. B. auf den Desktop, damit du ihn wiederfindest.
 
-> **Bei einer neuen Fassung:** Den neuen Ordner herunterladen und den Unterordner **`lokal`**
-> aus dem alten Ordner in den neuen kopieren. Darin liegen deine Daten und Sicherungen.
-> (Ab Etappe 1 baut Claude dafür einen bequemeren Weg.)
+> **Bei einer neuen Fassung:** Einfach neu herunterladen und den neuen Ordner starten.
+> Deine Daten liegen getrennt vom Programm im Ordner **Dokumente → PFALZ-WERK-Daten**
+> und bleiben bei jedem Update erhalten. Den alten Programmordner kannst du danach selbst löschen.
 
 ---
 

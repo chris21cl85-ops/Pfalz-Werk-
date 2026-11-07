@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
@@ -10,7 +11,7 @@ from .dienst import SicherungFehler, sicherung_anlegen, sicherungen
 
 @rolle_erforderlich(*VERWALTUNGS_ROLLEN)
 def uebersicht(request):
-    return render(request, "sicherung/uebersicht.html", {"sicherungen": sicherungen()})
+    return render(request, "sicherung/uebersicht.html", {"sicherungen": sicherungen(), "ordner": settings.SICHERUNG_DIR})
 
 
 @require_POST
