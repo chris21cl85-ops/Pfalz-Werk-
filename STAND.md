@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 07.11.2026
+Letzte Aktualisierung: 09.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -11,7 +11,7 @@ Letzte Aktualisierung: 07.11.2026
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
-## Etappe 0 – Fundament: gebaut, wartet auf Abnahme durch Chris
+## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
 
 ### Erledigt
 - Projektgerüst Django 5.2, SQLite im Datenordner (nicht im Git), geheimer Schlüssel wird beim ersten Start erzeugt.
@@ -32,8 +32,11 @@ Letzte Aktualisierung: 07.11.2026
 - 64 automatische Tests, alle grün.
 - Auf GitHub: `chris21cl85-ops/Pfalz-Werk-` (privat), Zweig `main`.
 
-### Offen in Etappe 0
-- Abnahme durch Chris (Klickwege siehe unten).
+### Abnahme
+- Von Chris am 09.11.2026 abgenommen („passt“). Programm läuft auf seinem Rechner.
+- Klickweg „Mitarbeiter anlegen / als Mitarbeiter anmelden“ hat Chris nicht selbst durchgeklickt;
+  ist durch automatische Tests abgedeckt. Beim ersten echten Mitarbeiter-Zugang kurz mitprüfen.
+- Excel-Import wird mit der echten Excel-Datei zu Beginn von Etappe 1 getestet.
 
 ### So testest du es
 Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
@@ -46,4 +49,5 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 
 ## Nächstes Paket
 Etappe 1, Paket 1: **Kunden** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Import aus dem Excel-Blatt
-„Kunden“. Dafür braucht Claude die Excel-Datei (oder zumindest Blattnamen und Spaltenköpfe).
+„Kunden“. Dafür braucht Claude die Excel-Datei: Chris legt sie in Google Drive ab
+(Claude liest sie dort über die Google-Drive-Verbindung).
