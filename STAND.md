@@ -48,6 +48,39 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 5. Als Chef: „Protokoll“ → Anmeldungen, Fehlversuch (vorher falsches Passwort tippen), Sicherung sind sichtbar.
 
 ## Nächstes Paket
-Etappe 1, Paket 1: **Kunden** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Import aus dem Excel-Blatt
-„Kunden“. Dafür braucht Claude die Excel-Datei: Chris legt sie in Google Drive ab
-(Claude liest sie dort über die Google-Drive-Verbindung).
+Etappe 1, Paket 1: **Kunden** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Import aus dem Excel-Blatt „Kunden“.
+Danach Paket 2: **Projekte** (brauchen Kunden).
+
+### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
+Excel-Datei liegt in Chris' Google Drive: „Pfalz-Werk_Weniger_Buero_mehr_Handwerk_aktuell.xlsm“ (ca. 9 MB,
+zu groß zum direkten Einlesen in der Sitzung – Import läuft im Programm auf Chris' Rechner).
+Daten ab Zeile 4 (Kopf vermutlich Zeile 3). Zuordnung nach **Spaltenbuchstaben**, nicht nach Überschrift.
+
+Blatt **Kunden** (Zeilen 4–97):
+| Spalte | Inhalt | Regel |
+|---|---|---|
+| A | Kunden-Nr. | Pflicht, eindeutig |
+| B | Name / Firma | Pflicht |
+| C | Ansprechpartner | |
+| D | Telefon | |
+| E | E-Mail | |
+| F | Adresse (ein Feld, Original behalten) | |
+| G | Kundenart | leer → „Unbekannt“ |
+| I | Hinweise | |
+Status neuer Kunden: „Aktiv“. Bestehende Nummern werden beim Import übersprungen, nicht überschrieben.
+
+Blatt **Projekte** (Zeilen 4–300):
+| Spalte | Inhalt | Regel |
+|---|---|---|
+| A | Projekt-Nr. | Pflicht, eindeutig |
+| B | Projektname | Pflicht |
+| C | Kunden-Nr. | Pflicht, muss als Kunde existieren |
+| D | Phase | |
+| E | Status | leer → „Planung“ |
+| F | Projektpate | |
+| G / H | Startdatum / Zieldatum | |
+| K | Risiko | |
+| L | Nächster Schritt | |
+| Y, sonst S | Projektart | leer → „Nicht zugeordnet“ |
+| AL | Anfrage-ID | |
+Reihenfolge beim Import: erst Kunden, dann Projekte; alles in einem Rutsch oder gar nicht.
