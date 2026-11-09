@@ -1,0 +1,23 @@
+{% extends "basis.html" %}
+{% block titel %}{{ kunde.name }} – Kunden{% endblock %}
+{% block inhalt %}
+<p><a href="{% url 'kunden:liste' %}">← Alle Kunden</a></p>
+<h1>{{ kunde.name }} {% if not kunde.ist_aktiv %}<span class="marke-inaktiv">inaktiv</span>{% endif %}</h1>
+<div class="karte">
+<dl class="daten">
+  <dt>Kunden-Nr.</dt><dd>{{ kunde.kundennr }}</dd>
+  <dt>Kundenart</dt><dd>{{ kunde.kundenart|default:"–" }}</dd>
+  <dt>Ansprechpartner</dt><dd>{{ kunde.ansprechpartner|default:"–" }}</dd>
+  <dt>Telefon</dt><dd>{% if kunde.telefon %}<a href="tel:{{ kunde.telefon }}">{{ kunde.telefon }}</a>{% else %}–{% endif %}</dd>
+  <dt>E-Mail</dt><dd>{% if kunde.email %}<a href="mailto:{{ kunde.email }}">{{ kunde.email }}</a>{% else %}–{% endif %}</dd>
+  <dt>Adresse</dt><dd>{% if kunde.strasse or kunde.ort %}{{ kunde.strasse }}
+{{ kunde.plz }} {{ kunde.ort }}{% else %}{{ kunde.adresse_original|default:"–" }}{% endif %}</dd>
+  {% if kunde.adresse_original and not kunde.ort %}<dt></dt><dd class="hilfe">Die Adresse aus Excel konnte nicht in Straße/PLZ/Ort zerlegt werden – bitte beim Bearbeiten ergänzen.</dd>{% endif %}
+  <dt>Hinweise</dt><dd>{{ kunde.hinweise|default:"–" }}</dd>
+  <dt>Status</dt><dd>{{ kunde.status }}</dd>
+  <dt>Angelegt / geändert</dt><dd>{{ kunde.angelegt_am|date:"d.m.Y H:i" }} / {{ kunde.geaendert_am|date:"d.m.Y H:i" }}</dd>
+</dl>
+</div>
+{% if darf_bearbeiten %}<p><a class="knopf" href="{% url 'kunden:bearbeiten' kunde.pk %}">Bearbeiten</a></p>{% endif %}
+<p class="grau">Projekte dieses Kunden erscheinen hier, sobald das Paket „Projekte“ fertig ist.</p>
+{% endblock %}

@@ -25,8 +25,14 @@ class Importer:
 
     blatt: str = ""
     titel: str = ""
+    reihenfolge: int = 100  # kleinere Zahl wird zuerst eingelesen (z. B. Kunden vor Projekten)
     kopfzeile: int = 1
     pflichtspalten: tuple[str, ...] = ()
+    # Optional: feste Zuordnung Spaltenbuchstabe -> Feldname (wie in der Excel-Fassung).
+    # Dann wird nicht nach Überschriften gelesen, sondern ab ``startzeile`` bis ``endzeile``.
+    spalten: dict[str, str] = {}
+    startzeile: int = 2
+    endzeile: int | None = None
 
     def zeile_pruefen(self, zeile: dict) -> list[str]:
         """Liefert Fehlermeldungen für eine Zeile (leer = in Ordnung)."""
@@ -45,6 +51,15 @@ def registrieren(klasse):
 
 def _text(wert):
     return str(wert).strip() if wert is not None else ""
+
+
+def als_text(wert) -> str:
+    """Excel-Wert als sauberer Text: 12.0 -> '12', Leerzeichen weg, None -> ''."""
+    if wert is None:
+        return ""
+    if isinstance(wert, float) and wert.is_integer():
+        return str(int(wert))
+    return str(wert).strip()
 
 
 def datei_speichern(hochgeladen) -> Path:
@@ -81,13 +96,30 @@ def _zeilen(blatt, kopfzeile):
         yield nr, {k: (w.strip() if isinstance(w, str) else w) for k, w in zip(kopf, werte) if k}
 
 
+def _spalten_zeilen(blatt, imp):
+    """Liest feste Spalten (Buchstaben) ab der Startzeile."""
+    from openpyxl.utils import column_index_from_string
+    index = {buchstabe: column_index_from_string(buchstabe) - 1 for buchstabe in imp.spalten}
+    letzte = max(index.values()) + 1
+    for nr, werte in enumerate(blatt.iter_rows(min_row=imp.startzeile, max_row=imp.endzeile,
+                                                max_col=letzte, values_only=True), start=imp.startzeile):
+        werte = list(werte) + [None] * (letzte - len(werte))
+        zeile = {feld: werte[index[b]] for b, feld in imp.spalten.items()}
+        zeile = {k: (v.strip() if isinstance(v, str) else v) for k, v in zeile.items()}
+        if all(v in (None, "") for v in zeile.values()):
+            continue
+        yield nr, zeile
+
+
 def ausfuehren(pfad, probelauf=True) -> dict:
     """Prüft (Probelauf) oder übernimmt alle Blätter mit registriertem Importer."""
     mappe = _arbeitsmappe(pfad)
     bericht = {"blaetter": [], "probelauf": probelauf}
     try:
         with transaction.atomic():
-            for blatt in mappe.worksheets:
+            reihenfolge = {name: (IMPORTER[name].reihenfolge if name in IMPORTER else 999, i)
+                           for i, name in enumerate(mappe.sheetnames)}
+            for blatt in sorted(mappe.worksheets, key=lambda b: reihenfolge[b.title]):
                 klasse = IMPORTER.get(blatt.title)
                 eintrag = {"blatt": blatt.title, "zeilen": 0, "importer": klasse.titel if klasse else None,
                            "neu": 0, "geaendert": 0, "unveraendert": 0, "fehler": []}
@@ -96,14 +128,16 @@ def ausfuehren(pfad, probelauf=True) -> dict:
                     bericht["blaetter"].append(eintrag)
                     continue
                 imp = klasse()
-                for nr, zeile in _zeilen(blatt, imp.kopfzeile):
+                zeilen = _spalten_zeilen(blatt, imp) if imp.spalten else _zeilen(blatt, imp.kopfzeile)
+                for nr, zeile in zeilen:
                     eintrag["zeilen"] += 1
                     fehler = imp.zeile_pruefen(zeile)
                     if fehler:
                         eintrag["fehler"].append(f"Zeile {nr}: " + ", ".join(fehler))
                         continue
-                    if not probelauf:
-                        eintrag[imp.zeile_uebernehmen(zeile)] += 1
+                    # Auch im Probelauf wird „übernommen“ – am Ende aber alles zurückgerollt.
+                    # So zeigt schon der Probelauf, was neu wäre und was schon da ist.
+                    eintrag[imp.zeile_uebernehmen(zeile)] += 1
                 bericht["blaetter"].append(eintrag)
             if probelauf:
                 transaction.set_rollback(True)

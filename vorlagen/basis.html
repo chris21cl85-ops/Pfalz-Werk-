@@ -39,8 +39,23 @@
   th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--rand); vertical-align:top; }
   th { background:#f1ebe2; }
   .karte { background:#fff; border:1px solid var(--rand); border-radius:10px; padding:20px; margin-bottom:20px; }
-  input[type=text], input[type=password], input[type=file] { font-size:18px; padding:10px; width:100%;
-         max-width:420px; border:1px solid #bbb; border-radius:6px; }
+  input[type=text], input[type=password], input[type=file], input[type=email], input[type=search],
+  select, textarea { font-size:18px; padding:10px; width:100%; max-width:520px; border:1px solid #bbb;
+         border-radius:6px; font-family:inherit; background:#fff; }
+  .knopf.zweit { background:#fff; color:var(--holz-dunkel); border:1px solid var(--holz); }
+  .knopf.zweit:hover { background:#f1ebe2; }
+  .leiste { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  .leiste form { display:flex; gap:10px; flex-wrap:wrap; align-items:center; flex:1; }
+  .leiste input[type=search] { flex:1; min-width:200px; }
+  dl.daten { display:grid; grid-template-columns:200px 1fr; gap:8px 16px; margin:0; }
+  dl.daten dt { color:var(--grau); }
+  dl.daten dd { margin:0; white-space:pre-line; }
+  @media (max-width:600px) { dl.daten { grid-template-columns:1fr; } dl.daten dd { margin-bottom:8px; } }
+  .marke-inaktiv { background:#eee; color:#666; border-radius:4px; padding:2px 8px; font-size:14px; }
+  .hilfe { color:var(--grau); font-size:15px; margin-top:4px; }
+  .nowrap { white-space:nowrap; }
+  @media (max-width:600px) { .breit { display:none; } }
+  tr.klickbar:hover td { background:#faf5ee; cursor:pointer; }
   label { display:block; margin:12px 0 4px; font-weight:600; }
   .fehler { color:var(--rot); }
   .grau { color:var(--grau); }

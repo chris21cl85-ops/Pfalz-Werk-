@@ -7,7 +7,7 @@ WERKSTATT_LEITUNG = (Rolle.CHEF, Rolle.ADMIN, Rolle.MEISTER)
 
 MODULE = [
     # (Titel, Beschreibung, Etappe, Rollen, URL-Name oder None)
-    ("Kunden", "Kundenstamm und Ansprechpartner", 1, ALLE, None),
+    ("Kunden", "Kundenstamm und Ansprechpartner", 1, ALLE, "kunden:liste"),
     ("Projekte", "Aufträge und Baustellen", 1, ALLE, None),
     ("Material", "Platten, Beschläge, Kanten", 1, ALLE, None),
     ("Lieferanten", "Bezugsquellen und Konditionen", 1, BUERO + (Rolle.MEISTER,), None),

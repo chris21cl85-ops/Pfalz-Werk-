@@ -17,6 +17,7 @@ GESPEICHERT = []
 def test_importer():
     """Ein Beispiel-Importer, wie er ab Etappe 1 für echte Blätter gebaut wird."""
     GESPEICHERT.clear()
+    vorher = dict(dienst.IMPORTER)
 
     @dienst.registrieren
     class TestKunden(dienst.Importer):
@@ -29,7 +30,8 @@ def test_importer():
             return "neu"
 
     yield TestKunden
-    dienst.IMPORTER.pop("Kunden", None)
+    dienst.IMPORTER.clear()
+    dienst.IMPORTER.update(vorher)
 
 
 def excel(tmp_path, blaetter):
@@ -57,14 +59,14 @@ def test_probelauf_zeigt_blaetter_ohne_zu_speichern(chef_client, tmp_path, test_
     assert "Kunden (Test)" in inhalt and "Notizen" in inhalt and "Zeile 3" in inhalt
     lauf = Importlauf.objects.get()
     assert lauf.status == Importlauf.Status.PROBELAUF
-    assert GESPEICHERT == []
     kunden = lauf.bericht["blaetter"][0]
-    assert kunden["zeilen"] == 2 and len(kunden["fehler"]) == 1
+    assert kunden["zeilen"] == 2 and len(kunden["fehler"]) == 1 and kunden["neu"] == 1
 
 
 def test_uebernahme_sichert_vorher_und_protokolliert(chef_client, tmp_path, test_importer):
     hochladen(chef_client, excel(tmp_path, {"Kunden": [["Nr", "Name"], [1, " Müller "], [2, "Schmitt"]]}))
     lauf = Importlauf.objects.get()
+    GESPEICHERT.clear()
     chef_client.post(reverse("importe:uebernehmen", args=[lauf.pk]))
     lauf.refresh_from_db()
     assert lauf.status == Importlauf.Status.UEBERNOMMEN

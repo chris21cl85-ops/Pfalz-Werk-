@@ -19,5 +19,6 @@ urlpatterns = [
     path("protokoll/", kern.protokoll, name="protokoll"),
     path("sicherung/", include("sicherung.urls")),
     path("import/", include("importe.urls")),
+    path("kunden/", include("kunden.urls")),
     path("verwaltung/", admin.site.urls),
 ]

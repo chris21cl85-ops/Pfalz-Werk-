@@ -1,0 +1,21 @@
+{% extends "basis.html" %}
+{% block titel %}{{ titel }}{% endblock %}
+{% block inhalt %}
+<p><a href="{% if kunde %}{{ kunde.get_absolute_url }}{% else %}{% url 'kunden:liste' %}{% endif %}">← Zurück ohne Speichern</a></p>
+<h1>{{ titel }}</h1>
+<form method="post" class="karte">{% csrf_token %}
+  {% if formular.non_field_errors %}<div class="meldung error">{{ formular.non_field_errors|join:" " }}</div>{% endif %}
+  {% for feld in formular %}
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>
+    {{ feld }}
+    {% if feld.name == "kundennr" and not kunde %}<div class="hilfe">Vorschlag: nächste freie Nummer. Kann geändert werden.</div>{% endif %}
+    {% if feld.name == "kundenart" %}<div class="hilfe">Auswählen oder frei eintippen.</div>{% endif %}
+    {% if feld.name == "status" %}<div class="hilfe">Kunden werden nicht gelöscht. „Inaktiv“ blendet sie in der Liste aus.</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+  {% endfor %}
+  <datalist id="kundenarten">{% for a in formular.kundenarten %}<option value="{{ a }}">{% endfor %}</datalist>
+  {% if kunde.adresse_original %}<p class="hilfe">Adresse wie in Excel: {{ kunde.adresse_original }}</p>{% endif %}
+  <p><button class="knopf" type="submit">Speichern</button></p>
+  <p class="hilfe">* Pflichtfeld</p>
+</form>
+{% endblock %}

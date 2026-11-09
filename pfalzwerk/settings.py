@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "kern",
     "sicherung",
     "importe",
+    "kunden",
 ]
 
 MIDDLEWARE = [

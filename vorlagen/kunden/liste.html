@@ -1,0 +1,37 @@
+{% extends "basis.html" %}
+{% block titel %}Kunden – PFALZ-WERK{% endblock %}
+{% block inhalt %}
+<h1>Kunden</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Name, Nummer, Ort, Telefon …" autofocus>
+    {% if not nur_aktive %}<input type="hidden" name="alle" value="1">{% endif %}
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  {% if darf_bearbeiten %}<a class="knopf" href="{% url 'kunden:neu' %}">+ Neuer Kunde</a>{% endif %}
+</div>
+<p class="grau">
+  {{ anzahl }} Kunde{{ anzahl|pluralize:"n" }}{% if suche %} gefunden für „{{ suche }}“{% endif %}.
+  {% if nur_aktive %}<a href="?alle=1{% if suche %}&suche={{ suche|urlencode }}{% endif %}">Auch inaktive zeigen</a>
+  {% else %}<a href="?{% if suche %}suche={{ suche|urlencode }}{% endif %}">Nur aktive zeigen</a>{% endif %}
+  {% if suche %} · <a href="{% url 'kunden:liste' %}">Suche löschen</a>{% endif %}
+</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Name / Firma</th><th class="breit">Ansprechpartner</th><th class="breit">Ort</th><th>Telefon</th></tr>
+  {% for k in seite %}
+  <tr class="klickbar" onclick="location.href='{{ k.get_absolute_url }}'">
+    <td class="nowrap">{{ k.kundennr }}</td>
+    <td><a href="{{ k.get_absolute_url }}">{{ k.name }}</a>{% if not k.ist_aktiv %} <span class="marke-inaktiv">inaktiv</span>{% endif %}</td>
+    <td class="breit">{{ k.ansprechpartner }}</td><td class="breit">{{ k.ort|default:"" }}</td>
+    <td>{% if k.telefon %}<a href="tel:{{ k.telefon }}" onclick="event.stopPropagation()">{{ k.telefon }}</a>{% endif %}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="5">{% if suche %}Kein Kunde passt zu „{{ suche }}“.{% else %}Noch keine Kunden. Über „Excel-Import“ übernehmen oder „+ Neuer Kunde“.{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% if seite.paginator.num_pages > 1 %}
+<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}&suche={{ suche|urlencode }}{% if not nur_aktive %}&alle=1{% endif %}">← zurück</a>{% endif %}
+   Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+   {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}&suche={{ suche|urlencode }}{% if not nur_aktive %}&alle=1{% endif %}">weiter →</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

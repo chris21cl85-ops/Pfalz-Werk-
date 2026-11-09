@@ -2,17 +2,21 @@
 {% block titel %}Import {{ lauf.dateiname }}{% endblock %}
 {% block inhalt %}
 <h1>Import: {{ lauf.dateiname }}</h1>
+{% if lauf.status == "probelauf" %}<div class="meldung success">Das war nur eine <b>Prüfung</b> – es wurde noch nichts gespeichert.</div>{% endif %}
+{% if lauf.status == "uebernommen" %}<div class="meldung success">Die Daten sind <b>übernommen</b>.</div>{% endif %}
 <p>Status: <b>{{ lauf.get_status_display }}</b> · {{ lauf.zeitpunkt|date:"d.m.Y H:i" }}</p>
 {% if lauf.bericht.meldung %}<div class="meldung error">{{ lauf.bericht.meldung }}</div>{% endif %}
 {% if lauf.bericht.blaetter %}
 <div class="tabelle-rahmen"><table>
   <tr><th>Tabellenblatt</th><th>Zeilen</th><th>Wird übernommen als</th>
-      {% if not lauf.bericht.probelauf %}<th>Neu</th><th>Geändert</th><th>Unverändert</th>{% endif %}
+      <th>{% if lauf.bericht.probelauf %}Würde neu angelegt{% else %}Neu angelegt{% endif %}</th>
+      <th>Schon vorhanden (bleibt unverändert)</th>
       <th>Probleme</th></tr>
   {% for b in lauf.bericht.blaetter %}
   <tr><td>{{ b.blatt }}</td><td>{{ b.zeilen }}</td>
       <td>{{ b.importer|default:"– (noch nicht angebunden)" }}</td>
-      {% if not lauf.bericht.probelauf %}<td>{{ b.neu }}</td><td>{{ b.geaendert }}</td><td>{{ b.unveraendert }}</td>{% endif %}
+      <td>{% if b.importer %}{{ b.neu }}{% else %}–{% endif %}</td>
+      <td>{% if b.importer %}{{ b.unveraendert }}{% else %}–{% endif %}</td>
       <td>{% for f in b.fehler|slice:":10" %}<div class="fehler">{{ f }}</div>{% empty %}–{% endfor %}
           {% if b.fehler|length > 10 %}<div class="grau">… und {{ b.fehler|length|add:"-10" }} weitere</div>{% endif %}</td></tr>
   {% endfor %}

@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 09.11.2026
+Letzte Aktualisierung: 09.11.2026 (Etappe 1, Paket 1)
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -47,9 +47,26 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 4. Als Chef: „Excel-Import“ → PFALZ-WERK-Excel wählen → „Datei prüfen“ → Liste der Tabellenblätter mit Zeilenzahl.
 5. Als Chef: „Protokoll“ → Anmeldungen, Fehlversuch (vorher falsches Passwort tippen), Sicherung sind sichtbar.
 
+## Etappe 1 – Kern: in Arbeit
+
+### Paket 1: Kunden – gebaut, wartet auf Abnahme durch Chris
+- Kundenliste mit Suche (Name, Nr., Ort, Telefon, E-Mail, Adresse), nur aktive oder alle; am Handy schlanker.
+- Kundenkarte, Anlegen, Bearbeiten. Nummernvorschlag im bisherigen Muster (K-007 → K-008, 41 → 42).
+- Kunden werden nie gelöscht, nur „Inaktiv“. Jede Anlage/Änderung im Protokoll mit alt → neu.
+- Rechte: alle dürfen ansehen; Chef, Admin, Buchhaltung, Meister dürfen anlegen/ändern; Mitarbeiter nicht.
+- Excel-Import Blatt „Kunden“ (Spalten A–I, Zeilen 4–97 wie im Makro); Adresse wird in Straße/PLZ/Ort zerlegt,
+  Original bleibt gespeichert. Bestehende Nummern werden nie überschrieben. Probelauf zeigt jetzt schon
+  „würde neu angelegt“ / „schon vorhanden“ und Fehler (doppelte Nr., fehlender Name, ungültige E-Mail).
+- Import-Gerüst kann jetzt feste Spaltenbuchstaben und Reihenfolge (Kunden vor Projekten).
+- 95 automatische Tests, alle grün.
+
+### Offen
+- Abnahme Kunden durch Chris inkl. Import mit der echten Excel.
+- Paket 2: Projekte (Blatt „Projekte“, siehe Vorlage unten), danach Material, Lieferanten, Mitarbeiter.
+
 ## Nächstes Paket
-Etappe 1, Paket 1: **Kunden** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Import aus dem Excel-Blatt „Kunden“.
-Danach Paket 2: **Projekte** (brauchen Kunden).
+Etappe 1, Paket 2: **Projekte** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Verknüpfung mit Kunden,
+Import aus dem Excel-Blatt „Projekte“.
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
 Excel-Datei liegt in Chris' Google Drive: „Pfalz-Werk_Weniger_Buero_mehr_Handwerk_aktuell.xlsm“ (ca. 9 MB,
