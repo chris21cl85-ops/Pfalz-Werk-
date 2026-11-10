@@ -1,7 +1,13 @@
 {% extends "basis.html" %}
 {% block titel %}{{ kunde.name }} – Kunden{% endblock %}
+{% block pfad %} › <a href="{% url 'kunden:liste' %}">Kunden</a> › {{ kunde.kundennr }}{% endblock %}
 {% block inhalt %}
-<p><a href="{% url 'kunden:liste' %}">← Alle Kunden</a></p>
+<div class="leiste">
+  <a class="pfeil" href="{% url 'kunden:liste' %}">↑ Alle Kunden</a>
+  {% if vorheriger %}<a class="pfeil" href="{{ vorheriger.get_absolute_url }}" title="{{ vorheriger.name }}">‹ Vorheriger</a>{% endif %}
+  {% if naechster %}<a class="pfeil" href="{{ naechster.get_absolute_url }}" title="{{ naechster.name }}">Nächster ›</a>{% endif %}
+  <span class="grau">Kunde {{ position }} von {{ gesamt }}</span>
+</div>
 <h1>{{ kunde.name }} {% if not kunde.ist_aktiv %}<span class="marke-inaktiv">inaktiv</span>{% endif %}</h1>
 <div class="karte">
 <dl class="daten">

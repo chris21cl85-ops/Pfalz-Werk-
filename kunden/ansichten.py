@@ -38,7 +38,15 @@ def liste(request):
 
 def detail(request, pk):
     kunde = get_object_or_404(Kunde, pk=pk)
-    return render(request, "kunden/detail.html", {"kunde": kunde, "darf_bearbeiten": darf_bearbeiten(request.user)})
+    # Blättern in der Reihenfolge der Liste (nach Name)
+    reihe = list(Kunde.objects.order_by("name", "pk").values_list("pk", flat=True))
+    i = reihe.index(kunde.pk)
+    vorheriger = Kunde.objects.get(pk=reihe[i - 1]) if i > 0 else None
+    naechster = Kunde.objects.get(pk=reihe[i + 1]) if i + 1 < len(reihe) else None
+    return render(request, "kunden/detail.html", {
+        "kunde": kunde, "darf_bearbeiten": darf_bearbeiten(request.user),
+        "vorheriger": vorheriger, "naechster": naechster, "position": i + 1, "gesamt": len(reihe),
+    })
 
 
 def _aenderungen(formular):

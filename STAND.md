@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 09.11.2026 (Etappe 1, Paket 1)
+Letzte Aktualisierung: 10.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -49,7 +49,8 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 
 ## Etappe 1 – Kern: in Arbeit
 
-### Paket 1: Kunden – gebaut, wartet auf Abnahme durch Chris
+### Paket 1: Kunden – ABGENOMMEN am 10.11.2026
+- Echte Excel importiert: 2 Kunden, keine Probleme (Chris bestätigt: stimmt).
 - Kundenliste mit Suche (Name, Nr., Ort, Telefon, E-Mail, Adresse), nur aktive oder alle; am Handy schlanker.
 - Kundenkarte, Anlegen, Bearbeiten. Nummernvorschlag im bisherigen Muster (K-007 → K-008, 41 → 42).
 - Kunden werden nie gelöscht, nur „Inaktiv“. Jede Anlage/Änderung im Protokoll mit alt → neu.
@@ -58,10 +59,18 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   Original bleibt gespeichert. Bestehende Nummern werden nie überschrieben. Probelauf zeigt jetzt schon
   „würde neu angelegt“ / „schon vorhanden“ und Fehler (doppelte Nr., fehlender Name, ungültige E-Mail).
 - Import-Gerüst kann jetzt feste Spaltenbuchstaben und Reihenfolge (Kunden vor Projekten).
-- 95 automatische Tests, alle grün.
+
+### Zwischenpaket: Navigation (Wunsch von Chris) – gebaut, wartet auf Abnahme
+- Auf jeder Seite eine Leiste: „← Zurück“, „⌂ Start“, „☰ Navi“ und Pfadangabe (Start › Kunden › K-001).
+- Navi (runder Knopf unten rechts oder Taste N): alle Bereiche auf einen Blick, gruppiert wie in der Excel
+  (Büro & Planung, Werkstatt & Material, Geld, Verwaltung); nur was die Rolle darf; Künftiges grau mit Etappe.
+- Kundenkarte: „‹ Vorheriger“ / „Nächster ›“ und „Kunde 2 von 3“.
+- Das Navi-Rad der Excel selbst konnte Claude nicht sehen (nicht in den Makro-Dateien) – Aussehen ggf. nach
+  Bildschirmfoto von Chris angleichen.
+- 101 automatische Tests, alle grün.
 
 ### Offen
-- Abnahme Kunden durch Chris inkl. Import mit der echten Excel.
+- Abnahme Navigation durch Chris.
 - Paket 2: Projekte (Blatt „Projekte“, siehe Vorlage unten), danach Material, Lieferanten, Mitarbeiter.
 
 ## Nächstes Paket

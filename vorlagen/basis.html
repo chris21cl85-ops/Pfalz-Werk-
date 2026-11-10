@@ -60,6 +60,40 @@
   .fehler { color:var(--rot); }
   .grau { color:var(--grau); }
   .tabelle-rahmen { overflow-x:auto; }
+  /* Navigation */
+  .navleiste { background:#efe6d8; border-bottom:1px solid var(--rand); }
+  .navleiste .innen { max-width:1100px; margin:0 auto; padding:8px 16px; display:flex; gap:8px;
+                      align-items:center; flex-wrap:wrap; }
+  .pfeil { display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--rand);
+           border-radius:8px; padding:8px 14px; font-size:17px; color:var(--holz-dunkel); text-decoration:none;
+           cursor:pointer; font-family:inherit; }
+  .pfeil:hover { border-color:var(--holz); background:#faf5ee; }
+  .pfad { color:var(--grau); font-size:16px; margin-left:6px; }
+  .pfad a { color:var(--holz-dunkel); }
+  .navi-knopf { position:fixed; right:20px; bottom:20px; width:76px; height:76px; border-radius:50%;
+                background:var(--holz); color:#fff; border:4px solid #fff; box-shadow:0 3px 12px rgba(0,0,0,.3);
+                font-size:15px; font-weight:700; cursor:pointer; z-index:50; display:flex; flex-direction:column;
+                align-items:center; justify-content:center; line-height:1.1; font-family:inherit; }
+  .navi-knopf span { font-size:26px; }
+  .navi-knopf:hover { background:var(--holz-dunkel); }
+  dialog.navi { border:0; border-radius:14px; padding:0; width:min(900px, calc(100vw - 32px));
+                max-height:calc(100vh - 40px); box-shadow:0 10px 40px rgba(0,0,0,.35); }
+  dialog.navi::backdrop { background:rgba(40,25,10,.45); }
+  .navi-kopf { display:flex; justify-content:space-between; align-items:center; background:var(--holz-dunkel);
+               color:#fff; padding:14px 20px; position:sticky; top:0; }
+  .navi-kopf b { font-size:22px; }
+  .navi-inhalt { padding:16px 20px 24px; }
+  .navi-gruppe h3 { margin:16px 0 8px; font-size:15px; text-transform:uppercase; letter-spacing:1px; color:var(--grau); }
+  .navi-ziele { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:10px; }
+  @media (max-width:600px) { .navi-kopf b { font-size:18px; } .navi-inhalt { padding:10px 12px 20px; } .navi-ziel { min-height:84px; padding:10px 4px; } }
+  .navi-ziel { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+               text-align:center; padding:14px 8px; border:1px solid var(--rand); border-radius:12px;
+               background:#fff; color:var(--holz-dunkel); text-decoration:none; font-weight:600; min-height:96px; }
+  .navi-ziel .z { font-size:30px; }
+  a.navi-ziel:hover { border-color:var(--holz); background:#faf5ee; }
+  .navi-ziel.spaeter { opacity:.45; font-weight:400; }
+  .navi-ziel small { font-size:12px; color:var(--grau); }
+  main { padding-bottom:120px; }
 </style>
 </head>
 <body>
@@ -74,9 +108,49 @@
   </div>
   {% endif %}
 </header>
+{% if user.is_authenticated %}
+<nav class="navleiste" aria-label="Navigation">
+  <div class="innen">
+    <button class="pfeil" type="button" onclick="history.length > 1 ? history.back() : location.href='{% url 'startseite' %}'" title="Eine Seite zurück (Alt + ←)">← Zurück</button>
+    <a class="pfeil" href="{% url 'startseite' %}" title="Zur Startseite">⌂ Start</a>
+    <button class="pfeil" type="button" onclick="naviAuf()" title="Alle Bereiche (Taste N)">☰ Navi</button>
+    <span class="pfad"><a href="{% url 'startseite' %}">Start</a>{% block pfad %}{% endblock %}</span>
+  </div>
+</nav>
+{% endif %}
 <main>
   {% for m in messages %}<div class="meldung {{ m.tags }}">{{ m }}</div>{% endfor %}
   {% block inhalt %}{% endblock %}
 </main>
+{% if user.is_authenticated and navi %}
+<button class="navi-knopf" type="button" onclick="naviAuf()" title="Alle Bereiche öffnen (Taste N)"><span>☸</span>Navi</button>
+<dialog class="navi" id="navi">
+  <div class="navi-kopf"><b>☸ Navi – wohin möchten Sie?</b>
+    <button class="pfeil" type="button" onclick="document.getElementById('navi').close()">✕ Schließen</button></div>
+  <div class="navi-inhalt">
+    <div class="navi-ziele" style="margin-bottom:6px">
+      <a class="navi-ziel" href="{% url 'startseite' %}"><span class="z">⌂</span>Startseite</a>
+    </div>
+    {% for bereich, module in navi %}
+    <div class="navi-gruppe"><h3>{{ bereich }}</h3>
+      <div class="navi-ziele">
+        {% for m in module %}
+          {% if m.url %}<a class="navi-ziel" href="{% url m.url %}"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}</a>
+          {% else %}<div class="navi-ziel spaeter"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}<small>kommt in Etappe {{ m.etappe }}</small></div>{% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</dialog>
+<script>
+  function naviAuf() { const d = document.getElementById('navi'); if (d && !d.open) d.showModal(); }
+  document.getElementById('navi').addEventListener('click', e => { if (e.target.id === 'navi') e.target.close(); });
+  document.addEventListener('keydown', e => {
+    const tippen = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+    if (!tippen && !e.ctrlKey && !e.altKey && !e.metaKey && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); naviAuf(); }
+  });
+</script>
+{% endif %}
 </body>
 </html>

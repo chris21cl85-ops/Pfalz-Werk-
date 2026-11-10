@@ -1,5 +1,6 @@
 {% extends "basis.html" %}
 {% block titel %}{{ titel }}{% endblock %}
+{% block pfad %} › <a href="{% url 'kunden:liste' %}">Kunden</a>{% if kunde %} › <a href="{{ kunde.get_absolute_url }}">{{ kunde.kundennr }}</a> › Bearbeiten{% else %} › Neuer Kunde{% endif %}{% endblock %}
 {% block inhalt %}
 <p><a href="{% if kunde %}{{ kunde.get_absolute_url }}{% else %}{% url 'kunden:liste' %}{% endif %}">← Zurück ohne Speichern</a></p>
 <h1>{{ titel }}</h1>

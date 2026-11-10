@@ -1,5 +1,6 @@
 {% extends "basis.html" %}
 {% block titel %}Import {{ lauf.dateiname }}{% endblock %}
+{% block pfad %} › <a href="{% url 'importe:uebersicht' %}">Excel-Import</a> › {{ lauf.dateiname|truncatechars:40 }}{% endblock %}
 {% block inhalt %}
 <h1>Import: {{ lauf.dateiname }}</h1>
 {% if lauf.status == "probelauf" %}<div class="meldung success">Das war nur eine <b>Prüfung</b> – es wurde noch nichts gespeichert.</div>{% endif %}
