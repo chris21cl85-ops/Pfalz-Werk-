@@ -45,3 +45,7 @@ def test_blaettern_zwischen_kunden(chef_client):
     assert a.get_absolute_url() in inhalt and c.get_absolute_url() in inhalt and "Kunde 2 von 3" in inhalt
     erste = chef_client.get(reverse("kunden:detail", args=[a.pk])).content.decode()
     assert "‹ Vorheriger" not in erste and "Nächster ›" in erste
+
+
+def test_fassung_im_navi_sichtbar(chef_client):
+    assert "Fassung 1.2" in chef_client.get("/").content.decode()

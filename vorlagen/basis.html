@@ -80,7 +80,7 @@
                 max-height:calc(100vh - 40px); box-shadow:0 10px 40px rgba(0,0,0,.35); }
   dialog.navi::backdrop { background:rgba(40,25,10,.45); }
   .navi-kopf { display:flex; justify-content:space-between; align-items:center; background:var(--holz-dunkel);
-               color:#fff; padding:14px 20px; position:sticky; top:0; }
+               color:#fff; padding:14px 20px; position:sticky; top:0; z-index:5; }
   .navi-kopf b { font-size:22px; }
   .navi-inhalt { padding:16px 20px 24px; }
   .navi-gruppe h3 { margin:16px 0 8px; font-size:15px; text-transform:uppercase; letter-spacing:1px; color:var(--grau); }
@@ -125,7 +125,7 @@
 {% if user.is_authenticated and navi %}
 <button class="navi-knopf" type="button" onclick="naviAuf()" title="Alle Bereiche öffnen (Taste N)"><span>☸</span>Navi</button>
 <dialog class="navi" id="navi">
-  <div class="navi-kopf"><b>☸ Navi – wohin möchten Sie?</b>
+  <div class="navi-kopf"><b>☸ Navi – wohin möchten Sie?</b> <small style="opacity:.7">{{ pfalzwerk_fassung }}</small>
     <button class="pfeil" type="button" onclick="document.getElementById('navi').close()">✕ Schließen</button></div>
   <div class="navi-inhalt">
     <div class="navi-ziele" style="margin-bottom:6px">
