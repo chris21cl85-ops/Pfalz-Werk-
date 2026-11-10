@@ -1,5 +1,6 @@
 """Startet PFALZ-WERK: Pakete prüfen, Datenbank aktualisieren, sichern, Browser öffnen."""
 import os
+import socket
 import subprocess
 import sys
 import threading
@@ -32,12 +33,40 @@ def vorbereiten():
     return py
 
 
+def laeuft_schon() -> bool:
+    """Prüft, ob schon ein PFALZ-WERK (z. B. eine alte Fassung) auf dem Port läuft."""
+    host, port = ADRESSE.split(":")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((host, int(port))) == 0
+
+
+def schritt(befehl, was):
+    """Führt einen Schritt aus. Bei Fehler: verständliche Meldung + Fehlertext in Datei."""
+    ergebnis = subprocess.run(befehl, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if ergebnis.stdout:
+        print(ergebnis.stdout, end="")
+    if ergebnis.returncode != 0:
+        datei = ORDNER / "FEHLERBERICHT.txt"
+        datei.write_text(f"Schritt: {was}\nBefehl: {befehl}\n\n{ergebnis.stdout}\n{ergebnis.stderr}", encoding="utf-8")
+        letzte = [z for z in ergebnis.stderr.strip().splitlines() if z.strip()][-1:] or ["(keine Meldung)"]
+        print(f"\nFEHLER bei: {was}")
+        print(f"Ursache: {letzte[0]}")
+        print(f"\nDer vollständige Fehlertext steht in:\n  {datei}")
+        print("Bitte diese Datei an Claude schicken (oder ein Bildschirmfoto dieses Fensters).")
+        raise SystemExit(1)
+
+
 def main():
+    if laeuft_schon():
+        print("PFALZ-WERK läuft bereits in einem anderen Fenster (vielleicht eine ältere Fassung).")
+        print("Bitte ALLE schwarzen PFALZ-WERK-Fenster schließen und dann erneut starten.")
+        raise SystemExit(1)
     py = vorbereiten()
     verwalten = [str(py), str(ORDNER / "manage.py")]
-    subprocess.check_call(verwalten + ["migrate", "--noinput", "-v", "0"])
-    subprocess.check_call(verwalten + ["ersteinrichtung"])
-    subprocess.check_call(verwalten + ["sicherung", "--wenn-faellig"])
+    schritt(verwalten + ["migrate", "--noinput", "-v", "0"], "Datenbank aktualisieren")
+    subprocess.check_call(verwalten + ["ersteinrichtung"])  # fragt evtl. nach Eingaben, daher direkt
+    schritt(verwalten + ["sicherung", "--wenn-faellig"], "Tägliche Sicherung")
 
     def browser_oeffnen():
         time.sleep(2)
@@ -55,3 +84,7 @@ if __name__ == "__main__":
         print(f"\nFEHLER beim Start: {fehler}")
         input("Eingabetaste drücken zum Schließen ...")
         sys.exit(1)
+    except SystemExit as ende:
+        if ende.code:
+            input("\nEingabetaste drücken zum Schließen ...")
+        raise

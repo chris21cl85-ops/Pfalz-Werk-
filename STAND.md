@@ -10,7 +10,7 @@ Letzte Aktualisierung: 10.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.2 (Projekte).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.3 (Projekte).
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
 ## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
