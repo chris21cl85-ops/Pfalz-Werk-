@@ -56,7 +56,7 @@ def test_probelauf_zeigt_blaetter_ohne_zu_speichern(chef_client, tmp_path, test_
                             "Notizen": [["x"], [1]]})
     antwort = hochladen(chef_client, pfad)
     inhalt = antwort.content.decode()
-    assert "Kunden (Test)" in inhalt and "Notizen" in inhalt and "Zeile 3" in inhalt
+    assert "<b>Kunden</b>" in inhalt and "Notizen" in inhalt and "Zeile 3" in inhalt
     lauf = Importlauf.objects.get()
     assert lauf.status == Importlauf.Status.PROBELAUF
     kunden = lauf.bericht["blaetter"][0]

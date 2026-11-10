@@ -7,20 +7,20 @@
 <p>Status: <b>{{ lauf.get_status_display }}</b> · {{ lauf.zeitpunkt|date:"d.m.Y H:i" }}</p>
 {% if lauf.bericht.meldung %}<div class="meldung error">{{ lauf.bericht.meldung }}</div>{% endif %}
 {% if lauf.bericht.blaetter %}
+<h2>Diese Blätter werden übernommen</h2>
 <div class="tabelle-rahmen"><table>
-  <tr><th>Tabellenblatt</th><th>Zeilen</th><th>Wird übernommen als</th>
+  <tr><th>Tabellenblatt</th><th>Zeilen mit Inhalt</th>
       <th>{% if lauf.bericht.probelauf %}Würde neu angelegt{% else %}Neu angelegt{% endif %}</th>
-      <th>Schon vorhanden (bleibt unverändert)</th>
-      <th>Probleme</th></tr>
-  {% for b in lauf.bericht.blaetter %}
-  <tr><td>{{ b.blatt }}</td><td>{{ b.zeilen }}</td>
-      <td>{{ b.importer|default:"– (noch nicht angebunden)" }}</td>
-      <td>{% if b.importer %}{{ b.neu }}{% else %}–{% endif %}</td>
-      <td>{% if b.importer %}{{ b.unveraendert }}{% else %}–{% endif %}</td>
-      <td>{% for f in b.fehler|slice:":10" %}<div class="fehler">{{ f }}</div>{% empty %}–{% endfor %}
+      <th>Schon vorhanden (bleibt unverändert)</th><th>Probleme</th></tr>
+  {% for b in lauf.bericht.blaetter %}{% if b.importer %}
+  <tr><td><b>{{ b.blatt }}</b></td><td>{{ b.zeilen }}</td><td>{{ b.neu }}</td><td>{{ b.unveraendert }}</td>
+      <td>{% for f in b.fehler|slice:":10" %}<div class="fehler">{{ f }}</div>{% empty %}keine{% endfor %}
           {% if b.fehler|length > 10 %}<div class="grau">… und {{ b.fehler|length|add:"-10" }} weitere</div>{% endif %}</td></tr>
-  {% endfor %}
+  {% endif %}{% endfor %}
 </table></div>
+<details style="margin-top:16px"><summary class="grau" style="cursor:pointer">Weitere Blätter in der Datei (noch nicht angebunden – werden ignoriert)</summary>
+  <ul class="grau">{% for b in lauf.bericht.blaetter %}{% if not b.importer %}<li>{{ b.blatt }}</li>{% endif %}{% endfor %}</ul>
+</details>
 {% endif %}
 {% if lauf.status == "probelauf" %}
   {% if lauf.bericht.erkannt %}
