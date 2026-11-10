@@ -1,0 +1,40 @@
+{% extends "basis.html" %}
+{% block titel %}Projekte – PFALZ-WERK{% endblock %}
+{% block pfad %} › Projekte{% endblock %}
+{% block inhalt %}
+<h1>Projekte</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Projekt, Nummer, Kunde, Pate …" autofocus>
+    <select name="status" style="max-width:220px" onchange="this.form.submit()">
+      <option value="offen" {% if status == "offen" %}selected{% endif %}>Nur offene</option>
+      <option value="alle" {% if status == "alle" %}selected{% endif %}>Alle Projekte</option>
+      {% for s in stati %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>Status: {{ s }}</option>{% endfor %}
+    </select>
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  {% if darf_bearbeiten %}<a class="knopf" href="{% url 'projekte:neu' %}">+ Neues Projekt</a>{% endif %}
+</div>
+<p class="grau">{{ anzahl }} Projekt{{ anzahl|pluralize:"e" }}{% if suche %} gefunden für „{{ suche }}“{% endif %}.
+  {% if suche or status != "offen" %}<a href="{% url 'projekte:liste' %}">Filter löschen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Projekt</th><th>Kunde</th><th class="breit">Status</th><th class="breit">Zieldatum</th><th class="breit">Nächster Schritt</th></tr>
+  {% for p in seite %}
+  <tr class="klickbar" onclick="location.href='{{ p.get_absolute_url }}'">
+    <td class="nowrap">{{ p.projektnr }}</td>
+    <td><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></td>
+    <td>{{ p.kunde.name }}</td>
+    <td class="breit">{{ p.status }}</td>
+    <td class="breit nowrap">{{ p.zieldatum|date:"d.m.Y"|default:"" }}</td>
+    <td class="breit">{{ p.naechster_schritt|truncatechars:60 }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">{% if suche %}Kein Projekt passt zu „{{ suche }}“.{% else %}Keine Projekte in dieser Ansicht.{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% if seite.paginator.num_pages > 1 %}
+<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}&suche={{ suche|urlencode }}&status={{ status|urlencode }}">← zurück</a>{% endif %}
+   Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+   {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}&suche={{ suche|urlencode }}&status={{ status|urlencode }}">weiter →</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

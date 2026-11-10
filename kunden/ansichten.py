@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
+from kern.blaettern import aenderungen, nachbarn
 from kern.models import protokolliere
 from konten.models import Rolle
 from konten.rechte import rolle_erforderlich
@@ -38,24 +39,11 @@ def liste(request):
 
 def detail(request, pk):
     kunde = get_object_or_404(Kunde, pk=pk)
-    # Blättern in der Reihenfolge der Liste (nach Name)
-    reihe = list(Kunde.objects.order_by("name", "pk").values_list("pk", flat=True))
-    i = reihe.index(kunde.pk)
-    vorheriger = Kunde.objects.get(pk=reihe[i - 1]) if i > 0 else None
-    naechster = Kunde.objects.get(pk=reihe[i + 1]) if i + 1 < len(reihe) else None
     return render(request, "kunden/detail.html", {
         "kunde": kunde, "darf_bearbeiten": darf_bearbeiten(request.user),
-        "vorheriger": vorheriger, "naechster": naechster, "position": i + 1, "gesamt": len(reihe),
+        "projekte": kunde.projekte.all(),
+        **nachbarn(Kunde.objects.order_by("name", "pk"), kunde),
     })
-
-
-def _aenderungen(formular):
-    zeilen = []
-    for feld in formular.changed_data:
-        alt = formular.initial.get(feld, "")
-        neu = formular.cleaned_data.get(feld, "")
-        zeilen.append(f"{formular.fields[feld].label}: „{alt}“ → „{neu}“")
-    return "\n".join(zeilen)
 
 
 @rolle_erforderlich(*BEARBEITER)
@@ -75,7 +63,7 @@ def bearbeiten(request, pk):
     formular = KundeFormular(request.POST or None, instance=kunde)
     if request.method == "POST" and formular.is_valid():
         if formular.has_changed():
-            details = _aenderungen(formular)
+            details = aenderungen(formular)
             kunde = formular.save()
             protokolliere("kunde_geaendert", kunde, details=details, benutzer=request.user)
             messages.success(request, "Änderungen gespeichert.")

@@ -1,0 +1,29 @@
+{% extends "basis.html" %}
+{% block titel %}{{ projekt.name }} – Projekte{% endblock %}
+{% block pfad %} › <a href="{% url 'projekte:liste' %}">Projekte</a> › {{ projekt.projektnr }}{% endblock %}
+{% block inhalt %}
+<div class="leiste">
+  <a class="pfeil" href="{% url 'projekte:liste' %}">↑ Alle Projekte</a>
+  {% if vorheriger %}<a class="pfeil" href="{{ vorheriger.get_absolute_url }}" title="{{ vorheriger.name }}">‹ Vorheriges</a>{% endif %}
+  {% if naechster %}<a class="pfeil" href="{{ naechster.get_absolute_url }}" title="{{ naechster.name }}">Nächstes ›</a>{% endif %}
+  <span class="grau">Projekt {{ position }} von {{ gesamt }}</span>
+</div>
+<h1>{{ projekt.name }} {% if not projekt.ist_offen %}<span class="marke-inaktiv">{{ projekt.status }}</span>{% endif %}</h1>
+<div class="karte">
+<dl class="daten">
+  <dt>Projekt-Nr.</dt><dd>{{ projekt.projektnr }}</dd>
+  <dt>Kunde</dt><dd><a href="{{ projekt.kunde.get_absolute_url }}">{{ projekt.kunde.kundennr }} – {{ projekt.kunde.name }}</a></dd>
+  <dt>Projektart</dt><dd>{{ projekt.projektart|default:"–" }}</dd>
+  <dt>Status</dt><dd>{{ projekt.status }}</dd>
+  <dt>Phase</dt><dd>{{ projekt.phase|default:"–" }}</dd>
+  <dt>Projektpate</dt><dd>{{ projekt.projektpate|default:"–" }}</dd>
+  <dt>Start / Ziel</dt><dd>{{ projekt.startdatum|date:"d.m.Y"|default:"–" }} / {{ projekt.zieldatum|date:"d.m.Y"|default:"–" }}</dd>
+  <dt>Nächster Schritt</dt><dd>{{ projekt.naechster_schritt|default:"–" }}</dd>
+  <dt>Risiko</dt><dd>{{ projekt.risiko|default:"–" }}</dd>
+  <dt>Anfrage-ID</dt><dd>{{ projekt.anfrage_id|default:"–" }}</dd>
+  <dt>Hinweise</dt><dd>{{ projekt.hinweise|default:"–" }}</dd>
+  <dt>Angelegt / geändert</dt><dd>{{ projekt.angelegt_am|date:"d.m.Y H:i" }} / {{ projekt.geaendert_am|date:"d.m.Y H:i" }}</dd>
+</dl>
+</div>
+{% if darf_bearbeiten %}<p><a class="knopf" href="{% url 'projekte:bearbeiten' projekt.pk %}">Bearbeiten</a></p>{% endif %}
+{% endblock %}

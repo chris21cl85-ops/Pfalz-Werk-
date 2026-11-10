@@ -2,7 +2,6 @@
 {% block titel %}{{ titel }}{% endblock %}
 {% block pfad %} › <a href="{% url 'kunden:liste' %}">Kunden</a>{% if kunde %} › <a href="{{ kunde.get_absolute_url }}">{{ kunde.kundennr }}</a> › Bearbeiten{% else %} › Neuer Kunde{% endif %}{% endblock %}
 {% block inhalt %}
-<p><a href="{% if kunde %}{{ kunde.get_absolute_url }}{% else %}{% url 'kunden:liste' %}{% endif %}">← Zurück ohne Speichern</a></p>
 <h1>{{ titel }}</h1>
 <form method="post" class="karte">{% csrf_token %}
   {% if formular.non_field_errors %}<div class="meldung error">{{ formular.non_field_errors|join:" " }}</div>{% endif %}
@@ -16,7 +15,8 @@
   {% endfor %}
   <datalist id="kundenarten">{% for a in formular.kundenarten %}<option value="{{ a }}">{% endfor %}</datalist>
   {% if kunde.adresse_original %}<p class="hilfe">Adresse wie in Excel: {{ kunde.adresse_original }}</p>{% endif %}
-  <p><button class="knopf" type="submit">Speichern</button></p>
+  <p><button class="knopf" type="submit">Speichern</button>
+     <a class="knopf zweit" href="{% if kunde %}{{ kunde.get_absolute_url }}{% else %}{% url 'kunden:liste' %}{% endif %}">Abbrechen</a></p>
   <p class="hilfe">* Pflichtfeld</p>
 </form>
 {% endblock %}

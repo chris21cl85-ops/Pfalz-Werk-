@@ -12,7 +12,7 @@ BEREICHE = ["Büro & Planung", "Werkstatt & Material", "Geld", "Verwaltung"]
 MODULE = [
     # (Titel, Beschreibung, Etappe, Rollen, URL-Name oder None, Bereich, Zeichen)
     ("Kunden", "Kundenstamm und Ansprechpartner", 1, ALLE, "kunden:liste", "Büro & Planung", "👥"),
-    ("Projekte", "Aufträge und Baustellen", 1, ALLE, None, "Büro & Planung", "📁"),
+    ("Projekte", "Aufträge und Baustellen", 1, ALLE, "projekte:liste", "Büro & Planung", "📁"),
     ("Möbelrechner", "Kalkulation von Möbeln", 3, WERKSTATT_LEITUNG, None, "Büro & Planung", "📐"),
     ("Zeiterfassung", "Stunden auf Projekte buchen", 4, ALLE, None, "Büro & Planung", "⏱"),
     ("Material", "Platten, Beschläge, Kanten", 1, ALLE, None, "Werkstatt & Material", "🪵"),

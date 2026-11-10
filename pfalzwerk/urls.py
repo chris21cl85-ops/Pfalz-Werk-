@@ -20,5 +20,6 @@ urlpatterns = [
     path("sicherung/", include("sicherung.urls")),
     path("import/", include("importe.urls")),
     path("kunden/", include("kunden.urls")),
+    path("projekte/", include("projekte.urls")),
     path("verwaltung/", admin.site.urls),
 ]

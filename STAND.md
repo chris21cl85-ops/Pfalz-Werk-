@@ -60,22 +60,33 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   „würde neu angelegt“ / „schon vorhanden“ und Fehler (doppelte Nr., fehlender Name, ungültige E-Mail).
 - Import-Gerüst kann jetzt feste Spaltenbuchstaben und Reihenfolge (Kunden vor Projekten).
 
-### Zwischenpaket: Navigation (Wunsch von Chris) – gebaut, wartet auf Abnahme
+### Zwischenpaket: Navigation (Wunsch von Chris) – ABGENOMMEN am 10.11.2026
 - Auf jeder Seite eine Leiste: „← Zurück“, „⌂ Start“, „☰ Navi“ und Pfadangabe (Start › Kunden › K-001).
 - Navi (runder Knopf unten rechts oder Taste N): alle Bereiche auf einen Blick, gruppiert wie in der Excel
   (Büro & Planung, Werkstatt & Material, Geld, Verwaltung); nur was die Rolle darf; Künftiges grau mit Etappe.
 - Kundenkarte: „‹ Vorheriger“ / „Nächster ›“ und „Kunde 2 von 3“.
 - Das Navi-Rad der Excel selbst konnte Claude nicht sehen (nicht in den Makro-Dateien) – Aussehen ggf. nach
   Bildschirmfoto von Chris angleichen.
-- 101 automatische Tests, alle grün.
+
+### Paket 2: Projekte – gebaut, wartet auf Abnahme durch Chris
+- Projektliste mit Suche (Nr., Name, Kunde, Pate, Projektart, nächster Schritt) und Filter
+  „Nur offene“ (ohne Abgeschlossen/Erledigt/Storniert/Abgerechnet/Archiviert) / „Alle“ / je Status.
+- Projektkarte mit Blätterpfeilen, Link zum Kunden; Anlegen/Bearbeiten mit Nummernvorschlag,
+  Datumsauswahl, Vorschlagslisten für Status/Projektart/Pate (freie Eingabe bleibt möglich).
+- Kundenkarte zeigt die Projekte des Kunden und „+ Neues Projekt für diesen Kunden“.
+- Kunden mit Projekten sind technisch gegen Löschen geschützt; inaktive Kunden nicht für neue Projekte wählbar.
+- Änderungen im Protokoll (Kundenwechsel mit Namen).
+- Excel-Import Blatt „Projekte“ (A–AL, Zeilen 4–300 wie im Makro); Kunden werden immer zuerst gelesen;
+  Fehler: fehlender/unbekannter Kunde, doppelte Nr., fehlender Name. Unlesbares Datum → Hinweis im Projekt.
+- 127 automatische Tests, alle grün.
 
 ### Offen
-- Abnahme Navigation durch Chris.
-- Paket 2: Projekte (Blatt „Projekte“, siehe Vorlage unten), danach Material, Lieferanten, Mitarbeiter.
+- Abnahme Projekte durch Chris inkl. Import mit der echten Excel.
+- Paket 3: Material, danach Lieferanten, Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt –
+  vorhanden: Makros PFALZ_WERK_Materialuebernahme.bas und PFALZ_WERK_SQL_MaterialLager.bas in Drive).
 
 ## Nächstes Paket
-Etappe 1, Paket 2: **Projekte** – Datenmodell, Liste/Suche/Anlegen/Bearbeiten, Verknüpfung mit Kunden,
-Import aus dem Excel-Blatt „Projekte“.
+Etappe 1, Paket 3: **Material** – Aufbau aus den Makros zur Materialübernahme in Drive ableiten.
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
 Excel-Datei liegt in Chris' Google Drive: „Pfalz-Werk_Weniger_Buero_mehr_Handwerk_aktuell.xlsm“ (ca. 9 MB,
