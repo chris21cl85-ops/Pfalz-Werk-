@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 10.11.2026
+Letzte Aktualisierung: 12.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -10,7 +10,7 @@ Letzte Aktualisierung: 10.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.3 (Projekte).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.4 (Material).
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
 ## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
@@ -81,14 +81,28 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - Excel-Import Blatt „Projekte“ (A–AL, Zeilen 4–300 wie im Makro); Kunden werden immer zuerst gelesen;
   Fehler: fehlender/unbekannter Kunde, doppelte Nr., fehlender Name. Unlesbares Datum → Hinweis im Projekt.
 - 127 automatische Tests, alle grün.
+- Startprobleme 12.11.: alte Fassung lief noch; Startprogramm erkennt das jetzt und schreibt FEHLERBERICHT.txt.
+  Danach lief Fassung 1.3 bei Chris („läuft“). Import der echten Projekte noch nicht von Chris gemeldet.
+
+### Paket 3: Material – gebaut, wartet auf Abnahme durch Chris
+- Materialliste mit Suche (Nr., Bezeichnung, Gruppe, Untergruppe, Format, Lagerplatz), Filter Produktgruppe,
+  nur aktive / alle; Materialkarte mit Blätterpfeilen; Anlegen/Bearbeiten mit Komma-Zahlen, Vorschlagslisten.
+- Einkaufs- und Referenzpreise sehen nur Chef, Admin, Buchhaltung, Meister (nicht Mitarbeiter).
+- Material wird nie gelöscht, nur inaktiv; Änderungen (auch Preise) im Protokoll.
+- Excel-Import Blatt „Material“, Zeilen 4–350, Spalten wie Makro PFALZ_WERK_SQL_MaterialLager (DEV-28.9A):
+  A Nr, B Produktgruppe, C Bezeichnung, D Einheit, E EK netto, F Mindestbestand, H Lieferzeit, I Preishinweis,
+  T Untergruppe, U Stärke, V Format, W Lagerartikel (Ja/Wahr/1/X), X Aktiv (Inaktiv/Nein/0 = inaktiv),
+  Y Beschaffungsart, AF Zielbestand, AH Lagerplatz, AI Referenzpreis brutto, AK Preisquelle, AL Preisstand.
+  Unlesbare Zahlen/Daten → leer + Hinweis im Material (Makro setzte stillschweigend 0).
+- Noch NICHT übernommen (Etappe 3, Lager): Blatt „Lager“ – A Material-Nr., D Bestand, E Reserviert, I Lagerort.
+- 158 automatische Tests, alle grün.
 
 ### Offen
-- Abnahme Projekte durch Chris inkl. Import mit der echten Excel.
-- Paket 3: Material, danach Lieferanten, Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt –
-  vorhanden: Makros PFALZ_WERK_Materialuebernahme.bas und PFALZ_WERK_SQL_MaterialLager.bas in Drive).
+- Abnahme Projekte und Material durch Chris inkl. Import mit der echten Excel.
+- Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
 
 ## Nächstes Paket
-Etappe 1, Paket 3: **Material** – Aufbau aus den Makros zur Materialübernahme in Drive ableiten.
+Etappe 1, Paket 4: **Lieferanten** – Excel-Aufbau des Blatts klären (Bildschirmfoto der Kopfzeile von Chris oder Makro).
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
 Excel-Datei liegt in Chris' Google Drive: „Pfalz-Werk_Weniger_Buero_mehr_Handwerk_aktuell.xlsm“ (ca. 9 MB,

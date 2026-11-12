@@ -48,4 +48,4 @@ def test_blaettern_zwischen_kunden(chef_client):
 
 
 def test_fassung_im_navi_sichtbar(chef_client):
-    assert "Fassung 1.3" in chef_client.get("/").content.decode()
+    assert "Fassung 1.4" in chef_client.get("/").content.decode()

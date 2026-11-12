@@ -1,0 +1,43 @@
+{% extends "basis.html" %}
+{% block titel %}Material – PFALZ-WERK{% endblock %}
+{% block pfad %} › Material{% endblock %}
+{% block inhalt %}
+<h1>Material</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Bezeichnung, Nummer, Format, Lagerplatz …" autofocus>
+    <select name="gruppe" style="max-width:240px" onchange="this.form.submit()">
+      <option value="">Alle Produktgruppen</option>
+      {% for g in gruppen %}<option value="{{ g }}" {% if g == gruppe %}selected{% endif %}>{{ g }}</option>{% endfor %}
+    </select>
+    {% if alle %}<input type="hidden" name="alle" value="1">{% endif %}
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  {% if darf_bearbeiten %}<a class="knopf" href="{% url 'material:neu' %}">+ Neues Material</a>{% endif %}
+</div>
+<p class="grau">{{ anzahl }} Artikel{% if suche %} gefunden für „{{ suche }}“{% endif %}.
+  {% if alle %}<a href="?suche={{ suche|urlencode }}&gruppe={{ gruppe|urlencode }}">Nur aktive zeigen</a>
+  {% else %}<a href="?alle=1&suche={{ suche|urlencode }}&gruppe={{ gruppe|urlencode }}">Auch inaktive zeigen</a>{% endif %}
+  {% if suche or gruppe %} · <a href="{% url 'material:liste' %}">Filter löschen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Bezeichnung</th><th class="breit">Gruppe</th><th class="breit">Format</th><th>Einheit</th>
+      {% if preise %}<th class="breit" style="text-align:right">EK netto</th>{% endif %}<th class="breit">Lagerplatz</th></tr>
+  {% for m in seite %}
+  <tr class="klickbar" onclick="location.href='{{ m.get_absolute_url }}'">
+    <td class="nowrap">{{ m.materialnr }}</td>
+    <td><a href="{{ m.get_absolute_url }}">{{ m.bezeichnung }}</a>{% if not m.aktiv %} <span class="marke-inaktiv">inaktiv</span>{% endif %}</td>
+    <td class="breit">{{ m.produktgruppe }}{% if m.untergruppe %} / {{ m.untergruppe }}{% endif %}</td>
+    <td class="breit">{{ m.format }}{% if m.staerke_mm %} · {{ m.staerke_mm|floatformat:"-2" }} mm{% endif %}</td>
+    <td>{{ m.einheit }}</td>
+    {% if preise %}<td class="breit nowrap" style="text-align:right">{% if m.ek_netto is not None %}{{ m.ek_netto|floatformat:2 }} €{% endif %}</td>{% endif %}
+    <td class="breit">{{ m.lagerplatz }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="7">{% if suche or gruppe %}Kein Material passt zur Suche.{% else %}Noch kein Material. Über „Excel-Import“ übernehmen oder „+ Neues Material“.{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% if seite.paginator.num_pages > 1 %}
+<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}&suche={{ suche|urlencode }}&gruppe={{ gruppe|urlencode }}{% if alle %}&alle=1{% endif %}">← zurück</a>{% endif %}
+   Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+   {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}&suche={{ suche|urlencode }}&gruppe={{ gruppe|urlencode }}{% if alle %}&alle=1{% endif %}">weiter →</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "importe",
     "kunden",
     "projekte",
+    "material",
 ]
 
 MIDDLEWARE = [
