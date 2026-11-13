@@ -35,8 +35,9 @@ Das machst du jedes Mal, wenn Claude eine neue Fassung hochgeladen hat.
 **Tipp:** Verschiebe diesen Ordner z. B. auf den Desktop, damit du ihn wiederfindest.
 
 > **Bei einer neuen Fassung:** Einfach neu herunterladen und den neuen Ordner starten.
-> Deine Daten liegen getrennt vom Programm im Ordner **Dokumente → PFALZ-WERK-Daten**
-> und bleiben bei jedem Update erhalten. Den alten Programmordner kannst du danach selbst löschen.
+> Deine Daten liegen getrennt vom Programm – meist im Ordner **Dokumente → PFALZ-WERK-Daten**.
+> Sperrt Windows diesen Ordner, nimmt das Programm automatisch einen anderen. Wo genau, steht beim Start
+> im schwarzen Fenster („Daten und Sicherungen liegen in: …“). Die Daten bleiben bei jedem Update erhalten. Den alten Programmordner kannst du danach selbst löschen.
 
 ---
 

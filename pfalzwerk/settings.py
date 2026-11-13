@@ -12,20 +12,59 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 
+DB_NAME = "pfalzwerk.sqlite3"
+
+
+def _beschreibbar(ordner: Path) -> bool:
+    """Legt den Ordner an und prüft, ob Windows dort wirklich Schreiben erlaubt.
+
+    Der „überwachte Ordnerzugriff“ von Windows Defender oder OneDrive kann „Dokumente“ sperren –
+    dann kommt beim Anlegen z. B. ein FileNotFoundError oder PermissionError.
+    """
+    try:
+        ordner.mkdir(parents=True, exist_ok=True)
+        probe = ordner / ".schreibprobe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
+def _kandidaten() -> list[Path]:
+    """Mögliche Datenordner in der Reihenfolge, in der sie versucht werden."""
+    heim = Path.home()
+    dokumente = heim / "Documents"
+    appdata = Path(os.environ["LOCALAPPDATA"]) if os.environ.get("LOCALAPPDATA") else heim
+    return [
+        (dokumente if dokumente.is_dir() else heim) / "PFALZ-WERK-Daten",  # gut sichtbar für den Chef
+        appdata / "PFALZ-WERK-Daten",  # von Windows nie gesperrt
+        BASE_DIR / "lokal",  # letzter Ausweg: im Programmordner
+    ]
+
+
 def _datenordner() -> Path:
-    """Fester Datenordner außerhalb des Programmordners."""
+    """Fester Datenordner außerhalb des Programmordners – vorhandene Daten haben Vorrang."""
     if os.environ.get("PFALZWERK_LOKAL"):
         return Path(os.environ["PFALZWERK_LOKAL"])
-    alt = BASE_DIR / "lokal"  # frühere Ablage im Programmordner weiter nutzen, falls vorhanden
-    if (alt / "pfalzwerk.sqlite3").exists():
-        return alt
-    dokumente = Path.home() / "Documents"
-    return (dokumente if dokumente.is_dir() else Path.home()) / "PFALZ-WERK-Daten"
+    kandidaten = _kandidaten()
+    # 1. Wo schon eine Datenbank liegt, wird weitergearbeitet
+    for ordner in [kandidaten[2]] + kandidaten[:2]:
+        if (ordner / DB_NAME).exists() and _beschreibbar(ordner):
+            return ordner
+    # 2. Sonst der erste Ordner, in den Windows schreiben lässt
+    for ordner in kandidaten:
+        if _beschreibbar(ordner):
+            return ordner
+    raise RuntimeError(
+        "PFALZ-WERK findet keinen Ordner, in dem es seine Daten speichern darf. Versucht wurden: "
+        + "; ".join(str(k) for k in kandidaten)
+    )
 
 
 # Ordner für alles, was nur auf diesem Rechner liegt (Datenbank, Schlüssel, Sicherungen)
 LOKAL_DIR = _datenordner()
-LOKAL_DIR.mkdir(parents=True, exist_ok=True)
+LOKAL_DIR.mkdir(parents=True, exist_ok=True)  # bei PFALZWERK_LOKAL (Tests) evtl. noch nicht vorhanden
 SICHERUNG_DIR = Path(os.environ.get("PFALZWERK_SICHERUNG", LOKAL_DIR / "sicherungen"))
 IMPORT_DIR = LOKAL_DIR / "importe"
 
@@ -98,7 +137,7 @@ WSGI_APPLICATION = "pfalzwerk.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": LOKAL_DIR / "pfalzwerk.sqlite3",
+        "NAME": LOKAL_DIR / DB_NAME,
     }
 }
 

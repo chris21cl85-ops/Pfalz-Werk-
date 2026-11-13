@@ -10,7 +10,7 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.7 (Etappe 1 komplett).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.8 (Etappe 1 komplett).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -26,7 +26,9 @@ Letzte Aktualisierung: 13.11.2026
   noch nicht gebaute Bereiche erscheinen grau mit Etappe.
 - Benutzerverwaltung (Chef/Admin) unter „Benutzer“; Benutzer werden deaktiviert, nicht gelöscht.
 - Chef-Schutz: Nur der Chef darf den Chef-Zugang ändern und die Rolle Chef vergeben (Admin nicht).
-- Datenordner getrennt vom Programm: Dokumente/PFALZ-WERK-Daten (Update ohne Kopieren).
+- Datenordner getrennt vom Programm: Dokumente/PFALZ-WERK-Daten; ist „Dokumente“ von Windows gesperrt,
+  automatisch %LOCALAPPDATA%\PFALZ-WERK-Daten (Fassung 1.8). Vorhandene Datenbank hat immer Vorrang.
+  Das Startfenster zeigt „Daten und Sicherungen liegen in: …“.
 - Passwörter nur gehasht (Django PBKDF2), Mindestlänge 8.
 - Protokoll: unveränderbar, nicht löschbar; erfasst Anmeldung, Fehlversuche, Abmeldung, Sicherung, Import.
 - Sicherung: täglich automatisch beim Start, Knopf „Jetzt sichern“, vor jedem Import; Kopie wird auf

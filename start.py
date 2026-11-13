@@ -64,6 +64,7 @@ def main():
         raise SystemExit(1)
     py = vorbereiten()
     verwalten = [str(py), str(ORDNER / "manage.py")]
+    schritt(verwalten + ["datenordner"], "Datenordner finden")
     schritt(verwalten + ["migrate", "--noinput", "-v", "0"], "Datenbank aktualisieren")
     subprocess.check_call(verwalten + ["ersteinrichtung"])  # fragt evtl. nach Eingaben, daher direkt
     schritt(verwalten + ["sicherung", "--wenn-faellig"], "Tägliche Sicherung")
