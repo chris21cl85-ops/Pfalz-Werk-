@@ -9,6 +9,8 @@ Letzte Aktualisierung: 13.11.2026
 - Alles, was Claude selbst erledigen kann, erledigt Claude selbst. Chris bekommt nur Aufgaben,
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
+- In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
+  lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
   oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.2 (Etappe 2, Paket 2).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
@@ -155,7 +157,9 @@ Fachliche Vorlage: Makro `PW_Rechnung.bas` (Drive, Stand 26.10.2026), vollständ
 - 213 automatische Tests, alle grün.
 
 ### So testest du es (Paket 1a)
-Vorher: `PFALZ-WERK starten.bat` doppelklicken (lädt die neue Fassung). Im Navi oben muss „Fassung 2.0“ stehen.
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Die Startdatei allein lädt nichts nach!
+Im Navi oben muss die neue Fassungsnummer stehen.
 1. Kachel **Firmendaten** → alle Felder ausfüllen (echte Daten tippst du selbst) → „Speichern“.
    Oder: Excel-Import erneut durchlaufen lassen → Firmendaten werden aus der Excel übernommen.
 2. Ein Projekt öffnen → unten „+ Rechnung für dieses Projekt“ → Art „Rechnung“ → „Entwurf anlegen“ →
@@ -187,7 +191,9 @@ Vorlage: `XmlSchreiben()`, `Einheitcode()`, `AdrXml()` aus `PW_Rechnung.bas` –
 - 237 automatische Tests, alle grün.
 
 ### So testest du es (Paket 1b)
-Vorher: `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.1“ stehen.
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Die Startdatei allein lädt nichts nach!
+Im Navi oben muss die neue Fassungsnummer stehen.
 1. Firmendaten: Telefon und E-Mail müssen ausgefüllt sein.
 2. Einen Kunden öffnen, der eine Firma ist (Kundenart nicht „Privat“) und Straße, PLZ, Ort hat → Projekt →
    „+ Rechnung für dieses Projekt“ → bei „E-Rechnung“ steht „Automatisch“ → Entwurf anlegen, Position eintragen.
@@ -216,7 +222,9 @@ Vorlage: `ZahlungBuchen()` und Zahlungsteil von `Zusammenfassung()` in `PW_Rechn
 - 259 automatische Tests, alle grün.
 
 ### So testest du es (Paket 2)
-Vorher: `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.2“ stehen.
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Die Startdatei allein lädt nichts nach!
+Im Navi oben muss die neue Fassungsnummer stehen.
 1. Kachel „Rechnungen“ → eine festgeschriebene Rechnung öffnen → unten „Zahlungen“: Offen = Rechnungsbetrag.
 2. „Teilbetrag“ wählen → z. B. 100,00 eintippen → Datum lassen → „Zahlung buchen“ → Status „Teilbezahlt“, Offen kleiner.
 3. Bei Z-0001 „vertippt?“ antippen → Grund „Test“ → „Gegenbuchung“ → Offen wieder wie vorher, beide Zeilen grau.
