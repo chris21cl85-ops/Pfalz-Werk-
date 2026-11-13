@@ -53,7 +53,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 4. Als Chef: „Excel-Import“ → PFALZ-WERK-Excel wählen → „Datei prüfen“ → Liste der Tabellenblätter mit Zeilenzahl.
 5. Als Chef: „Protokoll“ → Anmeldungen, Fehlversuch (vorher falsches Passwort tippen), Sicherung sind sichtbar.
 
-## Etappe 1 – Kern: alle Pakete gebaut, Lieferanten + Mitarbeiter warten auf Abnahme
+## Etappe 1 – Kern: ABGENOMMEN am 13.11.2026 (Fassung 1.8, echter Import ok)
 
 ### Paket 1: Kunden – ABGENOMMEN am 10.11.2026
 - Echte Excel importiert: 2 Kunden, keine Probleme (Chris bestätigt: stimmt).
@@ -104,7 +104,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 ### Offen
 - Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
 
-### Paket 4+5: Lieferanten und Mitarbeiter – gebaut, wartet auf Abnahme durch Chris
+### Paket 4+5: Lieferanten und Mitarbeiter – ABGENOMMEN am 13.11.2026
 - Lieferanten: Liste/Suche, Karte mit allem Material des Lieferanten, Anlegen/Bearbeiten (Adresse, Portal,
   unsere Kunden-Nr., Zahlungsziel, Skonto). Sehen/bearbeiten: Chef, Admin, Buchhaltung, Meister.
   Ein eigenes Lieferanten-Blatt gibt es in der Excel nicht – Lieferanten entstehen beim Import aus
@@ -124,7 +124,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - 175 automatische Tests, alle grün.
 
 ## Nächstes Paket
-Nach Abnahme von Lieferanten + Mitarbeitern: **Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
+**Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
 Erstellen, XRechnung). Vorher: vorhandenen XRechnung-/DATEV-Code von Chris bekommen.
 Vorlage laut doku/EXCEL_AUFBAU (Blätter 107–117, alle versteckt, Rechnungen/Zahlungen noch LEER → kein Import):
 - Firmendaten: A Feld, B Wert, C Hinweis (24 Einträge) → übernehmen.
