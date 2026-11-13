@@ -19,9 +19,18 @@
           {% if b.fehler|length > 10 %}<div class="grau">… und {{ b.fehler|length|add:"-10" }} weitere</div>{% endif %}</td></tr>
   {% endif %}{% endfor %}
 </table></div>
-<details style="margin-top:16px"><summary class="grau" style="cursor:pointer">Weitere Blätter in der Datei (noch nicht angebunden – werden ignoriert)</summary>
-  <ul class="grau">{% for b in lauf.bericht.blaetter %}{% if not b.importer %}<li>{{ b.blatt }}</li>{% endif %}{% endfor %}</ul>
+<h2>Weitere Blätter in der Datei (noch nicht angebunden – werden ignoriert)</h2>
+<p class="grau">Zum Nachschauen ohne Excel: Ein Klick auf ein Blatt zeigt dessen Überschriften (Zeilen 1–5).</p>
+{% for b in lauf.bericht.blaetter %}{% if not b.importer %}
+<details class="kopfblick"><summary>{{ b.blatt }}</summary>
+  {% if b.kopf.spalten %}
+  <div class="tabelle-rahmen"><table class="kopf-tabelle">
+    <tr><th></th>{% for s in b.kopf.spalten %}<th>{{ s }}</th>{% endfor %}</tr>
+    {% for z in b.kopf.zeilen %}<tr><th>{{ forloop.counter }}</th>{% for w in z %}<td>{{ w }}</td>{% endfor %}</tr>{% endfor %}
+  </table></div>
+  {% else %}<p class="grau">Die ersten 5 Zeilen sind leer.</p>{% endif %}
 </details>
+{% endif %}{% endfor %}
 {% endif %}
 {% if lauf.status == "probelauf" %}
   {% if lauf.bericht.erkannt %}

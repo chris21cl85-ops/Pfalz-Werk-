@@ -111,6 +111,25 @@ def _spalten_zeilen(blatt, imp):
         yield nr, zeile
 
 
+KOPF_ZEILEN = 5    # nur Überschriften – keine Datenzeilen mit PINs o. Ä.
+KOPF_SPALTEN = 60  # bis Spalte BH
+
+
+def kopfbereich(blatt) -> dict:
+    """Zeilen 1–5 eines Blatts mit Spaltenbuchstaben – damit man den Aufbau ohne Excel sieht."""
+    from openpyxl.utils import get_column_letter
+    zeilen = []
+    for werte in blatt.iter_rows(min_row=1, max_row=KOPF_ZEILEN, max_col=KOPF_SPALTEN, values_only=True):
+        zeilen.append([als_text(w)[:40] for w in werte])
+    breite = 0
+    for z in zeilen:
+        for i, w in enumerate(z):
+            if w:
+                breite = max(breite, i + 1)
+    return {"spalten": [get_column_letter(i + 1) for i in range(breite)],
+            "zeilen": [z[:breite] + [""] * (breite - len(z)) for z in zeilen]}
+
+
 def ausfuehren(pfad, probelauf=True) -> dict:
     """Prüft (Probelauf) oder übernimmt alle Blätter mit registriertem Importer."""
     mappe = _arbeitsmappe(pfad)
@@ -125,6 +144,7 @@ def ausfuehren(pfad, probelauf=True) -> dict:
                            "neu": 0, "geaendert": 0, "unveraendert": 0, "fehler": []}
                 if klasse is None:
                     eintrag["zeilen"] = max(blatt.max_row - 1, 0) if blatt.max_row else 0
+                    eintrag["kopf"] = kopfbereich(blatt)
                     bericht["blaetter"].append(eintrag)
                     continue
                 imp = klasse()

@@ -98,3 +98,21 @@ def test_kaputte_excel_datei_gibt_verstaendliche_meldung(chef_client, tmp_path):
     antwort = hochladen(chef_client, pfad, name="kaputt.xlsx")
     assert "lässt sich nicht öffnen" in antwort.content.decode()
     assert Importlauf.objects.get().status == Importlauf.Status.FEHLER
+
+
+def test_kopfbereich_nicht_angebundener_blaetter(chef_client, tmp_path):
+    mappe = Workbook()
+    blatt = mappe.active
+    blatt.title = "Lieferanten"
+    blatt.append(["Lieferantenliste"])
+    blatt.append([])
+    blatt.append(["Nr", "Firma", "Ort"])
+    blatt.append(["L-1", "Holz Meier", "Landau"])
+    blatt.append(["L-2", "Beschlag Huber", "Speyer"])
+    blatt.append(["L-3", "GEHEIM-ZEILE-6", "nicht zeigen"])
+    blatt["AK3"] = "Skonto"
+    pfad = tmp_path / "x.xlsx"
+    mappe.save(pfad)
+    antwort = hochladen(chef_client, pfad, name="x.xlsx").content.decode()
+    assert "Holz Meier" in antwort and "Skonto" in antwort and "<th>AK</th>" in antwort
+    assert "GEHEIM-ZEILE-6" not in antwort
