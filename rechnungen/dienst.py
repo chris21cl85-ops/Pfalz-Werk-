@@ -161,7 +161,7 @@ def festschreiben(rechnung, benutzer, heute: dt.date | None = None) -> Rechnung:
         rechnung.ziel_tage = tage
         rechnung.faellig = heute + dt.timedelta(days=tage)
         if rechnung.zahlungsziel == "14s":
-            rechnung.skonto_prozent, rechnung.skonto_tage = Decimal("2"), 7
+            rechnung.skonto_prozent, rechnung.skonto_tage = Decimal("2.00"), 7
         rechnung.ust_satz, rechnung.netto = summen["ust_satz"], summen["netto"]
         rechnung.ust, rechnung.brutto = summen["ust"], summen["brutto"]
         if rechnung.art == Rechnung.Art.ABSCHLAG:
@@ -197,3 +197,80 @@ def verwerfen(rechnung, benutzer) -> Rechnung:
     protokolliere("rechnung_entwurf_verworfen", f"Entwurf {rechnung.pk}", benutzer=benutzer,
                   details=f"Projekt {rechnung.projekt.projektnr}")
     return rechnung
+
+
+# ------------------------------------------------------------------ Zahlungen (wie ZahlungBuchen() im Makro)
+VOLL, SKONTO, TEIL = "voll", "skonto", "teil"
+
+
+def naechste_znr() -> str:
+    """Z-0001, Z-0002 … fortlaufend (wie im Blatt „Zahlungen“)."""
+    from .models import Zahlung
+    hoechste = 0
+    for znr in Zahlung.objects.values_list("znr", flat=True):
+        try:
+            hoechste = max(hoechste, int(znr.split("-")[-1]))
+        except ValueError:
+            pass
+    return f"Z-{hoechste + 1:04d}"
+
+
+def zahlung_buchen(rechnung, *, art, datum, benutzer, betrag=None, konto="Bank", notiz=""):
+    """Bucht einen Zahlungseingang.
+
+    art „voll“: der ganze offene Betrag. „skonto“: offen minus Skonto (Rest gilt als Skonto, Rechnung erledigt).
+    „teil“: frei eingegebener Betrag, Rest bleibt offen.
+    """
+    from .models import Zahlung
+    with transaction.atomic():
+        rechnung = Rechnung.objects.select_for_update().get(pk=rechnung.pk)
+        if not rechnung.ist_festgeschrieben:
+            raise RechnungFehler("Zahlungen gibt es nur zu festgeschriebenen Rechnungen.")
+        if datum > timezone.localdate():
+            raise RechnungFehler("Das Zahlungsdatum liegt in der Zukunft.")
+        offen = rechnung.offen
+        if offen <= Decimal("0.005"):
+            raise RechnungFehler(f"Rechnung {rechnung.nummer} ist schon vollständig bezahlt.")
+        skonto = Decimal("0.00")
+        if art == VOLL:
+            betrag = offen
+        elif art == SKONTO:
+            if not rechnung.skonto_prozent:
+                raise RechnungFehler("Auf dieser Rechnung wurde kein Skonto angeboten.")
+            betrag = runden(offen - rechnung.skonto_betrag)
+            skonto = runden(offen - betrag)
+        elif art == TEIL:
+            if betrag is None or Decimal(betrag) <= 0:
+                raise RechnungFehler("Bitte den eingegangenen Betrag eintragen.")
+            betrag = runden(betrag)
+        else:
+            raise RechnungFehler("Unbekannte Zahlungsart.")
+        zahlung = Zahlung.objects.create(
+            znr=naechste_znr(), rechnung=rechnung, datum=datum, betrag=betrag, skonto=skonto,
+            konto=konto, notiz=notiz, erfasst_von=benutzer)
+        rechnung = Rechnung.objects.get(pk=rechnung.pk)
+        protokolliere("zahlung_gebucht", rechnung.nummer, benutzer=benutzer, details=(
+            f"{zahlung.znr} am {datum:%d.%m.%Y}: {euro(betrag)}"
+            + (f" · Skonto {euro(skonto)}" if skonto else "") + f" · {konto}"
+            + (f" · {notiz}" if notiz else "") + f"\nDanach offen: {euro(rechnung.offen)} ({rechnung.status_text})"))
+    return zahlung
+
+
+def zahlung_gegenbuchen(zahlung, *, benutzer, grund):
+    """Macht eine falsch gebuchte Zahlung rückgängig – durch eine Gegenbuchung, nie durch Löschen."""
+    from .models import Zahlung
+    if not grund.strip():
+        raise RechnungFehler("Bitte kurz den Grund angeben (z. B. „Betrag vertippt“).")
+    with transaction.atomic():
+        zahlung = Zahlung.objects.select_for_update().get(pk=zahlung.pk)
+        if zahlung.gegenbuchung_zu_id:
+            raise RechnungFehler("Eine Gegenbuchung kann nicht noch einmal gegengebucht werden.")
+        if zahlung.ist_gegengebucht:
+            raise RechnungFehler(f"{zahlung.znr} wurde schon gegengebucht.")
+        gegen = Zahlung.objects.create(
+            znr=naechste_znr(), rechnung=zahlung.rechnung, datum=timezone.localdate(), betrag=-zahlung.betrag,
+            skonto=-zahlung.skonto, konto=zahlung.konto, notiz=f"Gegenbuchung zu {zahlung.znr}: {grund.strip()}",
+            gegenbuchung_zu=zahlung, erfasst_von=benutzer)
+        protokolliere("zahlung_gegengebucht", zahlung.rechnung.nummer, benutzer=benutzer,
+                      details=f"{gegen.znr} hebt {zahlung.znr} auf ({euro(zahlung.betrag)}). Grund: {grund.strip()}")
+    return gegen

@@ -13,4 +13,6 @@ urlpatterns = [
     path("<int:pk>/verwerfen/", ansichten.verwerfen, name="verwerfen"),
     path("<int:pk>/pdf/", ansichten.pdf, name="pdf"),
     path("<int:pk>/xrechnung/", ansichten.xml, name="xml"),
+    path("<int:pk>/zahlung/", ansichten.zahlung, name="zahlung"),
+    path("zahlung/<int:pk>/gegenbuchung/", ansichten.gegenbuchung, name="gegenbuchung"),
 ]

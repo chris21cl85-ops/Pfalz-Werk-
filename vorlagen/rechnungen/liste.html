@@ -13,17 +13,21 @@
     <select name="status" style="max-width:220px" onchange="this.form.submit()">
       <option value="aktuell" {% if status == "aktuell" %}selected{% endif %}>Ohne verworfene</option>
       <option value="alle" {% if status == "alle" %}selected{% endif %}>Alle</option>
-      {% for wert, text in stati %}<option value="{{ wert }}" {% if status == wert %}selected{% endif %}>Status: {{ text }}</option>{% endfor %}
+      {% for wert, text in stati %}<option value="{{ wert }}" {% if status == wert %}selected{% endif %}>{{ text }}</option>{% endfor %}
     </select>
     <button class="knopf" type="submit">Suchen</button>
   </form>
   <a class="knopf" href="{% url 'rechnungen:neu' %}">+ Neue Rechnung</a>
   <a class="knopf zweit" href="{% url 'rechnungen:firmendaten' %}">Firmendaten</a>
 </div>
+{% if offen_gesamt %}<div class="karte" style="display:flex;gap:30px;flex-wrap:wrap;padding:14px 20px">
+  <a href="?status=unbezahlt" style="text-decoration:none;color:inherit"><span class="grau">Offen gesamt</span><br><b style="font-size:22px">{{ offen_gesamt|floatformat:"2g" }} €</b></a>
+  {% if ueberfaellig_gesamt %}<a href="?status=ueberfaellig" style="text-decoration:none;color:var(--rot)"><span>davon überfällig</span><br><b style="font-size:22px">{{ ueberfaellig_gesamt|floatformat:"2g" }} €</b></a>{% endif %}
+</div>{% endif %}
 <p class="grau">{{ anzahl }} Rechnung{{ anzahl|pluralize:"en" }}{% if suche %} gefunden für „{{ suche }}“{% endif %}.
   {% if suche or status != "aktuell" %}<a href="{% url 'rechnungen:liste' %}">Filter löschen</a>{% endif %}</p>
 <div class="tabelle-rahmen"><table>
-  <tr><th>Nr.</th><th class="breit">Datum</th><th>Kunde</th><th class="breit">Projekt</th><th class="breit">Art</th><th style="text-align:right">Brutto</th><th>Status</th></tr>
+  <tr><th>Nr.</th><th class="breit">Datum</th><th>Kunde</th><th class="breit">Projekt</th><th class="breit">Art</th><th style="text-align:right">Brutto</th><th style="text-align:right" class="breit">Offen</th><th>Status</th></tr>
   {% for r in seite %}
   <tr class="klickbar" onclick="location.href='{{ r.get_absolute_url }}'">
     <td class="nowrap"><a href="{{ r.get_absolute_url }}">{{ r.nummer|default:"(Entwurf)" }}</a></td>
@@ -32,10 +36,11 @@
     <td class="breit">{{ r.projekt.projektnr }}</td>
     <td class="breit">{{ r.titel }}</td>
     <td class="nowrap" style="text-align:right">{% if r.brutto is not None %}{{ r.brutto|floatformat:"2g" }} €{% endif %}</td>
-    <td>{% if r.ist_festgeschrieben %}🔒 {% endif %}{{ r.get_status_display }}</td>
+    <td class="nowrap breit" style="text-align:right">{% if r.ist_festgeschrieben %}{{ r.offen|floatformat:"2g" }} €{% endif %}</td>
+    <td{% if r.ist_ueberfaellig %} style="color:var(--rot);font-weight:600"{% endif %}>{% if r.ist_festgeschrieben %}🔒 {% endif %}{{ r.status_text }}</td>
   </tr>
   {% empty %}
-  <tr><td colspan="7">{% if suche %}Keine Rechnung passt zu „{{ suche }}“.{% else %}Noch keine Rechnungen. Oben auf „+ Neue Rechnung“ tippen.{% endif %}</td></tr>
+  <tr><td colspan="8">{% if suche %}Keine Rechnung passt zu „{{ suche }}“.{% else %}Noch keine Rechnungen. Oben auf „+ Neue Rechnung“ tippen.{% endif %}</td></tr>
   {% endfor %}
 </table></div>
 {% if seite.paginator.num_pages > 1 %}

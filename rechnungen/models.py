@@ -203,6 +203,54 @@ class Rechnung(models.Model):
             return f"{self.abschlag_nr}. Abschlagsrechnung" if self.abschlag_nr else "Abschlagsrechnung"
         return "Rechnung"
 
+    # ---------------------------------------------------------------- Zahlungsstand (berechnet, nie gespeichert)
+    @property
+    def bezahlt(self) -> Decimal:
+        """Summe der Zahlungen (ohne Skonto) – wie Spalte P „Bezahlt“."""
+        return sum((z.betrag for z in self.zahlungen.all()), Decimal("0.00"))
+
+    @property
+    def skonto_gesamt(self) -> Decimal:
+        return sum((z.skonto for z in self.zahlungen.all()), Decimal("0.00"))
+
+    @property
+    def offen(self) -> Decimal | None:
+        """Brutto minus Zahlungen minus Skonto – wie Spalte Q „Offen“."""
+        if not self.ist_festgeschrieben:
+            return None
+        return Decimal(self.brutto) - self.bezahlt - self.skonto_gesamt
+
+    @property
+    def ist_ueberfaellig(self) -> bool:
+        from django.utils import timezone
+        return bool(self.ist_festgeschrieben and self.offen > Decimal("0.005")
+                    and self.faellig and self.faellig < timezone.localdate())
+
+    @property
+    def status_text(self) -> str:
+        """Was der Benutzer als Status sieht: Entwurf, Verworfen, Offen, Teilbezahlt, Bezahlt, Überzahlt."""
+        if not self.ist_festgeschrieben:
+            return self.get_status_display()
+        offen = self.offen
+        if offen < Decimal("-0.005"):
+            return "Überzahlt"
+        if offen <= Decimal("0.005"):
+            return "Bezahlt"
+        text = "Teilbezahlt" if self.bezahlt or self.skonto_gesamt else "Offen"
+        return f"{text} · überfällig" if self.ist_ueberfaellig else text
+
+    @property
+    def skonto_bis(self):
+        import datetime as dt
+        if self.skonto_prozent and self.datum:
+            return self.datum + dt.timedelta(days=self.skonto_tage)
+        return None
+
+    @property
+    def skonto_betrag(self) -> Decimal:
+        """Skonto auf den Bruttobetrag – wie auf dem PDF und im Makro."""
+        return runden(Decimal(self.brutto or 0) * Decimal(self.skonto_prozent) / 100)
+
     @property
     def zahlungsziel_text(self) -> str:
         return dict(self.ZAHLUNGSZIELE).get(self.zahlungsziel, "")
@@ -219,13 +267,17 @@ class Rechnung(models.Model):
         return {"netto": netto, "ust_satz": Decimal(ust_satz), "ust": ust, "brutto": netto + ust}
 
     # ---------------------------------------------------------------- Prüfsumme
-    def inhalt_fuer_pruefsumme(self) -> str:
+    def inhalt_fuer_pruefsumme(self, alte_schreibweise=False) -> str:
+        # Skonto immer mit zwei Nachkommastellen. Bis Fassung 2.1 stand bei Skonto-Rechnungen „2“ statt „2.00“
+        # in der Prüfsumme (FEHLER.md Nr. 9) – diese alte Schreibweise wird beim Prüfen weiter anerkannt.
+        skonto = (f"{Decimal(self.skonto_prozent).normalize():f}" if alte_schreibweise
+                  else f"{Decimal(self.skonto_prozent):.2f}")
         daten = {
             "nummer": self.nummer, "art": self.art, "abschlag_nr": self.abschlag_nr,
             "datum": str(self.datum), "faellig": str(self.faellig),
             "projekt": self.projekt.projektnr, "kunde": self.kunde.kundennr, "empfaenger": self.empfaenger,
             "leistungszeitraum": self.leistungszeitraum, "ziel_tage": self.ziel_tage,
-            "skonto": [str(self.skonto_prozent), self.skonto_tage],
+            "skonto": [skonto, self.skonto_tage],
             "summen": [str(self.netto), str(self.ust_satz), str(self.ust), str(self.brutto)],
             "positionen": [[p.pos, p.text, str(p.menge), p.einheit, str(p.einzelpreis), str(p.gesamt)]
                            for p in self.positionen.order_by("pos")],
@@ -237,11 +289,15 @@ class Rechnung(models.Model):
             daten["kaeufer_referenz"] = self.kaeufer_referenz
         return json.dumps(daten, ensure_ascii=False, sort_keys=True)
 
-    def berechne_pruefsumme(self) -> str:
-        return hashlib.sha256(self.inhalt_fuer_pruefsumme().encode("utf-8")).hexdigest()
+    def berechne_pruefsumme(self, alte_schreibweise=False) -> str:
+        return hashlib.sha256(self.inhalt_fuer_pruefsumme(alte_schreibweise).encode("utf-8")).hexdigest()
 
     def pruefsumme_stimmt(self) -> bool:
-        return bool(self.pruefsumme) and self.pruefsumme == self.berechne_pruefsumme()
+        if not self.pruefsumme:
+            return False
+        if self.pruefsumme == self.berechne_pruefsumme():
+            return True
+        return bool(self.skonto_prozent) and self.pruefsumme == self.berechne_pruefsumme(alte_schreibweise=True)
 
 
 class PositionQuerySet(models.QuerySet):
@@ -290,3 +346,66 @@ class Position(models.Model):
     def delete(self, *args, **kwargs):
         self._pruefe_sperre()
         return super().delete(*args, **kwargs)
+
+
+# ------------------------------------------------------------------ Zahlungen
+class ZahlungGesperrt(Exception):
+    """Gebuchte Zahlungen werden nie geändert oder gelöscht – Korrektur nur per Gegenbuchung."""
+
+
+class ZahlungQuerySet(models.QuerySet):
+    def delete(self):
+        raise ZahlungGesperrt("Zahlungen werden nie gelöscht. Korrektur per Gegenbuchung.")
+
+    def update(self, **kwargs):
+        raise ZahlungGesperrt("Zahlungen werden nie geändert. Korrektur per Gegenbuchung.")
+
+
+class Zahlung(models.Model):
+    """Zahlungseingang zu einer Rechnung (wie Blatt „Zahlungen“: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto,
+    Konto, erfasst von, Notiz). Bezahlt/Offen/Status der Rechnung werden daraus berechnet."""
+
+    class Konto(models.TextChoices):
+        BANK = "Bank", "Bank (Überweisung)"
+        BAR = "Bar", "Bar"
+
+    znr = models.CharField("Zahlungs-Nr.", max_length=20, unique=True)
+    rechnung = models.ForeignKey(Rechnung, on_delete=models.PROTECT, related_name="zahlungen")
+    datum = models.DateField("Zahlungsdatum")
+    richtung = models.CharField("Richtung", max_length=10, default="Ein")
+    betrag = models.DecimalField("Betrag", max_digits=12, decimal_places=2)
+    skonto = models.DecimalField("Skonto", max_digits=12, decimal_places=2, default=Decimal("0"))
+    konto = models.CharField("Konto", max_length=10, choices=Konto.choices, default=Konto.BANK)
+    notiz = models.CharField("Notiz", max_length=300, blank=True)
+    gegenbuchung_zu = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT,
+                                           related_name="gegenbuchung", verbose_name="Gegenbuchung zu")
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                    related_name="+")
+    erfasst_am = models.DateTimeField("Erfasst am", auto_now_add=True)
+
+    objects = ZahlungQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Zahlung"
+        verbose_name_plural = "Zahlungen"
+        ordering = ["datum", "id"]
+
+    def __str__(self):
+        return self.znr
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise ZahlungGesperrt("Gebuchte Zahlungen werden nie geändert. Korrektur per Gegenbuchung.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ZahlungGesperrt("Zahlungen werden nie gelöscht. Korrektur per Gegenbuchung.")
+
+    @property
+    def ist_gegengebucht(self) -> bool:
+        return hasattr(self, "gegenbuchung")
+
+    @property
+    def wirkt(self) -> Decimal:
+        """Um so viel sinkt der offene Betrag (Zahlung + Skonto)."""
+        return Decimal(self.betrag) + Decimal(self.skonto)

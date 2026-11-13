@@ -130,3 +130,40 @@ def iban_gueltig(iban: str) -> bool:
         return False
     umgestellt = iban[4:] + iban[:4]
     return int("".join(str(int(z, 36)) for z in umgestellt)) % 97 == 1
+
+
+class ZahlungFormular(forms.Form):
+    art = forms.ChoiceField(label="Was ist eingegangen?", widget=forms.RadioSelect)
+    betrag = forms.DecimalField(label="Eingegangener Betrag (€)", required=False, decimal_places=2,
+                                min_value=Decimal("0.01"))
+    datum = forms.DateField(label="Zahlungsdatum (laut Kontoauszug)",
+                            widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+    konto = forms.ChoiceField(label="Wie bezahlt?", choices=[("Bank", "Überweisung (Bank)"), ("Bar", "Bar")],
+                              widget=forms.RadioSelect, initial="Bank")
+    notiz = forms.CharField(label="Notiz (optional)", required=False, max_length=300)
+
+    def __init__(self, rechnung, *args, **kwargs):
+        from .dienst import SKONTO, TEIL, VOLL, euro
+        super().__init__(*args, **kwargs)
+        self.initial.setdefault("datum", timezone.localdate())
+        wahl = [(VOLL, f"Voller offener Betrag: {euro(rechnung.offen)}")]
+        if rechnung.skonto_prozent:
+            mit = rechnung.offen - rechnung.skonto_betrag
+            bis = f" (Skonto-Frist bis {rechnung.skonto_bis:%d.%m.%Y})" if rechnung.skonto_bis else ""
+            wahl.append((SKONTO, f"Mit {rechnung.skonto_prozent.normalize():f} % Skonto: {euro(mit)}{bis}"))
+        wahl.append((TEIL, "Teilbetrag – Betrag selbst eintragen"))
+        self.fields["art"].choices = wahl
+        self.initial.setdefault("art", VOLL)
+        komma_felder(self, ["betrag"], mindestens=2)
+
+    def clean(self):
+        daten = super().clean()
+        if daten.get("art") == "teil" and not daten.get("betrag"):
+            self.add_error("betrag", "Bitte den eingegangenen Betrag eintragen.")
+        if daten.get("datum") and daten["datum"] > timezone.localdate():
+            self.add_error("datum", "Das Datum liegt in der Zukunft.")
+        return daten
+
+
+class GegenbuchungFormular(forms.Form):
+    grund = forms.CharField(label="Grund", max_length=200)

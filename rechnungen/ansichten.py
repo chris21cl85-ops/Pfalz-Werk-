@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -11,8 +13,9 @@ from konten.rechte import rolle_erforderlich
 from projekte.models import Projekt
 
 from . import dienst
-from .formulare import EINHEITEN, FirmendatenFormular, KopfFormular, NeueRechnungFormular, PositionenFormularsatz
-from .models import Firmendaten, Rechnung
+from .formulare import (EINHEITEN, FirmendatenFormular, GegenbuchungFormular, KopfFormular, NeueRechnungFormular,
+                        PositionenFormularsatz, ZahlungFormular)
+from .models import Firmendaten, Rechnung, Zahlung
 from .pdf import rechnung_pdf
 
 # Wie Darf() im Makro: Chef, Admin, Buchhaltung
@@ -23,20 +26,33 @@ BUERO = (Rolle.CHEF, Rolle.ADMIN, Rolle.BUCHHALTUNG)
 def liste(request):
     suche = request.GET.get("suche", "").strip()
     status = request.GET.get("status", "aktuell")
-    rechnungen = Rechnung.objects.select_related("kunde", "projekt")
-    if status == "aktuell":
-        rechnungen = rechnungen.exclude(status=Rechnung.Status.VERWORFEN)
-    elif status != "alle":
-        rechnungen = rechnungen.filter(status=status)
+    rechnungen = Rechnung.objects.select_related("kunde", "projekt").prefetch_related("zahlungen")
     if suche:
         rechnungen = rechnungen.filter(
             Q(nummer__icontains=suche) | Q(kunde__name__icontains=suche) | Q(kunde__kundennr__icontains=suche)
             | Q(projekt__projektnr__icontains=suche) | Q(projekt__name__icontains=suche))
+    alle = list(rechnungen)
+    festgeschrieben = [r for r in alle if r.ist_festgeschrieben]
+    filter_ = {
+        "aktuell": lambda r: r.status != Rechnung.Status.VERWORFEN,
+        "alle": lambda r: True,
+        "unbezahlt": lambda r: r.ist_festgeschrieben and r.offen > Decimal("0.005"),
+        "ueberfaellig": lambda r: r.ist_ueberfaellig,
+        "bezahlt": lambda r: r.ist_festgeschrieben and r.offen <= Decimal("0.005"),
+        "entwurf": lambda r: r.status == Rechnung.Status.ENTWURF,
+        "verworfen": lambda r: r.status == Rechnung.Status.VERWORFEN,
+    }.get(status, lambda r: True)
+    treffer = [r for r in alle if filter_(r)]
+    offen_gesamt = sum((r.offen for r in festgeschrieben if r.offen > 0), Decimal("0"))
+    ueberfaellig = sum((r.offen for r in festgeschrieben if r.ist_ueberfaellig), Decimal("0"))
     fd = Firmendaten.laden()
     return render(request, "rechnungen/liste.html", {
-        "seite": Paginator(rechnungen, 50).get_page(request.GET.get("seite")),
-        "anzahl": rechnungen.count(), "suche": suche, "status": status,
-        "stati": Rechnung.Status.choices, "firmendaten_fehlen": fd.fehlende_angaben(),
+        "seite": Paginator(treffer, 50).get_page(request.GET.get("seite")),
+        "anzahl": len(treffer), "suche": suche, "status": status,
+        "stati": [("unbezahlt", "Unbezahlt (offen)"), ("ueberfaellig", "Überfällig"), ("bezahlt", "Bezahlt"),
+                  ("entwurf", "Entwürfe"), ("verworfen", "Verworfen")],
+        "offen_gesamt": offen_gesamt, "ueberfaellig_gesamt": ueberfaellig,
+        "firmendaten_fehlen": fd.fehlende_angaben(),
     })
 
 
@@ -75,7 +91,55 @@ def detail(request, pk):
         "fehlt": dienst.pruefen(rechnung) if rechnung.ist_entwurf else [],
         "naechste_nummer": dienst.naechste_nummer_vorschau() if rechnung.ist_entwurf else "",
         "pruefsumme_ok": rechnung.pruefsumme_stimmt() if rechnung.ist_festgeschrieben else None,
+        "zahlungen": rechnung.zahlungen.select_related("erfasst_von", "gegenbuchung_zu"),
+        "zahlung_formular": (ZahlungFormular(rechnung)
+                             if rechnung.ist_festgeschrieben and rechnung.offen > Decimal("0.005") else None),
     })
+
+
+@rolle_erforderlich(*BUERO)
+def zahlung(request, pk):
+    rechnung = get_object_or_404(Rechnung, pk=pk)
+    if request.method != "POST" or not rechnung.ist_festgeschrieben:
+        return redirect(rechnung)
+    formular = ZahlungFormular(rechnung, request.POST)
+    if formular.is_valid():
+        d = formular.cleaned_data
+        try:
+            z = dienst.zahlung_buchen(rechnung, art=d["art"], datum=d["datum"], betrag=d.get("betrag"),
+                                      konto=d["konto"], notiz=d["notiz"], benutzer=request.user)
+        except dienst.RechnungFehler as fehler:
+            messages.error(request, str(fehler))
+        else:
+            rechnung = Rechnung.objects.get(pk=pk)
+            text = f"Zahlung {z.znr} über {dienst.euro(z.betrag)} gebucht. Status: {rechnung.status_text}."
+            if rechnung.status_text == "Überzahlt":
+                messages.error(request, text + f" Achtung: {dienst.euro(-rechnung.offen)} zu viel bezahlt – "
+                               "bitte prüfen (falls vertippt: Gegenbuchung).")
+            else:
+                messages.success(request, text)
+        return redirect(rechnung)
+    fehler = "; ".join(f"{formular.fields[f].label if f in formular.fields else ''}: {' '.join(e)}".strip(": ")
+                       for f, e in formular.errors.items())
+    messages.error(request, f"Zahlung nicht gebucht – {fehler}")
+    return redirect(rechnung)
+
+
+@rolle_erforderlich(*BUERO)
+def gegenbuchung(request, pk):
+    zahlung = get_object_or_404(Zahlung, pk=pk)
+    if request.method == "POST":
+        formular = GegenbuchungFormular(request.POST)
+        if formular.is_valid():
+            try:
+                gegen = dienst.zahlung_gegenbuchen(zahlung, benutzer=request.user, grund=formular.cleaned_data["grund"])
+                messages.success(request, f"{zahlung.znr} wurde durch {gegen.znr} aufgehoben. "
+                                          "Bei Bedarf jetzt die richtige Zahlung buchen.")
+            except dienst.RechnungFehler as fehler:
+                messages.error(request, str(fehler))
+        else:
+            messages.error(request, "Bitte kurz den Grund für die Gegenbuchung angeben.")
+    return redirect(zahlung.rechnung)
 
 
 @rolle_erforderlich(*BUERO)

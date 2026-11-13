@@ -325,3 +325,22 @@ def test_import_firmendaten(tmp_path):
     fd.save()
     ausfuehren(pfad, probelauf=False)
     assert Firmendaten.laden().letzte_rechnungsnummer == 20
+
+
+# ------------------------------------------------------------------ Fehler Nr. 9: Prüfsumme bei Skonto
+def test_pruefsumme_mit_skonto_nach_neuladen(firma, projekt, chef):
+    r = dienst.festschreiben(entwurf(projekt, chef, zahlungsziel="14s"), chef, heute=HEUTE)
+    assert Rechnung.objects.get(pk=r.pk).pruefsumme_stimmt()
+
+
+def test_alte_skonto_pruefsumme_wird_anerkannt(firma, projekt, chef):
+    """Bis Fassung 2.1 wurde bei Skonto „2“ statt „2.00“ eingerechnet – solche Rechnungen bleiben gültig."""
+    r = dienst.festschreiben(entwurf(projekt, chef, zahlungsziel="14s"), chef, heute=HEUTE)
+    alt = Rechnung.objects.get(pk=r.pk).berechne_pruefsumme(alte_schreibweise=True)
+    from django.db import connection
+    with connection.cursor() as c:
+        c.execute("UPDATE rechnungen_rechnung SET pruefsumme = %s WHERE id = %s", [alt, r.pk])
+    assert Rechnung.objects.get(pk=r.pk).pruefsumme_stimmt()
+    with connection.cursor() as c:  # Manipulation fällt trotzdem auf
+        c.execute("UPDATE rechnungen_position SET einzelpreis = 1 WHERE rechnung_id = %s", [r.pk])
+    assert not Rechnung.objects.get(pk=r.pk).pruefsumme_stimmt()

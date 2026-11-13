@@ -6,7 +6,8 @@
 <h1>{{ r.titel }} {% if r.nummer %}{{ r.nummer }}{% endif %}
   {% if r.ist_festgeschrieben %}<span class="marke-inaktiv">🔒 festgeschrieben</span>
   {% elif r.ist_entwurf %}<span class="marke-inaktiv">Entwurf</span>
-  {% else %}<span class="marke-inaktiv">{{ r.get_status_display }}</span>{% endif %}</h1>
+  {% else %}<span class="marke-inaktiv">{{ r.get_status_display }}</span>{% endif %}
+  {% if r.ist_festgeschrieben %}<span class="marke-inaktiv" style="{% if r.status_text == 'Bezahlt' %}background:#e8f5e9;color:var(--gruen){% elif r.ist_ueberfaellig or r.status_text == 'Überzahlt' %}background:#ffebee;color:var(--rot){% endif %}">{{ r.status_text }}</span>{% endif %}</h1>
 
 <div class="karte">
 <dl class="daten">
@@ -41,6 +42,66 @@
   <tr><th colspan="5" style="text-align:right">Rechnungsbetrag</th><th class="nowrap" style="text-align:right">{{ summen.brutto|floatformat:"2g" }} €</th></tr>
 </table></div>
 
+{% if r.ist_festgeschrieben %}
+<h2>Zahlungen</h2>
+<div class="karte">
+  <dl class="daten">
+    <dt>Rechnungsbetrag</dt><dd>{{ r.brutto|floatformat:"2g" }} €</dd>
+    <dt>Bezahlt</dt><dd>{{ r.bezahlt|floatformat:"2g" }} €</dd>
+    {% if r.skonto_gesamt %}<dt>Skonto abgezogen</dt><dd>{{ r.skonto_gesamt|floatformat:"2g" }} €</dd>{% endif %}
+    <dt>Offen</dt><dd><b{% if r.ist_ueberfaellig %} style="color:var(--rot)"{% endif %}>{{ r.offen|floatformat:"2g" }} €</b>{% if r.ist_ueberfaellig %} – fällig war {{ r.faellig|date:"d.m.Y" }}{% endif %}</dd>
+  </dl>
+  {% if zahlungen %}
+  <div class="tabelle-rahmen" style="margin-top:14px"><table>
+    <tr><th>Nr.</th><th>Datum</th><th style="text-align:right">Betrag</th><th style="text-align:right" class="breit">Skonto</th><th class="breit">Konto</th><th>Notiz</th><th></th></tr>
+    {% for z in zahlungen %}
+    <tr{% if z.ist_gegengebucht or z.gegenbuchung_zu %} style="color:var(--grau)"{% endif %}>
+      <td class="nowrap">{{ z.znr }}</td><td class="nowrap">{{ z.datum|date:"d.m.Y" }}</td>
+      <td class="nowrap" style="text-align:right">{{ z.betrag|floatformat:"2g" }} €</td>
+      <td class="nowrap breit" style="text-align:right">{% if z.skonto %}{{ z.skonto|floatformat:"2g" }} €{% endif %}</td>
+      <td class="breit">{{ z.konto }}</td>
+      <td>{{ z.notiz }}{% if z.ist_gegengebucht %} <i>(aufgehoben durch {{ z.gegenbuchung.znr }})</i>{% endif %}
+        <div class="hilfe">{{ z.erfasst_von.get_full_name|default:z.erfasst_von.username }}, {{ z.erfasst_am|date:"d.m.Y H:i" }}</div></td>
+      <td>{% if not z.ist_gegengebucht and not z.gegenbuchung_zu %}
+        <details><summary class="grau" style="cursor:pointer;font-size:15px">vertippt?</summary>
+          <form method="post" action="{% url 'rechnungen:gegenbuchung' z.pk %}" style="margin-top:6px">{% csrf_token %}
+            <input type="text" name="grund" placeholder="Grund, z. B. Betrag vertippt" required style="font-size:15px;padding:6px">
+            <button class="knopf zweit" type="submit" style="padding:6px 12px;font-size:15px;margin-top:6px">Gegenbuchung</button>
+          </form></details>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table></div>
+  <p class="hilfe">Zahlungen werden nie gelöscht. Falsch gebucht? „vertippt?“ → Gegenbuchung, dann richtig neu buchen.</p>
+  {% else %}<p class="grau">Noch keine Zahlung eingegangen.</p>{% endif %}
+</div>
+{% if zahlung_formular %}
+<style>
+  .wahl > div { display:flex; flex-direction:column; gap:8px; }
+  .wahl label { font-weight:400; display:flex; gap:10px; align-items:center; margin:0; background:#fff;
+                border:1px solid var(--rand); border-radius:8px; padding:10px 14px; max-width:520px; cursor:pointer; }
+  .wahl input[type=radio] { width:22px; height:22px; }
+</style>
+<form method="post" action="{% url 'rechnungen:zahlung' r.pk %}" class="karte">{% csrf_token %}
+  <h2 style="margin-top:0">Zahlung buchen</h2>
+  {% for feld in zahlung_formular %}
+    <div id="z-{{ feld.name }}">
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+    {% if feld.name == "art" or feld.name == "konto" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+    {% if feld.name == "betrag" %}<div class="hilfe">Mit Komma, z. B. 1500,00</div>{% endif %}
+    </div>
+  {% endfor %}
+  <p><button class="knopf" type="submit">💶 Zahlung buchen</button></p>
+</form>
+<script>
+  function zahlArt() {
+    const art = (document.querySelector('input[name=art]:checked') || {}).value;
+    document.getElementById('z-betrag').style.display = art === 'teil' ? '' : 'none';
+  }
+  document.querySelectorAll('input[name=art]').forEach(e => e.addEventListener('change', zahlArt));
+  zahlArt();
+</script>
+{% endif %}
+{% endif %}
 {% if r.ist_festgeschrieben %}
 <div class="karte" style="margin-top:20px">
   <p><a class="knopf" href="{% url 'rechnungen:pdf' r.pk %}" target="_blank">📄 PDF ansehen</a>

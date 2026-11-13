@@ -10,7 +10,7 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.1 (Etappe 2, Paket 1b).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.2 (Etappe 2, Paket 2).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -166,7 +166,7 @@ Vorher: `PFALZ-WERK starten.bat` doppelklicken (lädt die neue Fassung). Im Navi
    Paket 3). Zum Testen am besten erst mit einer Kopie arbeiten – oder bewusst die erste echte Rechnung nehmen.
 5. „Abschlagsrechnung“ mit Auftragswert 10.000,00 und 30 % → Entwurf zeigt 3.000,00 € netto.
 
-### Paket 1b: XRechnung – GEBAUT 13.11.2026, Abnahme offen
+### Paket 1b: XRechnung – ABGENOMMEN am 13.11.2026 („passt“)
 Vorlage: `XmlSchreiben()`, `Einheitcode()`, `AdrXml()` aus `PW_Rechnung.bas` – Aufbau 1:1 übernommen
 (UN/CEFACT CII, XRechnung 3.0, Kennung `urn:xeinkauf.de:kosit:xrechnung_3.0`, Peppol-Prozess).
 - Pro Rechnung Auswahl „E-Rechnung (XRechnung)“: automatisch (Firmen/Behörden ja, Privatkunden nein), ja, nein.
@@ -197,20 +197,47 @@ Vorher: `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.1
    die heruntergeladene XML-Datei hochladen → Ergebnis muss „gültig / valid“ sein. Ergebnis an Claude melden.
 5. Eine Rechnung für einen Privatkunden anlegen → „E-Rechnung: nein (nur PDF)“.
 
+### Paket 2: Zahlungen – GEBAUT 13.11.2026, Abnahme offen
+Vorlage: `ZahlungBuchen()` und Zahlungsteil von `Zusammenfassung()` in `PW_Rechnung.bas`.
+- Neue Tabelle Zahlungen wie Blatt „Zahlungen“: Z-Nr. (Z-0001 fortlaufend), Datum, Richtung „Ein“, Rechnung, Betrag,
+  Skonto, Konto (Bank/Bar), erfasst von/am, Notiz.
+- Auf der Rechnungsseite „Zahlung buchen“ mit drei Möglichkeiten wie im Makro: voller offener Betrag /
+  mit Skonto (offen minus Skonto auf Brutto, Rest als Skonto → erledigt; nur wenn Skonto angeboten) / Teilbetrag.
+  Datum nicht in der Zukunft. Nach dem Buchen Meldung mit neuem Status.
+- Bezahlt, Offen und Status werden immer aus den Zahlungen **berechnet** (wie die Formeln P/Q/R im Blatt);
+  die festgeschriebene Rechnung wird nie verändert. Status: Offen, Teilbezahlt, Bezahlt, Überzahlt, „· überfällig“
+  (Fälligkeit vorbei und noch offen).
+- Zahlungen sind gesperrt (nie ändern, nie löschen). Vertippt? → „Gegenbuchung“ mit Grund (Minusbuchung, die die
+  falsche Zahlung aufhebt), dann richtig neu buchen. Alles im Protokoll.
+- Rechnungsliste: Spalte „Offen“, Status farbig, Kasten „Offen gesamt / davon überfällig“ (antippbar),
+  Filter Unbezahlt / Überfällig / Bezahlt / Entwürfe / Verworfen. Projektkarte zeigt Offen je Rechnung.
+- **Fehler Nr. 9 behoben** (aus Paket 1a): Bei Skonto-Rechnungen zeigte die Prüfsumme nach dem Neuladen fälschlich
+  „stimmt nicht“. Schon festgeschriebene Skonto-Rechnungen werden wieder als in Ordnung erkannt.
+- 259 automatische Tests, alle grün.
+
+### So testest du es (Paket 2)
+Vorher: `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.2“ stehen.
+1. Kachel „Rechnungen“ → eine festgeschriebene Rechnung öffnen → unten „Zahlungen“: Offen = Rechnungsbetrag.
+2. „Teilbetrag“ wählen → z. B. 100,00 eintippen → Datum lassen → „Zahlung buchen“ → Status „Teilbezahlt“, Offen kleiner.
+3. Bei Z-0001 „vertippt?“ antippen → Grund „Test“ → „Gegenbuchung“ → Offen wieder wie vorher, beide Zeilen grau.
+4. „Voller offener Betrag“ → „Zahlung buchen“ → Status „Bezahlt“ (grün), Formular verschwindet.
+5. Rechnungsliste → Auswahl „Unbezahlt (offen)“ / „Bezahlt“ ausprobieren; oben steht „Offen gesamt“.
+Hinweis: Mit einer echten Rechnung testen ist in Ordnung – Testbuchungen lassen sich per Gegenbuchung aufheben
+(bleiben aber sichtbar, wie in der Buchhaltung üblich).
+
 ## Nächstes Paket
-**Etappe 2, Paket 2: Zahlungen** – Zahlungseingang buchen (voll, Teilzahlung, mit Skonto), Status offen/teilbezahlt/
-bezahlt, „Offen“-Betrag in der Liste. Vorlage: `ZahlungBuchen()` und Zahlungs-Teil von `Zusammenfassung()` in
-`PW_Rechnung.bas` (Blatt Zahlungen: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto, Konto, erfasst von, Notiz).
-Wichtig: Rechnung bleibt gesperrt – Zahlungen sind eigene Datensätze; Status/Offen wird daraus berechnet.
-Danach: Paket 3 Mahnungen + Storno (`Mahnen()`, `Stornieren()`), Paket 4 Eingangsrechnungen (PW_Eingang.bas),
-Paket 5 Finanz-Übersicht + DATEV-Export.
+**Etappe 2, Paket 3: Mahnungen + Storno**. Vorlage: `Mahnen()`, `Stornieren()` und Mahnteil von `Drucken()` in
+`PW_Rechnung.bas` (Zeilen ~843–905, ~1040–1060):
+- Mahnstufen: Zahlungserinnerung / 1. Mahnung / 2. Mahnung (+ Mahngebühr aus Firmendaten), neue Frist +7 Tage,
+  Mahn-PDF; Mahnstufe/Mahndatum als eigene Datensätze (Rechnung bleibt gesperrt).
+- Storno: Stornorechnung (eigene Nummer, Typ 381 in XRechnung, Beträge negativ, „Storno von“), Original wird als
+  storniert markiert, Abschläge zählen danach nicht mehr für die Schlussrechnung.
+Danach: Paket 4 Eingangsrechnungen (PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
 - **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, Zahlung, Mahnung, Storno
 - **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF
-Excel-Blätter 107–117 (alle versteckt; Rechnungen/Zahlungen LEER → kein Import nötig):
-- Zahlungen: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto, Konto, erfasst von, Notiz.
-- Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto, USt %,
-  USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.
+Excel-Blatt Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto,
+USt %, USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
