@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.2 (Etappe 2, Paket 2).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.3 (Etappe 2, Paket 3).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -203,7 +203,7 @@ Im Navi oben muss die neue Fassungsnummer stehen.
    die heruntergeladene XML-Datei hochladen → Ergebnis muss „gültig / valid“ sein. Ergebnis an Claude melden.
 5. Eine Rechnung für einen Privatkunden anlegen → „E-Rechnung: nein (nur PDF)“.
 
-### Paket 2: Zahlungen – GEBAUT 13.11.2026, Abnahme offen
+### Paket 2: Zahlungen – ABGENOMMEN am 13.11.2026 (Fassung 2.2 läuft bei Chris)
 Vorlage: `ZahlungBuchen()` und Zahlungsteil von `Zusammenfassung()` in `PW_Rechnung.bas`.
 - Neue Tabelle Zahlungen wie Blatt „Zahlungen“: Z-Nr. (Z-0001 fortlaufend), Datum, Richtung „Ein“, Rechnung, Betrag,
   Skonto, Konto (Bank/Bar), erfasst von/am, Notiz.
@@ -233,16 +233,45 @@ Im Navi oben muss die neue Fassungsnummer stehen.
 Hinweis: Mit einer echten Rechnung testen ist in Ordnung – Testbuchungen lassen sich per Gegenbuchung aufheben
 (bleiben aber sichtbar, wie in der Buchhaltung üblich).
 
+### Paket 3: Mahnungen + Storno – GEBAUT 13.11.2026, Abnahme offen
+Vorlage: `Mahnen()`, `Stornieren()`, Mahnteil von `Drucken()`, Statusformeln P/Q/R und Kachel-Regeln aus `PW_Rechnung.bas`.
+- **Storno** (Abschnitt „Rechnung stornieren …“ auf der Rechnungsseite, Haken + Grund): Stornorechnung mit nächster
+  Nummer, gleiche Positionen mit negativer Menge, Beträge negativ, Bezug „Storno zu“. PDF „Stornorechnung“
+  („Hiermit stornieren wir die Rechnung … vollständig“, „Gutschriftsbetrag“, ohne Zahlungsaufforderung).
+  XRechnung nur wenn das Original eine hatte: Typ 381, Beträge positiv, Verweis auf Original (Schema geprüft).
+  Original bleibt unverändert und zeigt „Storniert durch …“; Offen = 0 (wie Formel Q).
+  Regeln wie Makro: nicht bei Storno, nicht doppelt, nicht wenn schon Geld eingegangen (erst Gegenbuchung).
+  Stornierte Abschläge zählen nicht mehr (Abschlag-Nr. und Schlussrechnung).
+- **Mahnen** (Abschnitt „Erinnern / Mahnen“, solange offen): Zahlungserinnerung / 1. Mahnung / 2. Mahnung
+  (+ Mahngebühr aus Firmendaten); nächste Stufe vorausgewählt; neue Frist heute + 7 Tage; PDF wie Makro
+  (zusätzlich Anrede „Sehr geehrte Damen und Herren,“ und Grußformel). Mahnungen sind eigene, gesperrte Datensätze
+  mit PDF; Status zeigt die letzte Stufe („Offen · überfällig · 1. Mahnung“). Hinweis, wenn noch nicht fällig.
+  Mahngebühr steht nur im Schreiben, wird nicht als Forderung gebucht (wie Makro).
+- Skonto nur innerhalb der Skonto-Frist (Zahlungsdatum ≤ Rechnungsdatum + 7 Tage) – wie im Makro.
+- Rechnungsliste: Filter „Storniert / Storno“.
+- 274 automatische Tests, alle grün.
+
+### So testest du es (Paket 3)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.3“ stehen.
+1. Offene Rechnung öffnen → „Erinnern / Mahnen“ → „Zahlungserinnerung“ ist ausgewählt → „Erinnerung / Mahnung
+   erstellen“ → Zeile mit „📄 PDF“ erscheint → PDF ansehen. Status in der Liste zeigt „Zahlungserinnerung“.
+2. Nochmal → jetzt ist „1. Mahnung“ vorausgewählt. Bei „2. Mahnung“ steht die Mahngebühr im PDF.
+3. Achtung, Storno ist endgültig und verbraucht eine Nummer – nur mit einer Test-Rechnung oder einer, die
+   wirklich falsch ist: „Rechnung stornieren …“ aufklappen → Grund → Haken → „Stornieren“ → Stornorechnung erscheint.
+4. Zurück zum Original (Link „Storno zu“) → „Storniert durch …“, Offen 0, kein Mahn-/Zahlungsbereich mehr.
+5. Rechnungsliste → Auswahl „Storniert / Storno“.
+
 ## Nächstes Paket
-**Etappe 2, Paket 3: Mahnungen + Storno**. Vorlage: `Mahnen()`, `Stornieren()` und Mahnteil von `Drucken()` in
-`PW_Rechnung.bas` (Zeilen ~843–905, ~1040–1060):
-- Mahnstufen: Zahlungserinnerung / 1. Mahnung / 2. Mahnung (+ Mahngebühr aus Firmendaten), neue Frist +7 Tage,
-  Mahn-PDF; Mahnstufe/Mahndatum als eigene Datensätze (Rechnung bleibt gesperrt).
-- Storno: Stornorechnung (eigene Nummer, Typ 381 in XRechnung, Beträge negativ, „Storno von“), Original wird als
-  storniert markiert, Abschläge zählen danach nicht mehr für die Schlussrechnung.
-Danach: Paket 4 Eingangsrechnungen (PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
+**Zwischenpaket Design** (Wunsch von Chris, 13.11.2026): Oberfläche an die Excel anlehnen und darüber hinaus
+modernisieren – „futuristischer, moderner, fließende Übergänge und Farben“. Vorgehen: Chris schickt 2–3
+Bildschirmfotos der Excel (Startbild/Cockpit, Navi-Rad, Rechnungsfenster); daraus Farbwelt (Makro-Formulare nutzen
+Grün RGB 53,107,74 / 231,236,232), dann neues Erscheinungsbild für alle Seiten (Farbverläufe, sanfte Übergänge,
+Kacheln, Navi-Rad), bedienbar bleiben (große Schrift/Knöpfe, Handy). Nur `vorlagen/basis.html` + Vorlagen, keine
+Fachlogik. Ein Vorschlag als Bild zur Abnahme vor dem Umbau.
+Danach: **Etappe 2, Paket 4: Eingangsrechnungen** (PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
-- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, Zahlung, Mahnung, Storno
+- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen (komplett übernommen)
 - **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF
 Excel-Blatt Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto,
 USt %, USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.

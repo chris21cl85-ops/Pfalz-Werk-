@@ -41,7 +41,8 @@ def ziel_aus_firmendaten(fd: Firmendaten) -> str:
 
 def abschlaege(projekt):
     """Festgeschriebene Abschlagsrechnungen eines Projekts (Storno folgt in eigenem Paket)."""
-    return projekt.rechnungen.filter(art=Rechnung.Art.ABSCHLAG, festgeschrieben_am__isnull=False).order_by("datum", "id")
+    return (projekt.rechnungen.filter(art=Rechnung.Art.ABSCHLAG, festgeschrieben_am__isnull=False)
+            .exclude(storniert_durch__isnull=False).order_by("datum", "id"))  # stornierte zählen nicht (wie Makro)
 
 
 def letzter_auftragswert(projekt):
@@ -237,6 +238,9 @@ def zahlung_buchen(rechnung, *, art, datum, benutzer, betrag=None, konto="Bank",
         elif art == SKONTO:
             if not rechnung.skonto_prozent:
                 raise RechnungFehler("Auf dieser Rechnung wurde kein Skonto angeboten.")
+            if datum > rechnung.skonto_bis:
+                raise RechnungFehler(f"Die Zahlung vom {datum:%d.%m.%Y} liegt nach der Skonto-Frist "
+                                     f"({rechnung.skonto_bis:%d.%m.%Y}) – bitte als Teilbetrag buchen.")
             betrag = runden(offen - rechnung.skonto_betrag)
             skonto = runden(offen - betrag)
         elif art == TEIL:
@@ -274,3 +278,97 @@ def zahlung_gegenbuchen(zahlung, *, benutzer, grund):
         protokolliere("zahlung_gegengebucht", zahlung.rechnung.nummer, benutzer=benutzer,
                       details=f"{gegen.znr} hebt {zahlung.znr} auf ({euro(zahlung.betrag)}). Grund: {grund.strip()}")
     return gegen
+
+
+# ------------------------------------------------------------------ Storno (wie Stornieren() im Makro)
+def storno_moeglich(rechnung) -> str:
+    """Leerer Text = Storno möglich, sonst der Grund, warum nicht (Regeln wie im Makro)."""
+    if not rechnung.ist_festgeschrieben:
+        return "Nur festgeschriebene Rechnungen können storniert werden."
+    if rechnung.art == Rechnung.Art.STORNO:
+        return "Eine Stornorechnung kann nicht storniert werden."
+    if rechnung.ist_storniert:
+        return f"Diese Rechnung wurde schon storniert ({rechnung.stornorechnung.nummer})."
+    if rechnung.bezahlt != 0 or rechnung.skonto_gesamt != 0:
+        return ("Auf diese Rechnung ist schon Geld eingegangen. Erst die Zahlungen per Gegenbuchung aufheben "
+                "(bzw. das Geld zurücküberweisen), dann stornieren.")
+    return ""
+
+
+def stornieren(rechnung, benutzer, grund="") -> Rechnung:
+    """Erzeugt eine Stornorechnung (eigene Nummer, alle Beträge negativ). Das Original bleibt unverändert und
+    gilt danach als „Storniert“. Ein Storno lässt sich nicht zurücknehmen."""
+    from .pdf import rechnung_pdf
+    with transaction.atomic():
+        alt = Rechnung.objects.select_for_update().get(pk=rechnung.pk)
+        warum_nicht = storno_moeglich(alt)
+        if warum_nicht:
+            raise RechnungFehler(warum_nicht)
+        fd = Firmendaten.objects.select_for_update().get(pk=1)
+        heute = timezone.localdate()
+        zaehler = fd.letzte_rechnungsnummer + 1
+        while Rechnung.objects.filter(nummer=nummer_bilden(fd, zaehler, heute.year)).exists():
+            zaehler += 1
+        fd.letzte_rechnungsnummer = zaehler
+        fd.save()
+        storno = Rechnung.objects.create(
+            nummer=None, art=Rechnung.Art.STORNO, storno_von=alt, projekt=alt.projekt, kunde=alt.kunde,
+            leistungszeitraum=alt.leistungszeitraum, zahlungsziel="0", mit_xrechnung=bool(alt.xml),
+            kaeufer_referenz=alt.kaeufer_referenz, erstellt_von=benutzer)
+        for p in alt.positionen.order_by("pos", "id"):
+            Position.objects.create(rechnung=storno, pos=p.pos, text=p.text, menge=-p.menge, einheit=p.einheit,
+                                    einzelpreis=p.einzelpreis)
+        storno.nummer = nummer_bilden(fd, zaehler, heute.year)
+        storno.datum = storno.faellig = heute
+        storno.ziel_tage = 0
+        storno.ust_satz = alt.ust_satz
+        storno.netto, storno.ust, storno.brutto = -alt.netto, -alt.ust, -alt.brutto
+        storno.kundentyp, storno.empfaenger, storno.firma = alt.kundentyp, alt.empfaenger, alt.firma
+        storno.status = Rechnung.Status.OFFEN
+        storno.festgeschrieben_von = benutzer
+        storno.pdf = rechnung_pdf(storno)
+        if storno.mit_xrechnung:
+            from .xrechnung import xrechnung_xml
+            storno.xml = xrechnung_xml(storno)
+        storno.pruefsumme = storno.berechne_pruefsumme()
+        storno.festgeschrieben_am = timezone.now()
+        storno.save()
+        protokolliere("rechnung_storniert", alt.nummer, benutzer=benutzer,
+                      details=f"durch Stornorechnung {storno.nummer} ({euro(storno.brutto)})"
+                              + (f"\nGrund: {grund.strip()}" if grund.strip() else ""))
+    return storno
+
+
+# ------------------------------------------------------------------ Mahnungen (wie Mahnen() im Makro)
+MAHNFRIST_TAGE = 7
+
+
+def mahnen(rechnung, stufe, benutzer):
+    from .models import Mahnung
+    from .pdf import mahnung_pdf
+    with transaction.atomic():
+        rechnung = Rechnung.objects.select_for_update().get(pk=rechnung.pk)
+        if not rechnung.ist_festgeschrieben or rechnung.art == Rechnung.Art.STORNO or rechnung.ist_storniert:
+            raise RechnungFehler("Diese Rechnung kann nicht gemahnt werden.")
+        if rechnung.offen <= Decimal("0.005"):
+            raise RechnungFehler("Diese Rechnung ist bezahlt – keine Mahnung nötig.")
+        stufe = int(stufe)
+        if stufe not in Mahnung.Stufe.values:
+            raise RechnungFehler("Unbekannte Mahnstufe.")
+        fd = Firmendaten.laden()
+        heute = timezone.localdate()
+        mahnung = Mahnung(
+            rechnung=rechnung, stufe=stufe, datum=heute, frist=heute + dt.timedelta(days=MAHNFRIST_TAGE),
+            offen=rechnung.offen, gebuehr=fd.mahngebuehr if stufe == Mahnung.Stufe.MAHNUNG2 else Decimal("0"),
+            erstellt_von=benutzer)
+        mahnung.pdf = mahnung_pdf(mahnung, fd)
+        mahnung.save()
+        protokolliere("rechnung_gemahnt", rechnung.nummer, benutzer=benutzer, details=(
+            f"{mahnung.get_stufe_display()} · offen {euro(mahnung.offen)}"
+            + (f" + Gebühr {euro(mahnung.gebuehr)}" if mahnung.gebuehr else "")
+            + f" · neue Frist {mahnung.frist:%d.%m.%Y}"))
+    return mahnung
+
+
+def naechste_mahnstufe(rechnung) -> int:
+    return min(rechnung.mahnstufe + 1, 3)

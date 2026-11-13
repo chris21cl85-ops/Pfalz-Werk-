@@ -12,6 +12,8 @@
 <div class="karte">
 <dl class="daten">
   <dt>Kunde</dt><dd><a href="{{ r.kunde.get_absolute_url }}">{{ r.kunde.kundennr }} – {{ r.kunde.name }}</a></dd>
+  {% if r.storno_von %}<dt>Storno zu</dt><dd><a href="{{ r.storno_von.get_absolute_url }}">{{ r.storno_von.nummer }}</a></dd>{% endif %}
+  {% if r.ist_storniert %}<dt>Storniert durch</dt><dd><a href="{{ r.stornorechnung.get_absolute_url }}">{{ r.stornorechnung.nummer }}</a></dd>{% endif %}
   <dt>Projekt</dt><dd><a href="{{ r.projekt.get_absolute_url }}">{{ r.projekt.projektnr }} – {{ r.projekt.name }}</a></dd>
   {% if r.ist_festgeschrieben %}
   <dt>Rechnungsdatum</dt><dd>{{ r.datum|date:"d.m.Y" }}</dd>
@@ -103,6 +105,32 @@
 {% endif %}
 {% endif %}
 {% if r.ist_festgeschrieben %}
+{% if darf_mahnen or mahnungen %}
+<h2>Erinnern / Mahnen</h2>
+<div class="karte">
+  {% if mahnungen %}<div class="tabelle-rahmen"><table>
+    <tr><th>Datum</th><th>Stufe</th><th style="text-align:right">Offen</th><th style="text-align:right" class="breit">Gebühr</th><th class="breit">Frist</th><th></th></tr>
+    {% for m in mahnungen %}<tr><td class="nowrap">{{ m.datum|date:"d.m.Y" }}</td><td>{{ m.get_stufe_display }}</td>
+      <td class="nowrap" style="text-align:right">{{ m.offen|floatformat:"2g" }} €</td>
+      <td class="nowrap breit" style="text-align:right">{% if m.gebuehr %}{{ m.gebuehr|floatformat:"2g" }} €{% endif %}</td>
+      <td class="nowrap breit">{{ m.frist|date:"d.m.Y" }}</td>
+      <td><a href="{% url 'rechnungen:mahnung_pdf' m.pk %}" target="_blank">📄 PDF</a></td></tr>{% endfor %}
+  </table></div>{% else %}<p class="grau">Noch nicht gemahnt.</p>{% endif %}
+  {% if darf_mahnen %}
+  {% if not r.ist_ueberfaellig %}<p class="meldung error" style="margin-top:12px">Hinweis: Die Rechnung ist erst am {{ r.faellig|date:"d.m.Y" }} fällig. Normalerweise erst danach erinnern.</p>{% endif %}
+  <form method="post" action="{% url 'rechnungen:mahnen' r.pk %}" style="margin-top:14px">{% csrf_token %}
+    <div class="wahl"><div>
+    {% for wert, text in mahnstufen %}
+      <label><input type="radio" name="stufe" value="{{ wert }}" {% if wert == naechste_stufe %}checked{% endif %}>
+        {{ text }}{% if wert == 1 %} – freundlich{% elif wert == 2 %} – Frist 7 Tage{% else %} – + {{ mahngebuehr|floatformat:"2g" }} € Gebühr{% endif %}</label>
+    {% endfor %}
+    </div></div>
+    <p><button class="knopf" type="submit">✉ Erinnerung / Mahnung erstellen</button></p>
+    <p class="hilfe">Erstellt ein PDF mit neuer Frist (heute + 7 Tage). Die Mahngebühr steht nur im Schreiben – sie wird nicht als Forderung gebucht.</p>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
 <div class="karte" style="margin-top:20px">
   <p><a class="knopf" href="{% url 'rechnungen:pdf' r.pk %}" target="_blank">📄 PDF ansehen</a>
      <a class="knopf zweit" href="{% url 'rechnungen:pdf' r.pk %}?laden=1">PDF herunterladen</a>
@@ -112,6 +140,21 @@
     Diese Rechnung kann nicht mehr geändert werden – Korrekturen später nur per Storno.</p>
   {% if pruefsumme_ok %}<p style="color:var(--gruen)">✔ Prüfsumme in Ordnung – die Rechnung ist unverändert.</p>
   {% else %}<p class="fehler">✖ Prüfsumme stimmt nicht! Die gespeicherte Rechnung wurde verändert. Bitte sofort den Chef informieren.</p>{% endif %}
+  {% if r.art != "Storno" and not r.ist_storniert %}
+  <details style="margin-top:16px"><summary style="cursor:pointer;color:var(--holz-dunkel);font-weight:600">Rechnung stornieren …</summary>
+    {% if storno_hinderung %}<p class="meldung error" style="margin-top:10px">{{ storno_hinderung }}</p>
+    {% else %}
+    <form method="post" action="{% url 'rechnungen:stornieren' r.pk %}" style="margin-top:10px">{% csrf_token %}
+      <p>Es entsteht eine <b>Stornorechnung</b> mit neuer Nummer und negativen Beträgen. Diese Rechnung bleibt erhalten
+         und gilt danach als „Storniert“. <b>Ein Storno lässt sich nicht zurücknehmen.</b> Danach bei Bedarf eine neue,
+         richtige Rechnung schreiben.</p>
+      <label for="grund">Grund (für das Protokoll)</label>
+      <input type="text" id="grund" name="grund" placeholder="z. B. falscher Betrag, falscher Kunde">
+      <label style="display:flex;gap:10px;align-items:center;font-weight:400"><input type="checkbox" name="bestaetigt" value="1" required> Ja, diese Rechnung stornieren.</label>
+      <p><button class="knopf zweit" type="submit" style="border-color:var(--rot);color:var(--rot)">Stornieren</button></p>
+    </form>{% endif %}
+  </details>
+  {% endif %}
 </div>
 {% elif r.ist_entwurf %}
 <div class="karte" style="margin-top:20px">

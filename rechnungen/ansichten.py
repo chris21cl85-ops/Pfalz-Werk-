@@ -15,7 +15,7 @@ from projekte.models import Projekt
 from . import dienst
 from .formulare import (EINHEITEN, FirmendatenFormular, GegenbuchungFormular, KopfFormular, NeueRechnungFormular,
                         PositionenFormularsatz, ZahlungFormular)
-from .models import Firmendaten, Rechnung, Zahlung
+from .models import Firmendaten, Mahnung, Rechnung, Zahlung
 from .pdf import rechnung_pdf
 
 # Wie Darf() im Makro: Chef, Admin, Buchhaltung
@@ -40,6 +40,7 @@ def liste(request):
         "ueberfaellig": lambda r: r.ist_ueberfaellig,
         "bezahlt": lambda r: r.ist_festgeschrieben and r.offen <= Decimal("0.005"),
         "entwurf": lambda r: r.status == Rechnung.Status.ENTWURF,
+        "storniert": lambda r: r.art == Rechnung.Art.STORNO or r.ist_storniert,
         "verworfen": lambda r: r.status == Rechnung.Status.VERWORFEN,
     }.get(status, lambda r: True)
     treffer = [r for r in alle if filter_(r)]
@@ -50,7 +51,8 @@ def liste(request):
         "seite": Paginator(treffer, 50).get_page(request.GET.get("seite")),
         "anzahl": len(treffer), "suche": suche, "status": status,
         "stati": [("unbezahlt", "Unbezahlt (offen)"), ("ueberfaellig", "Überfällig"), ("bezahlt", "Bezahlt"),
-                  ("entwurf", "Entwürfe"), ("verworfen", "Verworfen")],
+                  ("entwurf", "Entwürfe"),
+                  ("storniert", "Storniert / Storno"), ("verworfen", "Verworfen")],
         "offen_gesamt": offen_gesamt, "ueberfaellig_gesamt": ueberfaellig,
         "firmendaten_fehlen": fd.fehlende_angaben(),
     })
@@ -92,6 +94,11 @@ def detail(request, pk):
         "naechste_nummer": dienst.naechste_nummer_vorschau() if rechnung.ist_entwurf else "",
         "pruefsumme_ok": rechnung.pruefsumme_stimmt() if rechnung.ist_festgeschrieben else None,
         "zahlungen": rechnung.zahlungen.select_related("erfasst_von", "gegenbuchung_zu"),
+        "mahnungen": rechnung.mahnungen.select_related("erstellt_von"),
+        "darf_mahnen": (rechnung.ist_festgeschrieben and rechnung.offen > Decimal("0.005")),
+        "naechste_stufe": dienst.naechste_mahnstufe(rechnung) if rechnung.ist_festgeschrieben else 1,
+        "mahnstufen": Mahnung.Stufe.choices, "mahngebuehr": Firmendaten.laden().mahngebuehr,
+        "storno_hinderung": dienst.storno_moeglich(rechnung) if rechnung.ist_festgeschrieben else "",
         "zahlung_formular": (ZahlungFormular(rechnung)
                              if rechnung.ist_festgeschrieben and rechnung.offen > Decimal("0.005") else None),
     })
@@ -241,3 +248,44 @@ def firmendaten(request):
         return redirect("rechnungen:firmendaten")
     return render(request, "rechnungen/firmendaten.html", {
         "formular": formular, "fehlt": fd.fehlende_angaben(), "naechste_nummer": dienst.naechste_nummer_vorschau()})
+
+
+@rolle_erforderlich(*BUERO)
+def mahnen(request, pk):
+    rechnung = get_object_or_404(Rechnung, pk=pk)
+    if request.method == "POST":
+        try:
+            m = dienst.mahnen(rechnung, request.POST.get("stufe", ""), request.user)
+        except (dienst.RechnungFehler, ValueError) as fehler:
+            messages.error(request, str(fehler) if isinstance(fehler, dienst.RechnungFehler) else "Bitte eine Stufe wählen.")
+        else:
+            messages.success(request, f"{m.get_stufe_display()} erstellt (neue Frist {m.frist:%d.%m.%Y}). "
+                                      "PDF öffnen, ausdrucken oder per E-Mail an den Kunden schicken.")
+    return redirect(rechnung)
+
+
+@rolle_erforderlich(*BUERO)
+def mahnung_pdf(request, pk):
+    mahnung = get_object_or_404(Mahnung.objects.select_related("rechnung"), pk=pk)
+    antwort = HttpResponse(bytes(mahnung.pdf), content_type="application/pdf")
+    art = "attachment" if request.GET.get("laden") else "inline"
+    antwort["Content-Disposition"] = f'{art}; filename="{mahnung.dateiname}"'
+    return antwort
+
+
+@rolle_erforderlich(*BUERO)
+def stornieren(request, pk):
+    rechnung = get_object_or_404(Rechnung, pk=pk)
+    if request.method != "POST":
+        return redirect(rechnung)
+    if not request.POST.get("bestaetigt"):
+        messages.error(request, "Bitte den Haken setzen, dass wirklich storniert werden soll.")
+        return redirect(rechnung)
+    try:
+        storno = dienst.stornieren(rechnung, request.user, request.POST.get("grund", ""))
+    except dienst.RechnungFehler as fehler:
+        messages.error(request, str(fehler))
+        return redirect(rechnung)
+    messages.success(request, f"Rechnung {rechnung.nummer} ist storniert. Hier die Stornorechnung {storno.nummer} – "
+                              "bitte an den Kunden schicken.")
+    return redirect(storno)

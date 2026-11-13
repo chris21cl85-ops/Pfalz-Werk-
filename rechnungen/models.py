@@ -107,6 +107,7 @@ class Rechnung(models.Model):
         RECHNUNG = "Rechnung", "Rechnung"
         ABSCHLAG = "Abschlag", "Abschlagsrechnung"
         SCHLUSS = "Schluss", "Schlussrechnung"
+        STORNO = "Storno", "Stornorechnung"
 
     class Status(models.TextChoices):
         ENTWURF = "Entwurf", "Entwurf"
@@ -124,6 +125,8 @@ class Rechnung(models.Model):
     nummer = models.CharField("Rechnungs-Nr.", max_length=40, unique=True, null=True, blank=True)
     art = models.CharField("Art", max_length=20, choices=Art.choices, default=Art.RECHNUNG)
     abschlag_nr = models.PositiveIntegerField("Abschlag Nr.", null=True, blank=True)
+    storno_von = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT,
+                                      related_name="storniert_durch", verbose_name="Storno von")
     abschlag_prozent = models.DecimalField("Abschlag %", max_digits=5, decimal_places=2, null=True, blank=True)
     auftragswert = models.DecimalField("Auftragswert netto", max_digits=12, decimal_places=2, null=True, blank=True)
     projekt = models.ForeignKey(Projekt, on_delete=models.PROTECT, related_name="rechnungen", verbose_name="Projekt")
@@ -201,7 +204,23 @@ class Rechnung(models.Model):
             return "Schlussrechnung"
         if self.art == self.Art.ABSCHLAG:
             return f"{self.abschlag_nr}. Abschlagsrechnung" if self.abschlag_nr else "Abschlagsrechnung"
+        if self.art == self.Art.STORNO:
+            return "Stornorechnung"
         return "Rechnung"
+
+    @property
+    def ist_storniert(self) -> bool:
+        """Wurde diese Rechnung durch eine Stornorechnung aufgehoben? (wie Spalte V „Storniert durch“)"""
+        return self.pk is not None and Rechnung.objects.filter(storno_von_id=self.pk).exists()
+
+    @property
+    def stornorechnung(self):
+        return Rechnung.objects.filter(storno_von_id=self.pk).first() if self.pk else None
+
+    @property
+    def mahnstufe(self) -> int:
+        letzte = self.mahnungen.order_by("-stufe").first() if self.pk else None
+        return letzte.stufe if letzte else 0
 
     # ---------------------------------------------------------------- Zahlungsstand (berechnet, nie gespeichert)
     @property
@@ -218,6 +237,8 @@ class Rechnung(models.Model):
         """Brutto minus Zahlungen minus Skonto – wie Spalte Q „Offen“."""
         if not self.ist_festgeschrieben:
             return None
+        if self.art == self.Art.STORNO or self.ist_storniert:  # wie Formel Q: Storno/Storniert = 0
+            return Decimal("0.00")
         return Decimal(self.brutto) - self.bezahlt - self.skonto_gesamt
 
     @property
@@ -231,13 +252,22 @@ class Rechnung(models.Model):
         """Was der Benutzer als Status sieht: Entwurf, Verworfen, Offen, Teilbezahlt, Bezahlt, Überzahlt."""
         if not self.ist_festgeschrieben:
             return self.get_status_display()
+        if self.art == self.Art.STORNO:
+            return "Storno"
+        if self.ist_storniert:
+            return "Storniert"
         offen = self.offen
         if offen < Decimal("-0.005"):
             return "Überzahlt"
         if offen <= Decimal("0.005"):
             return "Bezahlt"
         text = "Teilbezahlt" if self.bezahlt or self.skonto_gesamt else "Offen"
-        return f"{text} · überfällig" if self.ist_ueberfaellig else text
+        if self.ist_ueberfaellig:
+            text += " · überfällig"
+        stufe = self.mahnstufe
+        if stufe:
+            text += " · " + dict(Mahnung.Stufe.choices)[stufe]
+        return text
 
     @property
     def skonto_bis(self):
@@ -258,7 +288,7 @@ class Rechnung(models.Model):
     # ---------------------------------------------------------------- Summen
     def summen(self, ust_satz=None) -> dict:
         """Netto, USt, Brutto wie im Makro: jede Position auf Cent, USt auf die Nettosumme."""
-        if self.ist_festgeschrieben:
+        if self.ist_festgeschrieben or (self.netto is not None and not self.ist_entwurf):
             return {"netto": self.netto, "ust_satz": self.ust_satz, "ust": self.ust, "brutto": self.brutto}
         if ust_satz is None:
             ust_satz = Firmendaten.laden().effektiver_ust_satz
@@ -284,6 +314,8 @@ class Rechnung(models.Model):
             "firma": self.firma,
             "pdf": hashlib.sha256(bytes(self.pdf or b"")).hexdigest(),
         }
+        if self.storno_von_id:  # nur bei Stornorechnungen – ältere Prüfsummen bleiben gleich
+            daten["storno_von"] = self.storno_von.nummer
         if self.xml:  # nur wenn vorhanden – ältere Rechnungen ohne XRechnung behalten ihre Prüfsumme
             daten["xml"] = hashlib.sha256(bytes(self.xml)).hexdigest()
             daten["kaeufer_referenz"] = self.kaeufer_referenz
@@ -409,3 +441,60 @@ class Zahlung(models.Model):
     def wirkt(self) -> Decimal:
         """Um so viel sinkt der offene Betrag (Zahlung + Skonto)."""
         return Decimal(self.betrag) + Decimal(self.skonto)
+
+
+# ------------------------------------------------------------------ Mahnungen
+class MahnungQuerySet(models.QuerySet):
+    def delete(self):
+        raise RechnungGesperrt("Mahnungen werden nie gelöscht.")
+
+    def update(self, **kwargs):
+        raise RechnungGesperrt("Mahnungen werden nie geändert.")
+
+
+class Mahnung(models.Model):
+    """Zahlungserinnerung oder Mahnung zu einer Rechnung (im Makro: Spalten S „Mahnstufe“, T „Mahndatum“ + PDF).
+    Eigener Datensatz, damit die festgeschriebene Rechnung unverändert bleibt."""
+
+    class Stufe(models.IntegerChoices):
+        ERINNERUNG = 1, "Zahlungserinnerung"
+        MAHNUNG1 = 2, "1. Mahnung"
+        MAHNUNG2 = 3, "2. Mahnung"
+
+    rechnung = models.ForeignKey(Rechnung, on_delete=models.PROTECT, related_name="mahnungen")
+    stufe = models.PositiveSmallIntegerField("Stufe", choices=Stufe.choices)
+    datum = models.DateField("Datum")
+    frist = models.DateField("Neue Frist")
+    offen = models.DecimalField("Offen zum Mahndatum", max_digits=12, decimal_places=2)
+    gebuehr = models.DecimalField("Mahngebühr", max_digits=8, decimal_places=2, default=Decimal("0"))
+    pdf = models.BinaryField("PDF", editable=False)
+    erstellt_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                     related_name="+")
+    erstellt_am = models.DateTimeField("Erstellt am", auto_now_add=True)
+
+    objects = MahnungQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Mahnung"
+        verbose_name_plural = "Mahnungen"
+        ordering = ["datum", "id"]
+
+    def __str__(self):
+        return f"{self.get_stufe_display()} zu {self.rechnung.nummer}"
+
+    @property
+    def zu_zahlen(self) -> Decimal:
+        return Decimal(self.offen) + Decimal(self.gebuehr)
+
+    @property
+    def dateiname(self) -> str:
+        stufe = self.get_stufe_display().replace(". ", "").replace(" ", "")
+        return f"{self.rechnung.nummer}_{stufe}_{self.datum:%Y-%m-%d}.pdf"
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise RechnungGesperrt("Mahnungen werden nie geändert.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RechnungGesperrt("Mahnungen werden nie gelöscht.")

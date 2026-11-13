@@ -87,7 +87,9 @@ def xrechnung_xml(rechnung) -> bytes:
     satz = Decimal(rechnung.ust_satz or 0)
     kat = "E" if kleinunternehmer or satz == 0 else "S"
     satz_text = dez(0 if kat == "E" else satz)
-    typ = "326" if rechnung.art == "Abschlag" else "380"
+    storno = rechnung.art == "Storno"
+    vz = Decimal(-1) if storno else Decimal(1)  # Gutschrift: Beträge positiv mit Typ 381 (wie sg im Makro)
+    typ = "381" if storno else ("326" if rechnung.art == "Abschlag" else "380")
 
     wurzel = ET.Element(f"{{{RSM}}}CrossIndustryInvoice")
     kontext = _el(wurzel, "rsm:ExchangedDocumentContext")
@@ -111,7 +113,7 @@ def xrechnung_xml(rechnung) -> bytes:
         preis = Decimal(p.einzelpreis)
         _el(_el(_el(zeile, "ram:SpecifiedLineTradeAgreement"), "ram:NetPriceProductTradePrice"),
             "ram:ChargeAmount", dez(abs(preis)))
-        menge = Decimal(p.menge) * (-1 if preis < 0 else 1)  # negativer Preis -> negative Menge (Preis ist nie negativ)
+        menge = Decimal(p.menge) * vz * (-1 if preis < 0 else 1)  # negativer Preis -> negative Menge (Preis ist nie negativ)
         _el(_el(zeile, "ram:SpecifiedLineTradeDelivery"), "ram:BilledQuantity", zahl(menge),
             unitCode=einheitcode(p.einheit))
         abrechnung = _el(zeile, "ram:SpecifiedLineTradeSettlement")
@@ -120,7 +122,7 @@ def xrechnung_xml(rechnung) -> bytes:
         _el(steuer, "ram:CategoryCode", kat)
         _el(steuer, "ram:RateApplicablePercent", satz_text)
         _el(_el(abrechnung, "ram:SpecifiedTradeSettlementLineMonetarySummation"), "ram:LineTotalAmount",
-            dez(p.gesamt))
+            dez(p.gesamt * vz))
 
     # Verkäufer / Käufer
     vereinbarung = _el(handel, "ram:ApplicableHeaderTradeAgreement")
@@ -161,15 +163,17 @@ def xrechnung_xml(rechnung) -> bytes:
     if fd.get("bic"):
         _el(_el(zahlart, "ram:PayeeSpecifiedCreditorFinancialInstitution"), "ram:BICID", fd["bic"].replace(" ", ""))
     steuer = _el(abr, "ram:ApplicableTradeTax")
-    _el(steuer, "ram:CalculatedAmount", dez(rechnung.ust))
+    _el(steuer, "ram:CalculatedAmount", dez(rechnung.ust * vz))
     _el(steuer, "ram:TypeCode", "VAT")
     if kat == "E":
         _el(steuer, "ram:ExemptionReason", "Kleinunternehmer gemäß § 19 UStG")
-    _el(steuer, "ram:BasisAmount", dez(rechnung.netto))
+    _el(steuer, "ram:BasisAmount", dez(rechnung.netto * vz))
     _el(steuer, "ram:CategoryCode", kat)
     _el(steuer, "ram:RateApplicablePercent", satz_text)
     bedingungen = _el(abr, "ram:SpecifiedTradePaymentTerms")
-    if rechnung.ziel_tage == 0:
+    if storno:
+        text = f"Storno zu Rechnung {rechnung.storno_von.nummer}"
+    elif rechnung.ziel_tage == 0:
         text = "Zahlbar sofort ohne Abzug."
     else:
         text = f"Zahlbar bis {rechnung.faellig:%d.%m.%Y} ohne Abzug."
@@ -177,13 +181,16 @@ def xrechnung_xml(rechnung) -> bytes:
         # Skonto im Format der XRechnung: #SKONTO#TAGE=7#PROZENT=2.00# + Zeilenumbruch
         text += f"\n#SKONTO#TAGE={rechnung.skonto_tage}#PROZENT={dez(rechnung.skonto_prozent)}#\n"
     _el(bedingungen, "ram:Description", text)
-    _datum_el(bedingungen, "ram:DueDateDateTime", rechnung.faellig)
+    if not storno:
+        _datum_el(bedingungen, "ram:DueDateDateTime", rechnung.faellig)
     summe = _el(abr, "ram:SpecifiedTradeSettlementHeaderMonetarySummation")
-    _el(summe, "ram:LineTotalAmount", dez(rechnung.netto))
-    _el(summe, "ram:TaxBasisTotalAmount", dez(rechnung.netto))
-    _el(summe, "ram:TaxTotalAmount", dez(rechnung.ust), currencyID="EUR")
-    _el(summe, "ram:GrandTotalAmount", dez(rechnung.brutto))
-    _el(summe, "ram:DuePayableAmount", dez(rechnung.brutto))
+    _el(summe, "ram:LineTotalAmount", dez(rechnung.netto * vz))
+    _el(summe, "ram:TaxBasisTotalAmount", dez(rechnung.netto * vz))
+    _el(summe, "ram:TaxTotalAmount", dez(rechnung.ust * vz), currencyID="EUR")
+    _el(summe, "ram:GrandTotalAmount", dez(rechnung.brutto * vz))
+    _el(summe, "ram:DuePayableAmount", dez(rechnung.brutto * vz))
+    if storno:
+        _el(_el(abr, "ram:InvoiceReferencedDocument"), "ram:IssuerAssignedID", rechnung.storno_von.nummer)
 
     ET.indent(wurzel, space=" ")
     return ET.tostring(wurzel, encoding="UTF-8", xml_declaration=True)
