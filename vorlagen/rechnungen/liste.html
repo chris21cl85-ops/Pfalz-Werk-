@@ -1,0 +1,46 @@
+{% extends "basis.html" %}
+{% block titel %}Rechnungen – PFALZ-WERK{% endblock %}
+{% block pfad %} › Rechnungen{% endblock %}
+{% block inhalt %}
+<h1>Rechnungen</h1>
+{% if firmendaten_fehlen %}
+<div class="meldung error">Bevor die erste Rechnung festgeschrieben werden kann, fehlen in den Firmendaten noch:
+  {{ firmendaten_fehlen|join:", " }}. <a href="{% url 'rechnungen:firmendaten' %}">Jetzt ergänzen</a></div>
+{% endif %}
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Nummer, Kunde, Projekt …" autofocus>
+    <select name="status" style="max-width:220px" onchange="this.form.submit()">
+      <option value="aktuell" {% if status == "aktuell" %}selected{% endif %}>Ohne verworfene</option>
+      <option value="alle" {% if status == "alle" %}selected{% endif %}>Alle</option>
+      {% for wert, text in stati %}<option value="{{ wert }}" {% if status == wert %}selected{% endif %}>Status: {{ text }}</option>{% endfor %}
+    </select>
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  <a class="knopf" href="{% url 'rechnungen:neu' %}">+ Neue Rechnung</a>
+  <a class="knopf zweit" href="{% url 'rechnungen:firmendaten' %}">Firmendaten</a>
+</div>
+<p class="grau">{{ anzahl }} Rechnung{{ anzahl|pluralize:"en" }}{% if suche %} gefunden für „{{ suche }}“{% endif %}.
+  {% if suche or status != "aktuell" %}<a href="{% url 'rechnungen:liste' %}">Filter löschen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th class="breit">Datum</th><th>Kunde</th><th class="breit">Projekt</th><th class="breit">Art</th><th style="text-align:right">Brutto</th><th>Status</th></tr>
+  {% for r in seite %}
+  <tr class="klickbar" onclick="location.href='{{ r.get_absolute_url }}'">
+    <td class="nowrap"><a href="{{ r.get_absolute_url }}">{{ r.nummer|default:"(Entwurf)" }}</a></td>
+    <td class="breit nowrap">{{ r.datum|date:"d.m.Y"|default:"" }}</td>
+    <td>{{ r.kunde.name }}</td>
+    <td class="breit">{{ r.projekt.projektnr }}</td>
+    <td class="breit">{{ r.titel }}</td>
+    <td class="nowrap" style="text-align:right">{% if r.brutto is not None %}{{ r.brutto|floatformat:"2g" }} €{% endif %}</td>
+    <td>{% if r.ist_festgeschrieben %}🔒 {% endif %}{{ r.get_status_display }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="7">{% if suche %}Keine Rechnung passt zu „{{ suche }}“.{% else %}Noch keine Rechnungen. Oben auf „+ Neue Rechnung“ tippen.{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+{% if seite.paginator.num_pages > 1 %}
+<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}&suche={{ suche|urlencode }}&status={{ status|urlencode }}">← zurück</a>{% endif %}
+   Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+   {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}&suche={{ suche|urlencode }}&status={{ status|urlencode }}">weiter →</a>{% endif %}</p>
+{% endif %}
+{% endblock %}

@@ -51,8 +51,11 @@ def liste(request):
 
 def detail(request, pk):
     projekt = get_object_or_404(Projekt.objects.select_related("kunde"), pk=pk)
+    darf_rechnungen = request.user.hat_rolle(Rolle.CHEF, Rolle.ADMIN, Rolle.BUCHHALTUNG)
     return render(request, "projekte/detail.html", {
         "projekt": projekt, "darf_bearbeiten": darf_bearbeiten(request.user),
+        "darf_rechnungen": darf_rechnungen,
+        "rechnungen": projekt.rechnungen.exclude(status="Verworfen") if darf_rechnungen else [],
         **nachbarn(Projekt.objects.order_by("-projektnr"), projekt),
     })
 

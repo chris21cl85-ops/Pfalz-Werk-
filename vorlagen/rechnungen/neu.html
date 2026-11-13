@@ -1,0 +1,44 @@
+{% extends "basis.html" %}
+{% block titel %}Neue Rechnung{% endblock %}
+{% block pfad %} › <a href="{% url 'rechnungen:liste' %}">Rechnungen</a> › Neue Rechnung{% endblock %}
+{% block inhalt %}
+<style>
+  .wahl > div { display:flex; flex-direction:column; gap:8px; }
+  .wahl label { font-weight:400; display:flex; gap:10px; align-items:center; margin:0; background:#fff;
+                border:1px solid var(--rand); border-radius:8px; padding:10px 14px; max-width:520px; cursor:pointer; }
+  .wahl input[type=radio] { width:22px; height:22px; }
+</style>
+<h1>Neue Rechnung</h1>
+{% if firmendaten_fehlen %}
+<div class="meldung error">Hinweis: In den Firmendaten fehlt noch {{ firmendaten_fehlen|join:", " }}.
+  Den Entwurf können Sie trotzdem anlegen – festschreiben geht erst, wenn alles da ist.
+  <a href="{% url 'rechnungen:firmendaten' %}">Firmendaten ergänzen</a></div>
+{% endif %}
+<form method="post" class="karte">{% csrf_token %}
+  {% if formular.non_field_errors %}<div class="meldung error">{{ formular.non_field_errors|join:" " }}</div>{% endif %}
+  {% for feld in formular %}
+    <div id="feld-{{ feld.name }}">
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>
+    {% if feld.name == "art" or feld.name == "zahlungsziel" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+    {% if feld.name == "projekt" %}<div class="hilfe">Der Kunde wird aus dem Projekt übernommen.</div>{% endif %}
+    {% if feld.name == "abschlag_prozent" %}<div class="hilfe">Üblich: 30 oder 50.</div>{% endif %}
+    {% if feld.name == "auftragswert" %}<div class="hilfe">Netto, mit Komma, z. B. 12500,00. Nur für Abschlags- und Schlussrechnung.</div>{% endif %}
+    {% if feld.name == "leistungszeitraum" %}<div class="hilfe">z. B. 11/2026 oder 01.10.–15.11.2026</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  <p><button class="knopf" type="submit">Entwurf anlegen</button>
+     <a class="knopf zweit" href="{% url 'rechnungen:liste' %}">Abbrechen</a></p>
+  <p class="hilfe">Es entsteht erst ein Entwurf. Die Rechnungsnummer wird beim Festschreiben vergeben.</p>
+</form>
+<script>
+  // Felder für Abschlag/Schluss nur zeigen, wenn sie gebraucht werden
+  function artZeigen() {
+    const art = (document.querySelector('input[name=art]:checked') || {}).value;
+    document.getElementById('feld-abschlag_prozent').style.display = art === 'Abschlag' ? '' : 'none';
+    document.getElementById('feld-auftragswert').style.display = (art === 'Abschlag' || art === 'Schluss') ? '' : 'none';
+  }
+  document.querySelectorAll('input[name=art]').forEach(e => e.addEventListener('change', artZeigen));
+  artZeigen();
+</script>
+{% endblock %}

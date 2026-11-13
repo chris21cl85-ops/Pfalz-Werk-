@@ -1,0 +1,25 @@
+{% extends "basis.html" %}
+{% block titel %}Firmendaten – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'rechnungen:liste' %}">Rechnungen</a> › Firmendaten{% endblock %}
+{% block inhalt %}
+<h1>Firmendaten für Rechnungen</h1>
+<p class="grau">Diese Angaben stehen auf jeder Rechnung (Briefkopf, Bankverbindung, Steuernummer).
+  Eine schon geschriebene Rechnung behält die Angaben von damals.</p>
+{% if fehlt %}<div class="meldung error">Für Rechnungen fehlt noch: {{ fehlt|join:", " }}.</div>{% endif %}
+<form method="post" class="karte">{% csrf_token %}
+  {% for feld in formular %}
+    {% if feld.field.widget.input_type == "checkbox" %}
+      <label style="display:flex;gap:10px;align-items:center">{{ feld }} {{ feld.label }}</label>
+      <div class="hilfe">Haken nur setzen, wenn Sie keine Umsatzsteuer berechnen (§ 19 UStG).</div>
+    {% else %}
+      <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+      {{ feld }}
+    {% endif %}
+    {% if feld.help_text %}<div class="hilfe">{{ feld.help_text }}</div>{% endif %}
+    {% if feld.name == "rechnungs_praefix" %}<div class="hilfe">Nächste Rechnungsnummer wird: <b>{{ naechste_nummer }}</b></div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+  {% endfor %}
+  <p><button class="knopf" type="submit">Speichern</button>
+     <a class="knopf zweit" href="{% url 'rechnungen:liste' %}">Abbrechen</a></p>
+</form>
+{% endblock %}

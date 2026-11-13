@@ -26,4 +26,16 @@
 </dl>
 </div>
 {% if darf_bearbeiten %}<p><a class="knopf" href="{% url 'projekte:bearbeiten' projekt.pk %}">Bearbeiten</a></p>{% endif %}
+{% if darf_rechnungen %}
+<h2>Rechnungen zu diesem Projekt</h2>
+{% if rechnungen %}<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Art</th><th class="breit">Datum</th><th style="text-align:right">Brutto</th><th>Status</th></tr>
+  {% for r in rechnungen %}<tr class="klickbar" onclick="location.href='{{ r.get_absolute_url }}'">
+    <td><a href="{{ r.get_absolute_url }}">{{ r.nummer|default:"(Entwurf)" }}</a></td><td>{{ r.titel }}</td>
+    <td class="breit">{{ r.datum|date:"d.m.Y" }}</td>
+    <td style="text-align:right" class="nowrap">{% if r.brutto is not None %}{{ r.brutto|floatformat:"2g" }} €{% endif %}</td>
+    <td>{% if r.ist_festgeschrieben %}🔒 {% endif %}{{ r.get_status_display }}</td></tr>{% endfor %}
+</table></div>{% else %}<p class="grau">Noch keine Rechnung.</p>{% endif %}
+<p><a class="knopf zweit" href="{% url 'rechnungen:neu' %}?projekt={{ projekt.pk }}">+ Rechnung für dieses Projekt</a></p>
+{% endif %}
 {% endblock %}

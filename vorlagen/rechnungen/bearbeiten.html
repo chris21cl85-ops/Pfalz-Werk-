@@ -1,0 +1,49 @@
+{% extends "basis.html" %}
+{% block titel %}Entwurf bearbeiten{% endblock %}
+{% block pfad %} › <a href="{% url 'rechnungen:liste' %}">Rechnungen</a> › <a href="{{ r.get_absolute_url }}">{{ r }}</a> › Bearbeiten{% endblock %}
+{% block inhalt %}
+<style>
+  .wahl > div { display:flex; flex-direction:column; gap:8px; }
+  .wahl label { font-weight:400; display:flex; gap:10px; align-items:center; margin:0; background:#fff;
+                border:1px solid var(--rand); border-radius:8px; padding:10px 14px; max-width:520px; cursor:pointer; }
+  .wahl input[type=radio] { width:22px; height:22px; }
+  .posrahmen { border:1px solid var(--rand); border-radius:10px; padding:12px 16px; margin-bottom:12px; background:#fdfbf8; }
+  .posreihe { display:grid; grid-template-columns:110px 130px 170px; gap:12px; }
+  .posreihe label { margin-top:8px; }
+  @media (max-width:600px) { .posreihe { grid-template-columns:1fr 1fr; } }
+</style>
+<h1>{{ r.titel }} – Entwurf bearbeiten</h1>
+<p class="grau">{{ r.kunde.name }} · Projekt {{ r.projekt.projektnr }} – {{ r.projekt.name }}</p>
+<form method="post">{% csrf_token %}
+  <div class="karte">
+    {% for feld in kopf %}
+      <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+      {% if feld.name == "zahlungsziel" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+      {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+    {% endfor %}
+  </div>
+  <h2>Positionen</h2>
+  {{ satz.management_form }}
+  {% if satz.non_form_errors %}<div class="meldung error">{{ satz.non_form_errors|join:" " }}</div>{% endif %}
+  {% for f in satz %}
+  <div class="posrahmen">
+    {% for v in f.hidden_fields %}{{ v }}{% endfor %}
+    <b>{% if f.instance.pk %}Position {{ f.instance.pos }}{% else %}Neue Position (leer lassen, wenn nicht gebraucht){% endif %}</b>
+    <label for="{{ f.text.id_for_label }}">Beschreibung</label>{{ f.text }}
+    {% for e in f.text.errors %}<div class="fehler">{{ e }}</div>{% endfor %}
+    <div class="posreihe">
+      <div><label for="{{ f.menge.id_for_label }}">Menge</label>{{ f.menge }}{% for e in f.menge.errors %}<div class="fehler">{{ e }}</div>{% endfor %}</div>
+      <div><label for="{{ f.einheit.id_for_label }}">Einheit</label>{{ f.einheit }}</div>
+      <div><label for="{{ f.einzelpreis.id_for_label }}">Einzelpreis netto €</label>{{ f.einzelpreis }}{% for e in f.einzelpreis.errors %}<div class="fehler">{{ e }}</div>{% endfor %}</div>
+    </div>
+    {% if f.instance.pk %}<label style="display:flex;gap:10px;align-items:center;font-weight:400">{{ f.DELETE }} Diese Position entfernen</label>{% endif %}
+  </div>
+  {% endfor %}
+  <datalist id="liste-einheit">{% for e in einheiten %}<option value="{{ e }}">{% endfor %}</datalist>
+  <p class="hilfe">Preise mit Komma, z. B. 1250,00. Abzüge (z. B. bereits gezahlte Abschläge) mit Menge -1.
+     Mehr Positionen? „Speichern und weitere Positionen“ tippen – dann kommen drei neue leere Felder.</p>
+  <p><button class="knopf" type="submit">Speichern</button>
+     <button class="knopf zweit" type="submit" name="weiter" value="1">Speichern und weitere Positionen</button>
+     <a class="knopf zweit" href="{{ r.get_absolute_url }}">Abbrechen</a></p>
+</form>
+{% endblock %}

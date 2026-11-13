@@ -10,10 +10,12 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.8 (Etappe 1 komplett).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.0 (Etappe 2, Paket 1a).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
+- Achtung GitHub: Das Programm liegt in **`chris21cl85-ops/Pfalz-Werk-`** (mit Bindestrich am Ende).
+  `chris21cl85-ops/Pfalz-Werk` (ohne Bindestrich) ist ein leeres Projekt – dort nichts ablegen.
 
 ## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
 
@@ -36,7 +38,7 @@ Letzte Aktualisierung: 13.11.2026
 - Import-Gerüst: Excel hochladen → Probelauf (zeigt Blätter, Zeilen, Probleme) → „Daten übernehmen“
   (vorher Sicherung, danach Protokoll). Echte Blätter werden in Etappe 1 angebunden.
 - 64 automatische Tests, alle grün.
-- Auf GitHub: `chris21cl85-ops/Pfalz-Werk-` (privat), Zweig `main`.
+- Auf GitHub: `chris21cl85-ops/Pfalz-Werk-`, Zweig `main` (laut GitHub am 13.11.2026 **öffentlich** – siehe FEHLER.md Nr. 5).
 
 ### Abnahme
 - Von Chris am 09.11.2026 abgenommen („passt“). Programm läuft auf seinem Rechner.
@@ -101,9 +103,6 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - Noch NICHT übernommen (Etappe 3, Lager): Blatt „Lager“ – A Material-Nr., D Bestand, E Reserviert, I Lagerort.
 - 158 automatische Tests, alle grün.
 
-### Offen
-- Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
-
 ### Paket 4+5: Lieferanten und Mitarbeiter – ABGENOMMEN am 13.11.2026
 - Lieferanten: Liste/Suche, Karte mit allem Material des Lieferanten, Anlegen/Bearbeiten (Adresse, Portal,
   unsere Kunden-Nr., Zahlungsziel, Skonto). Sehen/bearbeiten: Chef, Admin, Buchhaltung, Meister.
@@ -123,23 +122,64 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   Material AE Meldebestand, AG Bestell-/Gebindegröße, AJ Referenzpreis netto, AM Preisart, AN Verlässlichkeit.
 - 175 automatische Tests, alle grün.
 
+## Etappe 2 – Geld: IN ARBEIT
+
+### Paket 1a: Rechnungen (Firmendaten, Entwurf, Festschreiben, PDF) – GEBAUT 13.11.2026, Abnahme offen
+Fachliche Vorlage: Makro `PW_Rechnung.bas` (Drive, Stand 26.10.2026), vollständig gelesen.
+- Neue Kachel „Rechnungen“ und „Firmendaten“ (Bereich Geld). Rechte wie `Darf()` im Makro: Chef, Admin, Buchhaltung.
+  Meister/Mitarbeiter sehen Rechnungen nicht (auch nicht auf der Projektkarte).
+- **Firmendaten** (20 Felder wie FDNAMEN im Makro): Firma, Inhaber, Adresse, Telefon, E-Mail, Steuernr., USt-IdNr.,
+  IBAN/BIC/Bank, Zahlungsziel, Kleinunternehmer, USt-Satz, Präfix, letzte Rechnungsnummer, Fußtext, Mahngebühr.
+  Pflicht für Rechnungen: Firma, Straße, PLZ, Ort, IBAN, Steuernr. oder USt-IdNr. Letzte Nummer darf nur steigen.
+  Excel-Import Blatt „Firmendaten“ (A Feld, B Wert, ab Zeile 4), Zuordnung über Feldnamen; füllt nur leere Felder;
+  unbekannte Feldnamen werden im Import-Bericht genannt (Excel hat 24 Zeilen, Makro nutzt 20).
+- **Ablauf**: „+ Neue Rechnung“ (oder von der Projektkarte) → Art wählen → **Entwurf** (ohne Nummer, frei änderbar,
+  Vorschau-PDF mit Aufdruck ENTWURF) → Haken „geprüft“ → **Festschreiben**.
+  - Arten wie im Makro: Rechnung (Positionen frei, max. 25), Abschlagsrechnung (x % vom Auftragswert, Text wie Makro,
+    § 632a BGB), Schlussrechnung (Auftragswert minus alle festgeschriebenen Abschläge als Minuspositionen).
+    Den Auftragswert gibt man von Hand ein (Blatt „Aufträge“ gibt es im Programm noch nicht); er wird fürs Projekt
+    gemerkt und bei der nächsten Rechnung vorgeschlagen.
+  - Zahlungsziele wie Makro: sofort / 14 / 30 Tage / 14 Tage mit 2 % Skonto in 7 Tagen. Vorbelegung aus Firmendaten.
+  - Beim Festschreiben: Nummer `Präfix + Jahr + - + 4 Stellen` (RE-2026-0001), fortlaufend über die Firmendaten-Nummer
+    (wie B21 im Makro, keine Lücken, keine Doppelten); Datum, Fälligkeit, Summen (Position auf Cent, USt auf Netto),
+    Kopie von Firmen- und Kundenanschrift, PDF und **Prüfsumme** (SHA-256 über Inhalt + PDF) werden gespeichert.
+  - Danach **gesperrt**: Ändern/Löschen von Rechnung und Positionen ist technisch unmöglich (auch an der Oberfläche
+    vorbei). Prüfsumme wird auf der Rechnungsseite angezeigt (✔ / ✖ bei Manipulation).
+  - Entwürfe werden nicht gelöscht, sondern „verworfen“ (bekommen nie eine Nummer).
+  - PDF wie Drucken() im Makro: Briefkopf, Absenderzeile, Anschrift, Angaben rechts, Positionstabelle, Summen,
+    Zahlungstext mit Fälligkeit/Skonto, § 19 UStG (Kleinunternehmer), § 14b UStG (Privatkunden), Fußtext,
+    Fußzeile mit Firma/Bank/Steuernummer. PDF liegt in der Datenbank → ist in jeder Sicherung enthalten.
+  - Protokoll: Entwurf angelegt/geändert/verworfen, festgeschrieben (mit Beträgen und Prüfsumme), PDF abgerufen,
+    Firmendaten geändert.
+- Neues Paket `reportlab` (PDF) – wird beim Start automatisch installiert.
+- 213 automatische Tests, alle grün.
+
+### So testest du es (Paket 1a)
+Vorher: `PFALZ-WERK starten.bat` doppelklicken (lädt die neue Fassung). Im Navi oben muss „Fassung 2.0“ stehen.
+1. Kachel **Firmendaten** → alle Felder ausfüllen (echte Daten tippst du selbst) → „Speichern“.
+   Oder: Excel-Import erneut durchlaufen lassen → Firmendaten werden aus der Excel übernommen.
+2. Ein Projekt öffnen → unten „+ Rechnung für dieses Projekt“ → Art „Rechnung“ → „Entwurf anlegen“ →
+   eine Position eintragen (z. B. „Test“, Menge 1, Preis 100,00) → „Speichern“.
+3. „Vorschau-PDF“ → PDF mit rotem Aufdruck ENTWURF prüfen.
+4. Haken „geprüft“ setzen → „Rechnung festschreiben“ → Nummer RE-2026-…, „PDF ansehen“, grüner Haken „Prüfsumme“.
+   Hinweis: Eine festgeschriebene Test-Rechnung verbraucht eine echte Nummer und bleibt für immer (Storno kommt in
+   Paket 3). Zum Testen am besten erst mit einer Kopie arbeiten – oder bewusst die erste echte Rechnung nehmen.
+5. „Abschlagsrechnung“ mit Auftragswert 10.000,00 und 30 % → Entwurf zeigt 3.000,00 € netto.
+
 ## Nächstes Paket
-**Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
-Erstellen, XRechnung). Vorhandener VBA-Code liegt in Chris' Google Drive (neueste Stände 04.11.2026 21:37,
-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3) – zu Beginn von Etappe 2 lesen und fachlich übernehmen:
-- **PW_Rechnung.bas** (94 KB, Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, ggf. DATEV
-- **PW_Eingang.bas** (64 KB, Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen
-- DATEV-EXTF: Volltextsuche nach „EXTF“ fand nur diese beiden Module → DATEV-Logik steckt vermutlich darin.
-Vorlage laut doku/EXCEL_AUFBAU (Blätter 107–117, alle versteckt, Rechnungen/Zahlungen noch LEER → kein Import):
-- Firmendaten: A Feld, B Wert, C Hinweis (24 Einträge) → übernehmen.
-- Rechnungen (Kopf Z.3): RE-Nr, Datum, Art, Projekt-ID, Auftrags-ID, Kunden-ID, Kunde, Kundentyp, Leistungszeitraum,
-  Netto, USt %, USt, Brutto, Ziel Tage, Fällig, Bezahlt, Offen, Status, Mahnstufe, Mahndatum, Storno von,
-  Storniert durch, PDF, XML, erstellt von, Skonto %, Skonto Tage, Prüfsumme, Festgeschrieben.
-- Rechnungspositionen: RE-Nr, Pos, Text, Menge, Einheit, Einzelpreis, Gesamt, USt %.
+**Etappe 2, Paket 1b: XRechnung** (CII-XML zur festgeschriebenen Rechnung). Vorlage: `XmlSchreiben()`,
+`Einheitcode()`, `AdrXml()` in `PW_Rechnung.bas` (Zeilen ~1116–1230). Im Makro wahlweise per Schalter „E-Rechnung“;
+braucht Telefon und E-Mail in den Firmendaten. XML gehört mit in die Prüfsumme → beim Festschreiben erzeugen.
+Danach: Paket 2 Zahlungen (Teil-/Skontozahlung, Status offen/bezahlt), Paket 3 Mahnungen + Storno
+(beide Logiken stehen in PW_Rechnung.bas: ZahlungBuchen, Mahnen, Stornieren), Paket 4 Eingangsrechnungen
+(PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
+Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
+- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, Zahlung, Mahnung, Storno
+- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF
+Excel-Blätter 107–117 (alle versteckt; Rechnungen/Zahlungen LEER → kein Import nötig):
 - Zahlungen: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto, Konto, erfasst von, Notiz.
 - Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto, USt %,
   USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.
-- Belegprotokoll: Zeit, Benutzer, Beleg, Aktion, Details (→ eigenes Protokoll im Programm).
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

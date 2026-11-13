@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "material",
     "lieferanten",
     "mitarbeiter",
+    "rechnungen",
 ]
 
 MIDDLEWARE = [

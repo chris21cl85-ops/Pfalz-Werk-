@@ -1,0 +1,74 @@
+{% extends "basis.html" %}
+{% block titel %}{{ r }} – Rechnungen{% endblock %}
+{% block pfad %} › <a href="{% url 'rechnungen:liste' %}">Rechnungen</a> › {{ r }}{% endblock %}
+{% block inhalt %}
+<div class="leiste"><a class="pfeil" href="{% url 'rechnungen:liste' %}">↑ Alle Rechnungen</a></div>
+<h1>{{ r.titel }} {% if r.nummer %}{{ r.nummer }}{% endif %}
+  {% if r.ist_festgeschrieben %}<span class="marke-inaktiv">🔒 festgeschrieben</span>
+  {% elif r.ist_entwurf %}<span class="marke-inaktiv">Entwurf</span>
+  {% else %}<span class="marke-inaktiv">{{ r.get_status_display }}</span>{% endif %}</h1>
+
+<div class="karte">
+<dl class="daten">
+  <dt>Kunde</dt><dd><a href="{{ r.kunde.get_absolute_url }}">{{ r.kunde.kundennr }} – {{ r.kunde.name }}</a></dd>
+  <dt>Projekt</dt><dd><a href="{{ r.projekt.get_absolute_url }}">{{ r.projekt.projektnr }} – {{ r.projekt.name }}</a></dd>
+  {% if r.ist_festgeschrieben %}
+  <dt>Rechnungsdatum</dt><dd>{{ r.datum|date:"d.m.Y" }}</dd>
+  <dt>Fällig am</dt><dd>{{ r.faellig|date:"d.m.Y" }}{% if r.skonto_prozent %} · {{ r.skonto_prozent|floatformat:"-2" }} % Skonto bis {{ r.skonto_tage }} Tage{% endif %}</dd>
+  <dt>Anschrift</dt><dd>{{ r.empfaenger }}</dd>
+  {% else %}
+  <dt>Zahlungsziel</dt><dd>{{ r.zahlungsziel_text }}</dd>
+  {% endif %}
+  <dt>Leistungszeitraum</dt><dd>{{ r.leistungszeitraum|default:"–" }}</dd>
+  {% if r.auftragswert %}<dt>Auftragswert netto</dt><dd>{{ r.auftragswert|floatformat:"2g" }} €</dd>{% endif %}
+</dl>
+</div>
+
+<h2>Positionen</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Pos</th><th>Beschreibung</th><th style="text-align:right">Menge</th><th>Einheit</th><th style="text-align:right">Einzelpreis</th><th style="text-align:right">Gesamt</th></tr>
+  {% for p in positionen %}
+  <tr><td>{{ p.pos }}</td><td style="white-space:pre-line">{{ p.text }}</td>
+      <td style="text-align:right">{{ p.menge|floatformat:"-3g" }}</td><td>{{ p.einheit }}</td>
+      <td class="nowrap" style="text-align:right">{{ p.einzelpreis|floatformat:"2g" }} €</td>
+      <td class="nowrap" style="text-align:right">{{ p.gesamt|floatformat:"2g" }} €</td></tr>
+  {% empty %}<tr><td colspan="6">Noch keine Positionen.</td></tr>
+  {% endfor %}
+  <tr><td colspan="5" style="text-align:right">Summe netto</td><td class="nowrap" style="text-align:right">{{ summen.netto|floatformat:"2g" }} €</td></tr>
+  <tr><td colspan="5" style="text-align:right">USt {{ summen.ust_satz|floatformat:"-2" }} %</td><td class="nowrap" style="text-align:right">{{ summen.ust|floatformat:"2g" }} €</td></tr>
+  <tr><th colspan="5" style="text-align:right">Rechnungsbetrag</th><th class="nowrap" style="text-align:right">{{ summen.brutto|floatformat:"2g" }} €</th></tr>
+</table></div>
+
+{% if r.ist_festgeschrieben %}
+<div class="karte" style="margin-top:20px">
+  <p><a class="knopf" href="{% url 'rechnungen:pdf' r.pk %}" target="_blank">📄 PDF ansehen</a>
+     <a class="knopf zweit" href="{% url 'rechnungen:pdf' r.pk %}?laden=1">PDF herunterladen</a></p>
+  <p class="grau">Festgeschrieben am {{ r.festgeschrieben_am|date:"d.m.Y H:i" }} von {{ r.festgeschrieben_von.get_full_name|default:r.festgeschrieben_von.username }}.
+    Diese Rechnung kann nicht mehr geändert werden – Korrekturen später nur per Storno.</p>
+  {% if pruefsumme_ok %}<p style="color:var(--gruen)">✔ Prüfsumme in Ordnung – die Rechnung ist unverändert.</p>
+  {% else %}<p class="fehler">✖ Prüfsumme stimmt nicht! Die gespeicherte Rechnung wurde verändert. Bitte sofort den Chef informieren.</p>{% endif %}
+</div>
+{% elif r.ist_entwurf %}
+<div class="karte" style="margin-top:20px">
+  <p><a class="knopf" href="{% url 'rechnungen:bearbeiten' r.pk %}">✎ Entwurf bearbeiten</a>
+     <a class="knopf zweit" href="{% url 'rechnungen:pdf' r.pk %}" target="_blank">📄 Vorschau-PDF</a></p>
+  <h2 style="margin-top:10px">Festschreiben</h2>
+  {% if fehlt %}
+    <div class="meldung error">Noch nicht möglich:<ul>{% for f in fehlt %}<li>{{ f }}</li>{% endfor %}</ul>
+      {% if "Firmendaten" in fehlt|join:" " %}<a href="{% url 'rechnungen:firmendaten' %}">Firmendaten ergänzen</a>{% endif %}</div>
+  {% else %}
+  <form method="post" action="{% url 'rechnungen:festschreiben' r.pk %}">{% csrf_token %}
+    <p>Die Rechnung bekommt die Nummer <b>{{ naechste_nummer }}</b> und das heutige Datum.
+       Danach ist sie <b>gesperrt</b> – Änderungen sind nur noch per Storno möglich.</p>
+    <label style="display:flex;gap:10px;align-items:center;font-weight:400">
+      <input type="checkbox" name="bestaetigt" value="1" required> Ich habe die Rechnung (Vorschau-PDF) geprüft.</label>
+    <p><button class="knopf" type="submit">🔒 Rechnung festschreiben</button></p>
+  </form>
+  {% endif %}
+  <form method="post" action="{% url 'rechnungen:verwerfen' r.pk %}" onsubmit="return confirm('Diesen Entwurf wirklich verwerfen?')" style="margin-top:20px">{% csrf_token %}
+    <button class="knopf zweit" type="submit">Entwurf verwerfen</button>
+    <span class="hilfe">Der Entwurf wird nicht gelöscht, sondern als „Verworfen“ abgelegt.</span>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
