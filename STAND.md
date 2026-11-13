@@ -125,7 +125,11 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 
 ## Nächstes Paket
 **Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
-Erstellen, XRechnung). Vorher: vorhandenen XRechnung-/DATEV-Code von Chris bekommen.
+Erstellen, XRechnung). Vorhandener VBA-Code liegt in Chris' Google Drive (neueste Stände 04.11.2026 21:37,
+Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3) – zu Beginn von Etappe 2 lesen und fachlich übernehmen:
+- **PW_Rechnung.bas** (94 KB, Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, ggf. DATEV
+- **PW_Eingang.bas** (64 KB, Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen
+- DATEV-EXTF: Volltextsuche nach „EXTF“ fand nur diese beiden Module → DATEV-Logik steckt vermutlich darin.
 Vorlage laut doku/EXCEL_AUFBAU (Blätter 107–117, alle versteckt, Rechnungen/Zahlungen noch LEER → kein Import):
 - Firmendaten: A Feld, B Wert, C Hinweis (24 Einträge) → übernehmen.
 - Rechnungen (Kopf Z.3): RE-Nr, Datum, Art, Projekt-ID, Auftrags-ID, Kunden-ID, Kunde, Kundentyp, Leistungszeitraum,
