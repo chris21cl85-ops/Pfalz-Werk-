@@ -104,12 +104,16 @@ def mappe_bauen(tmp_path):
     ma = mappe.create_sheet("Mitarbeiter")
     ma.append(["TECHNISCHE KOMPATIBILITÄTSANSICHT"]); ma.append(["Navigation"])
     ma.append(["Kuerzel", "Name", "Rolle", "Team-taeglich verfuegbar", "Telefon", "Kann Montage leiten",
-               "Hinweis", "Verfuegbarkeit", "Besonderheit", "Uhrzeit"])
+               "Hinweis", "Verfuegbarkeit", "Besonderheit", "Uhrzeit", "", "Anzeige", "Arbeitszeitmodell",
+               "Einsatzmuster", "Abwesenheit / Einschränkung", "Freigabeberechtigt (auto)"])
     ma.append(["CL", "C.Lorenz", "Chef", "Ja", None, "Nein", "Systemeigentümer", "Vollzeit verfügbar",
                "Montag - Freitag", "07:00 - 12:00 & 12:45 - 15:45"])
     ma.append(["ADM", "Administrator", "Chef", "Ja", "+49 176 0000", "Nein",
                "Neutraler Startzugang · PIN dauerhaft 0000", "Vollzeit verfügbar", "Montag - Freitag", ""])
-    ma.append(["WM", "W.Müller", "Geselle", "Ja", None, "Ja", None, "Vollzeit verfügbar", "Montag - Freitag", ""])
+    ma.append(["WM", "W.Müller", "Geselle", "Ja", None, "Ja", None, "Vollzeit verfügbar", "Montag - Freitag", "",
+               None, "WM – W.Müller", "Vollzeit 40 h", "Werkstatt + Montage", "Keine Überkopfarbeit", "Nein"])
+    for _ in range(30):  # Formelzeilen ohne Person
+        ma.append([None, None, None, None, None, None, None, "Vollzeit verfügbar", None, None, None, "–"])
     ds = mappe.create_sheet("Dashboard Steuerung")
     for _ in range(5):
         ds.append([])
@@ -139,6 +143,7 @@ def blatt(lauf, name):
 def test_import_mitarbeiter_vertragsdaten_lieferanten(chef_client, tmp_path):
     lauf = pruefen(chef_client, mappe_bauen(tmp_path))
     assert blatt(lauf, "Mitarbeiter")["neu"] == 3
+    assert blatt(lauf, "Mitarbeiter")["fehler"] == []  # Formelzeilen ohne Person zählen nicht
     assert blatt(lauf, "Dashboard Steuerung")["geaendert"] == 2
     assert "2 Lieferant(en) neu: Wickert, Holz Huber" in blatt(lauf, "Material")["zusatz"]
     chef_client.post(reverse("importe:uebernehmen", args=[lauf.pk]))
@@ -149,6 +154,8 @@ def test_import_mitarbeiter_vertragsdaten_lieferanten(chef_client, tmp_path):
     assert cl.wochenstunden == 40 and cl.urlaubstage == 30
     wm = Mitarbeiter.objects.get(kuerzel="WM")
     assert wm.kann_montage_leiten and wm.wochenstunden == Decimal("38.5") and wm.eintritt == dt.date(2023, 9, 1)
+    assert (wm.arbeitszeitmodell, wm.einsatzmuster, wm.einschraenkung) == (
+        "Vollzeit 40 h", "Werkstatt + Montage", "Keine Überkopfarbeit")
     adm = Mitarbeiter.objects.get(kuerzel="ADM")
     assert "0000" not in adm.hinweise and "****" in adm.hinweise
     # PINs werden nirgends gespeichert

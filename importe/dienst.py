@@ -34,6 +34,10 @@ class Importer:
     startzeile: int = 2
     endzeile: int | None = None
 
+    def zeile_leer(self, zeile: dict) -> bool:
+        """True = Zeile still überspringen (z. B. reine Formelzeilen ohne Nummer und Name)."""
+        return False
+
     def zeile_pruefen(self, zeile: dict) -> list[str]:
         """Liefert Fehlermeldungen für eine Zeile (leer = in Ordnung)."""
         return [f"„{s}“ fehlt" for s in self.pflichtspalten if zeile.get(s) in (None, "")]
@@ -150,6 +154,8 @@ def ausfuehren(pfad, probelauf=True) -> dict:
                 imp = klasse()
                 zeilen = _spalten_zeilen(blatt, imp) if imp.spalten else _zeilen(blatt, imp.kopfzeile)
                 for nr, zeile in zeilen:
+                    if imp.zeile_leer(zeile):
+                        continue
                     eintrag["zeilen"] += 1
                     fehler = imp.zeile_pruefen(zeile)
                     if fehler:

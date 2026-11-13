@@ -10,7 +10,8 @@ class MitarbeiterFormular(forms.ModelForm):
     class Meta:
         model = Mitarbeiter
         fields = ["kuerzel", "name", "rolle", "telefon", "team_taeglich_verfuegbar", "kann_montage_leiten",
-                  "verfuegbarkeit", "arbeitstage", "arbeitszeit", "eintritt", "wochenstunden", "urlaubstage",
+                  "verfuegbarkeit", "arbeitstage", "arbeitszeit", "arbeitszeitmodell", "einsatzmuster",
+                  "einschraenkung", "eintritt", "wochenstunden", "urlaubstage",
                   "stundensatz", "benutzer", "hinweise", "aktiv"]
         widgets = {"hinweise": forms.Textarea(attrs={"rows": 3}), "eintritt": DatumFeld()}
 

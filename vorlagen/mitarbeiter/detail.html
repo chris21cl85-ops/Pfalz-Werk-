@@ -16,6 +16,9 @@
   <dt>Kann Montage leiten</dt><dd>{{ m.kann_montage_leiten|yesno:"Ja,Nein" }}</dd>
   <dt>Verfügbarkeit</dt><dd>{{ m.verfuegbarkeit|default:"–" }}</dd>
   <dt>Arbeitstage / -zeit</dt><dd>{{ m.arbeitstage|default:"–" }}{% if m.arbeitszeit %} · {{ m.arbeitszeit }}{% endif %}</dd>
+  <dt>Arbeitszeitmodell</dt><dd>{{ m.arbeitszeitmodell|default:"–" }}</dd>
+  <dt>Einsatzmuster</dt><dd>{{ m.einsatzmuster|default:"–" }}</dd>
+  <dt>Abwesenheit / Einschränkung</dt><dd>{{ m.einschraenkung|default:"–" }}</dd>
   <dt>Eintritt</dt><dd>{{ m.eintritt|date:"d.m.Y"|default:"–" }}</dd>
   <dt>Wochenstunden</dt><dd>{{ m.wochenstunden|floatformat:"-2"|default:"–" }}</dd>
   <dt>Urlaubstage im Jahr</dt><dd>{{ m.urlaubstage|floatformat:"-1"|default:"–" }}</dd>

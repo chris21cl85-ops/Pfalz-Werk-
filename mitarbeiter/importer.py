@@ -1,7 +1,8 @@
 """Import der Mitarbeiter.
 
 Blatt „Mitarbeiter“ (Kopf Zeile 3, Daten ab Zeile 4): A Kürzel, B Name, C Rolle, D Team-täglich verfügbar,
-E Telefon, F Kann Montage leiten, G Hinweis, H Verfügbarkeit, I Besonderheit (Arbeitstage), J Uhrzeit.
+E Telefon, F Kann Montage leiten, G Hinweis, H Verfügbarkeit, I Besonderheit (Arbeitstage), J Uhrzeit,
+M Arbeitszeitmodell, N Einsatzmuster, O Abwesenheit/Einschränkung (P „Freigabeberechtigt“ ist eine Formel).
 Blatt „Dashboard Steuerung“ (ab Zeile 6, wie Makro MeinTag_Sync2/Vertragsfreigabe): A Kürzel,
 AB Eintritt, AD Wochenstunden, AJ Urlaub. PINs (Spalte M) werden bewusst NICHT übernommen.
 """
@@ -25,12 +26,17 @@ class MitarbeiterImporter(Importer):
     titel = "Mitarbeiter"
     reihenfolge = 40
     spalten = {"A": "kuerzel", "B": "name", "C": "rolle", "D": "team", "E": "telefon", "F": "montage",
-               "G": "hinweis", "H": "verfuegbarkeit", "I": "arbeitstage", "J": "arbeitszeit"}
+               "G": "hinweis", "H": "verfuegbarkeit", "I": "arbeitstage", "J": "arbeitszeit",
+               "M": "arbeitszeitmodell", "N": "einsatzmuster", "O": "einschraenkung"}
     startzeile = 4
-    endzeile = 300
+    endzeile = 1037
 
     def __init__(self):
         self.gesehen = set()
+
+    def zeile_leer(self, zeile):
+        # Das Blatt hat hunderte Formelzeilen ohne Person – die zählen nicht als Fehler
+        return not als_text(zeile["kuerzel"]) and not als_text(zeile["name"])
 
     def zeile_pruefen(self, zeile):
         kuerzel = als_text(zeile["kuerzel"])
@@ -59,6 +65,9 @@ class MitarbeiterImporter(Importer):
             verfuegbarkeit=als_text(zeile["verfuegbarkeit"]),
             arbeitstage=als_text(zeile["arbeitstage"]),
             arbeitszeit=als_text(zeile["arbeitszeit"]),
+            arbeitszeitmodell=als_text(zeile["arbeitszeitmodell"]),
+            einsatzmuster=als_text(zeile["einsatzmuster"]),
+            einschraenkung=als_text(zeile["einschraenkung"]),
         )
         return "neu"
 

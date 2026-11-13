@@ -10,7 +10,9 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.6 (Etappe 1 komplett).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.7 (Etappe 1 komplett).
+- **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
+  vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
 ## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
@@ -113,12 +115,25 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   leere Felder). PINs werden nicht übernommen; eine PIN im Hinweistext wird geschwärzt.
 - Import-Bericht zeigt „+ x ergänzt“ und neu angelegte Lieferanten; Blattvorschau (Zeilen 1–5) für alle
   nicht angebundenen Blätter, damit der Excel-Aufbau ohne Excel sichtbar ist.
+- Nachtrag 13.11. (Fassung 1.7): Mitarbeiter auch M Arbeitszeitmodell, N Einsatzmuster, O Abwesenheit/
+  Einschränkung; Formelzeilen ohne Kürzel/Name werden still übersprungen (Blatt hat ~1000 Formelzeilen).
+- Noch nicht übernommene Excel-Spalten (bei Bedarf nachziehen): Kunden H „Seit“, K „Kuerzel“;
+  Material AE Meldebestand, AG Bestell-/Gebindegröße, AJ Referenzpreis netto, AM Preisart, AN Verlässlichkeit.
 - 175 automatische Tests, alle grün.
 
 ## Nächstes Paket
 Nach Abnahme von Lieferanten + Mitarbeitern: **Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
-Erstellen, XRechnung). Vorher klären: vorhandenen XRechnung-/DATEV-Code von Chris bekommen; Firmendaten
-(Blatt „Firmendaten“, versteckt) und Blätter „Rechnungen“/„Rechnungspositionen“ (versteckt) per Blattvorschau ansehen.
+Erstellen, XRechnung). Vorher: vorhandenen XRechnung-/DATEV-Code von Chris bekommen.
+Vorlage laut doku/EXCEL_AUFBAU (Blätter 107–117, alle versteckt, Rechnungen/Zahlungen noch LEER → kein Import):
+- Firmendaten: A Feld, B Wert, C Hinweis (24 Einträge) → übernehmen.
+- Rechnungen (Kopf Z.3): RE-Nr, Datum, Art, Projekt-ID, Auftrags-ID, Kunden-ID, Kunde, Kundentyp, Leistungszeitraum,
+  Netto, USt %, USt, Brutto, Ziel Tage, Fällig, Bezahlt, Offen, Status, Mahnstufe, Mahndatum, Storno von,
+  Storniert durch, PDF, XML, erstellt von, Skonto %, Skonto Tage, Prüfsumme, Festgeschrieben.
+- Rechnungspositionen: RE-Nr, Pos, Text, Menge, Einheit, Einzelpreis, Gesamt, USt %.
+- Zahlungen: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto, Konto, erfasst von, Notiz.
+- Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto, USt %,
+  USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.
+- Belegprotokoll: Zeit, Benutzer, Beleg, Aktion, Details (→ eigenes Protokoll im Programm).
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

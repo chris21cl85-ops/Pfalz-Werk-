@@ -1,0 +1,1963 @@
+PFALZ-WERK - Aufbau aller Blätter (Stand der Datei vom 04.11.2026)
+Automatisch ausgelesen: Sichtbarkeit, belegter Bereich, Titel, Spaltenkopf mit Spaltenbuchstaben.
+
+1. Benutzerportal
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:P55  (93 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · BENUTZERPORTAL | Anmelden, persönlichen Arbeitsbereich öffnen und nur die zugewiesenen  | 👥 Personal-Leitstand
+   Spaltenkopf in Zeile 5 (3 Spalten), Datenzeilen darunter: 32
+     A: BENUTZER
+     B: Administrator
+     C: HINWEIS
+
+2. Start Hier
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q50  (29 Formeln)
+   Titel/Kopftexte: START | PFALZ-WERK | Heute · 4.11.2026
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+3. Release Leitstand
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H24  (26 Formeln)
+   Titel/Kopftexte: PFALZ-WERK V6.1 · RELEASE-LEITSTAND | DEV-27.15A · Geführter Produktivstart mit verbindlichem Rollen- und Re | ← Zurück Ablauf
+   Spaltenkopf in Zeile 5 (4 Spalten), Datenzeilen darunter: 16
+     A: SETUP-FORTSCHRITT
+     C: PROZESS-FORTSCHRITT
+     E: SYSTEMPRÜFUNG
+     G: RELEASE-STATUS
+
+4. Prozesscheck
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I125  (296 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DEV-25.4 · PILOTPROJEKT – BESTELLUNG, WARENEINGANG & LAGE | ← Zurück Cockpit | Weiter → Release
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 114
+     A: Nr.
+     B: Prozessschritt
+     C: Prüfhandlung
+     D: Erwartetes Ergebnis
+     E: Status
+     F: Bemerkung
+     G: Direkt öffnen
+     H: Projektname
+
+5. Systemcheck
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:G23  (6 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · REGRESSION- & ROLLENCHECK | ← Zurück Release | Weiter → Testzentrum
+   Spaltenkopf in Zeile 4 (7 Spalten), Datenzeilen darunter: 17
+     A: Nr.
+     B: Prüfbereich
+     C: Erwartetes Ergebnis
+     D: Chef
+     E: Meister
+     F: Administrator
+     G: Bemerkung
+
+6. Cockpit
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:S23  (34 Formeln)
+   Titel/Kopftexte: Administrator
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+7. Dashboard Start
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J14  (20 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DASHBOARD START | ← Zurück Benutzerportal | Weiter → Cockpit
+   Spaltenkopf in Zeile 3 (4 Spalten), Datenzeilen darunter: 10
+     A: Mitarbeiter
+     C: Rolle
+     F: EMPFOHLENER EINSTIEG
+     I: Heute
+
+8. Dashboard Steuerung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AL205  (782 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZENTRALE BENUTZERVERWALTUNG | Eine Person – ein Datensatz: Rolle, Modulzugriffe, Anmeldung, Arbeitsz | Vertragswerte sind betriebliche Eingaben und vor produktiver Planung m
+   Spaltenkopf in Zeile 4 (3 Spalten), Datenzeilen darunter: 12
+     A: 1 · BENUTZERKONTO, ROLLE UND MODULZUGRIFFE
+     R: 2 · MITARBEITER-, ARBEITSZEIT- UND EINSATZDATEN
+     AB: 3 · VERTRAG, SOLLZEIT UND ZEITKONTO
+
+9. Dashboard Planung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:G10  (15 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DASHBOARD PLANUNG / AV | ← Zurück Cockpit | Weiter → Projekte
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+10. Dashboard Produktion
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:G10  (12 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DASHBOARD PRODUKTION | ← Zurück Cockpit | Weiter → Routenplaner
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+11. Dashboard Material
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J30  (142 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DASHBOARD MATERIAL & LAGER | ← Zurück Cockpit | Weiter → Material
+   Spaltenkopf in Zeile 4 (6 Spalten), Datenzeilen darunter: 12
+     E: Unter Mindestbestand
+     F: Beschaffungsbedarf
+     G: Freigabe offen
+     H: Bestellbereit
+     I: Aktive Bestellungen
+     J: Offene Einlagerung
+
+12. Dashboard Inventur
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J25  (34 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DASHBOARD INVENTUR | ← Zurück Cockpit | Weiter → Inventur
+   Spaltenkopf in Zeile 3 (3 Spalten), Datenzeilen darunter: 9
+     A: Mitarbeiter
+     C: Rolle
+     E: Zugriff
+
+13. Produktion Leitstand
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H11  (23 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION LEITSTAND | ← Zurück Übergabeprüfung | Weiter → Arbeitsgänge
+   Spaltenkopf in Zeile 4 (7 Spalten), Datenzeilen darunter: 7
+     A: KENNZAHL
+     B: WERT
+     C: STATUS
+     E: AKTUELLER SCHRITT
+     F: MITARBEITER
+     G: STARTFREIGABE
+     H: PROBLEM
+
+14. Produktion Rechte
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H4  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION RECHTE | ← Zurück Dashboard Produktion | Weiter → Produktion
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 0
+     A: Mitarbeiter
+     B: Lesen
+     C: Arbeitsgang starten
+     D: Pause / Problem
+     E: Fertig melden
+     F: Zuweisen
+     G: Freigeben
+     H: Status
+
+15. Produktion Arbeitsgänge
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AJ205  (2605 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION ARBEITSGÄNGE | ← Zurück Fertigungsweg | Weiter → Qualität
+   Spaltenkopf in Zeile 5 (36 Spalten), Datenzeilen darunter: 12
+     A: AG-ID
+     B: Auftrags-ID
+     C: Projekt-ID
+     D: Bauteil / Bereich
+     E: Arbeitsgang
+     F: Reihenfolge
+     G: Mitarbeiter
+     H: Team
+     I: Planstart
+     J: Planende
+     K: Status
+     L: Priorität
+     M: Plan-Std.
+     N: Ist-Std.
+     O: Materialstatus
+     P: Problem / Grund
+     Q: Begonnen am
+     R: Fertig am
+     S: Bemerkung
+     T: Projekt-Link
+     U: Vorgänger AG-ID
+     V: Vorgänger bearbeitet von
+     W: Vorgänger fertig am
+     X: Vorgänger Status
+     Y: Vorgänger QM
+     Z: Startfreigabe
+     AA: Nächster AG-ID
+     AB: Nächster Schritt
+     AC: Mobil-Helfer
+     AD: Vorgangstyp
+     AE: Wartezeit Std.
+     AF: Frühester Start
+     AG: Zeitstatus
+     AH: Nacharbeit
+     AI: Prozesshinweis
+     AJ: Lohnkosten Ist (€)
+
+16. Produktion Arbeitsgangbibliothe
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H32  (4 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION ARBEITSGANGBIBLIOTHEK | ← Zurück Routenvorlagen | Weiter → Routenplaner
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 28
+     A: AG-CODE
+     B: Kategorie
+     C: Arbeitsgang
+     D: Typ
+     E: Standardfolge
+     F: QM danach?
+     G: Wartezeit möglich?
+     H: Hinweis
+
+17. Produktion Fertigungsroute
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:T11  (141 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION FERTIGUNGSROUTE | ← Zurück Übergabeprüfung | Weiter → Arbeitsgänge
+   Spaltenkopf in Zeile 4 (20 Spalten), Datenzeilen darunter: 0
+     A: Route-ID
+     B: Auftrags-ID
+     C: Projekt-ID
+     D: Bauteil / Baugruppe
+     E: Werkstoffgruppe
+     F: Schritt
+     G: AG-Code
+     H: Arbeitsgang
+     I: Typ
+     J: Vorgänger
+     K: Plan-Std.
+     L: Wartezeit Std.
+     M: QM erforderlich
+     N: Status
+     O: Mitarbeiter / Team
+     P: Bemerkung
+     Q: Operative AG-ID (Eingabe)
+     R: Vorgängerstatus (automatisch)
+     S: Startfreigabe (automatisch)
+     T: Nächster Schritt (automatisch)
+
+18. Produktion QM
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:O204  (204 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION QM | ← Zurück Arbeitsgänge | Weiter → Montageplan
+   Spaltenkopf in Zeile 4 (15 Spalten), Datenzeilen darunter: 0
+     A: QM-ID
+     B: Route-ID
+     C: Projekt-ID
+     D: Bauteil
+     E: Prüfpunkt
+     F: Prüfer (Eingabe)
+     G: Prüfdatum (Eingabe)
+     H: Ergebnis (Eingabe)
+     I: Abweichung / Mangel (Eingabe)
+     J: Nacharbeit nötig (Eingabe)
+     K: Nacharbeit erledigt (Eingabe)
+     L: Nachprüfung (Eingabe)
+     M: Freigabe (Eingabe)
+     N: AG-ID
+     O: Produktionsfreigabe (automatisch)
+
+19. Produktion Mobile
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:H24  (21 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION MOBILE | ← Zurück Produktion | Weiter → Qualität
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 17
+     A: MITARBEITER
+     B: AKTUELLER ARBEITSGANG
+     C: Bauteil
+     D: Arbeitsgang
+     E: Status
+     F: Material
+     G: AKTION / RÜCKMELDUNG
+     H: Bemerkung
+
+20. Kalender Leitstand
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:O27  (179 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZENTRALES TERMINZENTRUM | ← Zurück Zeitdaten | Weiter → Monatskalender
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 6
+     A: Ab Datum
+     C: Tage
+     E: Mitarbeiter
+     F: Alle
+     G: Bereich
+     H: Alle
+     I: Projekt
+     J: Alle
+
+21. Kalender Monat
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J28  (130 Formeln)
+   Titel/Kopftexte: ANSICHT · MONATSKALENDER | Keine Dateneingabe – Termine stammen aus der zentralen Termin- & Einsa | Monat wählen
+   Spaltenkopf in Zeile 5 (7 Spalten), Datenzeilen darunter: 0
+     B: Montag
+     C: Dienstag
+     D: Mittwoch
+     E: Donnerstag
+     F: Freitag
+     G: Samstag
+     H: Sonntag
+
+22. Kalender Woche
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J17  (95 Formeln)
+   Titel/Kopftexte: ANSICHT · WOCHENKALENDER | Keine Dateneingabe – Termine stammen aus der zentralen Termin- & Einsa | ← Zurück Monatskalender
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+23. Kalender Mobile
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:J14  (61 Formeln)
+   Titel/Kopftexte: ANSICHT · KALENDER MOBIL | Keine Dateneingabe – persönliche Termine stammen aus der zentralen Ter | ← Zurück Terminzentrum
+   Spaltenkopf in Zeile 6 (6 Spalten), Datenzeilen darunter: 0
+     A: Datum
+     B: Zeit
+     C: Aufgabe
+     D: Ort
+     E: Status
+     F: Konflikt
+
+24. Kalender Rechte
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I34  (274 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · KALENDER-RECHTE | ◀ Leitstand | Rechte werden aus Rolle und Mitarbeiterstamm abgeleitet.
+   Spaltenkopf in Zeile 4 (9 Spalten), Datenzeilen darunter: 0
+     A: Mitarbeiter
+     B: Rolle
+     C: Lesen
+     D: Termin anlegen
+     E: Termin ändern
+     F: Konflikte prüfen
+     G: Freigeben
+     H: Kalenderverwaltung
+     I: Hinweis
+
+25. Inventur Leitstand
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I16  (28 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR-LEITSTAND | ← Zurück Inventur | Weiter → Inventur Cockpit
+   Spaltenkopf in Zeile 4 (4 Spalten), Datenzeilen darunter: 4
+     A: Inventur-ID
+     C: Status
+     E: Bereich
+     G: Verantwortlich
+
+26. Inventur Rechte
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I12  (75 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR-RECHTE | ← Zurück Benutzer | Weiter → Inventur
+   Spaltenkopf in Zeile 4 (9 Spalten), Datenzeilen darunter: 0
+     A: Mitarbeiter
+     B: Rolle
+     C: Lesen
+     D: Zählen
+     E: Nachzählen
+     F: Prüfen
+     G: Freigeben
+     H: Abschluss
+     I: Status / Hinweis
+
+27. Inventur Start
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:G18  (18 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR START | ← Zurück Einstellungen | Weiter → Zählaufträge
+   Spaltenkopf in Zeile 5 (3 Spalten), Datenzeilen darunter: 11
+     A: Inventur-ID
+     C: Typ
+     E: Bereich
+
+28. Inventur Zählaufträge
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I103  (699 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR ZÄHLAUFTRÄGE | ← Zurück Inventur Start | Weiter → Inventur Mobile
+   Spaltenkopf in Zeile 3 (3 Spalten), Datenzeilen darunter: 1
+     A: Inventur-ID
+     C: Bereich
+     E: Status
+
+29. Inventur Mobile
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N106  (701 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR MOBILE | ← Zurück Zählaufträge | Weiter → Inventur Erfassung
+   Spaltenkopf in Zeile 3 (4 Spalten), Datenzeilen darunter: 2
+     A: Mitarbeiter
+     C: Inventur
+     E: Status
+     H: Fortschritt
+
+30. Inventur Nachzählung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N104  (1104 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR NACHZÄHLUNG | ← Zurück Abweichungen | Weiter → Inventur Abschluss
+   Spaltenkopf in Zeile 4 (14 Spalten), Datenzeilen darunter: 0
+     A: Inventur-ID
+     B: Material-ID
+     C: Bezeichnung
+     D: Soll
+     E: Erstzählung
+     F: Erstzähler
+     G: Bewertung
+     H: Nachzähler
+     I: Nachzählung
+     J: Vier-Augen
+     K: Status
+     L: Freigabe-Ist
+     M: Bemerkung
+     N: Quellzeile
+
+31. Inventur Abschluss
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N27  (32 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR ABSCHLUSS | ← Zurück Nachzählung | Weiter → Inventur Bericht
+   Spaltenkopf in Zeile 4 (3 Spalten), Datenzeilen darunter: 19
+     A: PRÜFPUNKT
+     B: WERT
+     C: STATUS
+
+32. Inventur Bericht
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:D19  (22 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTURBERICHT | ← Zurück Inventur Abschluss | Weiter → Inventur Historie
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+33. Kunden
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K97  (1039 Formeln)
+   Titel/Kopftexte: Kundenstammdaten | ← Zurück Anfrage | Weiter → Projekte
+   Spaltenkopf in Zeile 3 (11 Spalten), Datenzeilen darunter: 0
+     A: Kunden-ID
+     B: Name/Firma
+     C: Ansprechpartner
+     D: Telefon
+     E: E-Mail
+     F: Adresse
+     G: Kundentyp
+     H: Seit
+     I: Hinweise
+     J: Aktive Projekte
+     K: Kuerzel
+
+34. Neukundenprotokoll
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:S224  (922 Formeln)
+   Titel/Kopftexte: PFALZ-WERK — NEUKUNDENPROTOKOLL | ← Zurück Cockpit | Schönborn Christian
+   Spaltenkopf in Zeile 2 (3 Spalten), Datenzeilen darunter: 4
+     B: Schönborn Christian
+     I: ARBEITSABLAUF
+     J: ① Neukunde → ② Kunde → ③ Projekt → ④ Projektakte
+
+35. Projektakte
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AD35  (836 Formeln)
+   Titel/Kopftexte: PFALZ-WERK – PROJEKTAKTE V6 | Projektregister: Feldnamen links, Projekte wachsen nach rechts | ← Zurück Projekte
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+36. Projekte
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AN220  (1118 Formeln)
+   Titel/Kopftexte: Projekte & Vorgänge | ← Zurück Kunden | Weiter → Projektakte
+   Spaltenkopf in Zeile 2 (4 Spalten), Datenzeilen darunter: 4
+     F: Kunde auswählen → Daten prüfen → Projekt ergänzen → Projekta
+     J: ID-Generator: Anfrage zuordnen → Projektart + Start setzen →
+     Z: PROJEKTASSISTENT – GEFÜHRTER START
+     AB: AUSGEWÄHLTER KUNDE
+
+37. Auftraege
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AB100  (114 Formeln)
+   Titel/Kopftexte: Auftragserfassung | ← Zurück Kalkulation | Weiter → Personal
+   Spaltenkopf in Zeile 3 (27 Spalten), Datenzeilen darunter: 0
+     A: Auftrags-ID
+     B: Projekt-ID
+     C: Kunde
+     D: Leistung
+     E: Anforderung / Kurztext
+     F: Menge
+     G: Angebot netto
+     H: Auftragsstatus
+     I: Freigabe Kunde
+     J: Lieferung/Montage
+     K: Chef-Freigabe
+     L: Meister-Freigabe
+     M: Interner Status
+     N: Projekt
+     O: Freigabe
+     Q: Projekt-ID
+     R: Kunden-ID
+     S: Projektname
+     T: Leistung
+     U: Kurztext
+     V: Menge
+     W: Angebot netto
+     X: Status
+     Y: Kundenfreigabe
+     Z: Chef-Freigabe
+     AA: Meister-Freigabe
+     AB: Aktion
+
+38. Rollen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:M121  (112 Formeln)
+   Titel/Kopftexte: ROLLEN & BERECHTIGUNGEN · TECHNISCHE RECHTEMATRIX | ← Zurück Benutzer | Weiter → Benutzerportal
+   Spaltenkopf in Zeile 3 (12 Spalten), Datenzeilen darunter: 114
+     A: Rolle
+     B: Lesen
+     C: Anlegen
+     D: Ändern
+     E: Freigeben
+     F: Verwaltung
+     G: Hinweis
+     I: Aktive Benutzerrolle
+     J: Verwaltung
+     K: Freigeben
+     L: Ändern
+     M: Anlegen
+
+39. Mitarbeiter
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q1037  (2402 Formeln)
+   Titel/Kopftexte: TECHNISCHE KOMPATIBILITÄTSANSICHT · QUELLE: ZENTRALE BENUTZERVERWALTUN | ← Zurück Benutzer | Weiter → Teams
+   Spaltenkopf in Zeile 3 (15 Spalten), Datenzeilen darunter: 837
+     A: Kuerzel
+     B: Name
+     C: Rolle
+     D: Team-taeglich verfuegbar
+     E: Telefon
+     F: Kann Montage leiten
+     G: Hinweis
+     H: Verfuegbarkeit
+     I: Besonderheit
+     J: Uhrzeit
+     L: Anzeige (fuer Dropdowns)
+     M: Arbeitszeitmodell
+     N: Einsatzmuster
+     O: Abwesenheit / Einschränkung
+     P: Freigabeberechtigt (auto)
+
+40. Teams
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AY409  (9573 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · TEAMS, PERSONALBESETZUNG & KAPAZITÄTSGATE | INTELLIGENTE PERSONALAUSWAHL · EMPFEHLUNG | ← Zurück Mitarbeiter
+   Spaltenkopf in Zeile 2 (4 Spalten), Datenzeilen darunter: 104
+     U: Team-ID
+     W: Funktion
+     Y: Startdatum
+     AA: Teamtyp (auto)
+
+41. Montageplan
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:R254  (261 Formeln)
+   Titel/Kopftexte: Montageplan | ← Zurück Qualität | Weiter → Abschluss
+   Spaltenkopf in Zeile 3 (18 Spalten), Datenzeilen darunter: 0
+     A: Kunde (automatisch)
+     B: Projekt-ID (Eingabe)
+     C: Baustelle/Adresse (Eingabe)
+     D: Datum (Eingabe)
+     E: Beginn (Eingabe)
+     F: Ende (Eingabe)
+     G: Team-ID (Eingabe)
+     H: Mitarbeiter (automatisch)
+     I: Aufgaben (Eingabe)
+     J: Material (Eingabe)
+     K: Werkzeug (Eingabe)
+     L: Fahrzeug (Eingabe)
+     M: Hinweise (Eingabe)
+     N: Terminstatus (automatisch)
+     O: QM-Status (automatisch)
+     P: Montagefreigabe (automatisch)
+     Q: Montageergebnis (Eingabe)
+     R: Abschlussstatus (automatisch)
+
+42. Zeitplan
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AE500  (6857 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZENTRALE TERMIN-, EINSATZ- & KAPAZITÄTSDATENBANK | ← Zurück Personal | Weiter → Routenplaner
+   Spaltenkopf in Zeile 3 (31 Spalten), Datenzeilen darunter: 0
+     A: Termin-ID
+     B: Mitarbeiter
+     C: Datum
+     D: Start
+     E: Ende
+     F: Projekt-ID
+     G: Kunde
+     H: Aufgabe
+     I: Ort
+     J: Team-ID
+     K: Terminart
+     L: Status (Tag)
+     M: Konflikt?
+     N: Interne Sortierung
+     O: Rang je Mitarbeiter (chronologisch, ab heute)
+     P: Tagesverfügbarkeit
+     Q: Planungshinweis
+     R: Nächste Aktion
+     S: Kunden-ID
+     T: Projektname
+     U: Projektpate
+     V: Kalenderbereich
+     W: Externer Kontakt
+     X: Quelle / Herkunft
+     Y: Sichtbarkeit
+     Z: Bearbeitungsstatus
+     AA: Dauer h
+     AB: Tagessoll h
+     AC: Gebucht h
+     AD: Rest h
+     AE: Kapazitätsstatus
+
+43. Mein Tag
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J40  (81 Formeln)
+   Titel/Kopftexte: ANSICHT · MEIN TAG / MEIN ZEITPLAN | Persönlich gefilterte Ansicht – zentrale Pflege ausschließlich im Zeit | ← Zurück Wochenkalender
+   Spaltenkopf in Zeile 3 (4 Spalten), Datenzeilen darunter: 2
+     A: Mitarbeiter waehlen:
+     B: L. Schneider – Meister – 🟢 verfuegbar
+     D: (Termine ab heute, nächste 8 Einträge des gewählten Mitarbei
+     G: reiner Name:
+
+44. Protokoll
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:M7  (22 Formeln)
+   Titel/Kopftexte: Gesprächs- & Änderungsprotokoll | ← Zurück Projektakte | Weiter → Aenderungen
+   Spaltenkopf in Zeile 3 (13 Spalten), Datenzeilen darunter: 4
+     A: Datum
+     B: Projekt-ID
+     C: Art
+     D: Beteiligte
+     E: Ausgangslage / Gespräch
+     F: Änderung / Entscheidung
+     G: Auswirkung
+     H: Freigabe nötig
+     I: Verantwortlich
+     J: Rang (fortlaufend)
+     K: Anzahl gesamt
+     L: Rang (neueste zuerst)
+     M: Globaler Rang (neueste zuerst)
+
+45. Aufgaben
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K9  (10 Formeln)
+   Titel/Kopftexte: Aufgaben, Fortschritt & Übergabe | ← Zurück Aufträge | Weiter → Zeitplan
+   Spaltenkopf in Zeile 3 (11 Spalten), Datenzeilen darunter: 0
+     A: Aufgaben-ID
+     B: Projekt-ID
+     C: Aufgabe
+     D: Rolle
+     E: Verantwortlich
+     F: Fällig
+     G: Status
+     H: Priorität
+     I: Fortschritt
+     J: Übergabe / Hinweis
+     K: Sortierschluessel (offen, nach Faelligkeit)
+
+46. Material
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AS350  (7330 Formeln)
+   Titel/Kopftexte: Materialdatenbank · DEV-23.4.1 · Lagerstamm & Referenzpreise | ← Zurück Dashboard Material | Weiter → Materialbedarf
+   Spaltenkopf in Zeile 3 (45 Spalten), Datenzeilen darunter: 316
+     A: Material-ID
+     B: Kategorie
+     C: Bezeichnung
+     D: Einheit
+     E: ① EK / Einheit
+     F: Mindestbestand
+     G: ① Lieferant
+     H: ① Lieferzeit Tage
+     I: ① Preis-/Lieferhinweis
+     J: Lagerbestand
+     K: Reserviert
+     L: Verfuegbar
+     M: Offene Bestellung (Status)
+     N: Ampel
+     O: Gesamtbedarf alle Projekte
+     P: Bestandskonflikt
+     Q: Ampel-Symbol
+     R: Empfohlene Aktion
+     S: Lieferstatus (aus Bestellungen)
+     T: Untergruppe
+     U: Stärke mm
+     V: Format / Abmessung
+     W: Lagerartikel
+     X: Aktivstatus
+     Y: Beschaffungsart
+     Z: Aktiver Bedarf
+     AA: Geplanter Bedarf
+     AB: Offene Bestellung
+     AC: Beschaffungsbedarf
+     AD: Beschaffungsstatus
+     AE: Meldebestand
+     AF: Zielbestand
+     AG: Bestell-/Gebindegröße
+     AH: Lagerplatz
+     AI: ① Referenzpreis brutto
+     AJ: ① Referenzpreis netto
+     AK: ① Preisquelle
+     AL: ① Preisstand
+     AM: ① Preisart
+     AN: ① Verlässlichkeit
+     ... und 5 weitere Spalten
+
+47. Bedarfsplanung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q351  (5884 Formeln)
+   Titel/Kopftexte: PFALZ-WERK – MATERIALBEDARF & BESCHAFFUNGSENTSCHEIDUNG · DEV-25.4 | ← Zurück Material | Weiter → Bestellungen
+   Spaltenkopf in Zeile 4 (17 Spalten), Datenzeilen darunter: 0
+     A: Material-ID
+     B: Bezeichnung
+     C: Einheit
+     D: Lagerbestand
+     E: Reserviert
+     F: Verfügbar
+     G: Mindestbestand
+     H: FSL-Bedarf offen
+     I: Aktiver Bedarf
+     J: Geplanter Bedarf
+     K: Offene Bestellung
+     L: Beschaffungsbedarf
+     M: Entscheidung
+     N: Nächste Aktion
+     O: Projektbezug
+     P: Prüfung
+     Q: Einlagerung offen
+
+48. Stueckliste
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AG316  (4328 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · STÜCKLISTENZENTRUM · MATERIALBEDARF | ← Ansicht 1 Bauteile & Fertigung | Weiter → Kalkulation
+   Spaltenkopf in Zeile 3 (31 Spalten), Datenzeilen darunter: 16
+     A: Pos.
+     B: Projekt-ID
+     C: Material-ID
+     D: Bezeichnung
+     E: Menge
+     F: Einheit
+     G: EK / Einheit (Pilot: TEST)
+     H: Gesamt EK
+     I: Status
+     J: Material-Ampel (live)
+     K: Bestandskonflikt (live)
+     L: Projektstatus
+     M: Bedarfsart
+     N: Kunden-ID
+     O: Material-Suche
+     P: Material-ID
+     Q: Menge
+     R: Einheit
+     T: Projekt-ID
+     U: Kunden-ID
+     V: Kunde
+     W: Material-ID
+     X: Bezeichnung
+     Y: Menge
+     Z: Einheit
+     AA: Gesamt EK
+     AB: SCHNELLHILFE
+     AC: + NEU führt zur nächsten freien Position
+     AD: Projekt → Material-ID → Menge → Status
+     AF: Übergabe-ID
+     AG: Quellposition
+
+49. Bestellungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AU350  (13945 Formeln)
+   Titel/Kopftexte: Bestellübersicht | PFALZ-WERK – DEV-25.4 · PILOTBESTELLUNG, WARENEINGANG & LAGERBUCHUNG | ← Zurück Materialbedarf
+   Spaltenkopf in Zeile 3 (47 Spalten), Datenzeilen darunter: 290
+     A: Bestell-ID
+     B: Projekt-ID
+     C: Material-ID
+     D: Lieferant
+     E: Freigegeben / bestellt am
+     F: Bestellmenge
+     G: Einheit
+     H: ④ Erwarteter Liefertermin
+     I: Status (automatisch)
+     J: ④ Wareneingang am
+     K: Lieferstatus (live)
+     L: Vorkommen (ID)
+     M: ④ Geliefert kumuliert
+     N: Offene Menge
+     O: Bedarfsdeckung
+     P: Lagerbuchung
+     Q: Vorschlag
+     R: Material-ID
+     S: Bezeichnung
+     T: Lieferant
+     U: Einheit
+     V: Mindestbestand
+     W: Lagerbestand
+     X: Reserviert
+     Y: Aktiver Bedarf
+     Z: Geplanter Bedarf
+     AA: Offene Bestellung
+     AB: AUTO-Menge
+     AC: ② Bestellart
+     AD: ② Eigene Menge (bei Manuell)
+     AE: Bestellmenge
+     AF: Bestellgrund
+     AG: Projektbezug
+     AH: Freigabe (aus Freigaben)
+     AI: Berechtigungsprüfung
+     AJ: Freigabestatus
+     AK: Nächster Schritt
+     AL: Abweichung zu AUTO
+     AM: Kommentar
+     AN: Geliefert kumuliert
+     ... und 7 weitere Spalten
+
+50. Kalkulation
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AK300  (3288 Formeln)
+   Titel/Kopftexte: Kalkulation (Vor- / Auftrags- / Nachkalkulation) | ← Zurück  Stückliste | Weiter →  Aufträge
+   Spaltenkopf in Zeile 3 (28 Spalten), Datenzeilen darunter: 27
+     A: Projekt-ID
+     B: Materialkosten (Stueckliste)
+     C: Beschlaege/Sonstiges
+     D: Lohn Std.
+     E: Lohn EUR/Std
+     F: Lohnkosten
+     G: Maschinenkosten
+     H: Montagekosten
+     I: Fahrtkosten
+     J: Fremdleistungen
+     K: Zwischensumme Kosten
+     L: Zuschlag %
+     M: Risiko %
+     N: Kalkulierter VK
+     O: Angebot netto (Auftrag)
+     P: Marge EUR
+     Q: Marge %
+     R: Ist-Kosten (Nachkalk.)
+     S: Ist minus Sollkosten
+     U: Kalkulationsart
+     V: Kunde
+     W: Datum
+     X: Wirtschaftlichkeits-Ampel
+     Y: Kunden-ID
+     Z: Projektname
+     AA: Basis aus
+     AB: Übernahme / Hinweis
+     AH: DEV-25.5 · REGALWAND · BEISPIELKALKULATION
+
+51. Finanzen (Vorbereitung)
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:L300  (1386 Formeln)
+   Titel/Kopftexte: Pfalz-Werk Finanzen / Controlling — Vorbereitung (Zukunftsmodul) | ← Zurück Kalkulation | Weiter → Ablauf
+   Spaltenkopf in Zeile 3 (12 Spalten), Datenzeilen darunter: 0
+     A: Projekt-ID
+     B: Einnahmen (Ist)
+     C: Materialkosten (Ist)
+     D: Lohnkosten (Ist)
+     E: Fremdleistungen (Ist)
+     F: Maschinenkosten (Ist)
+     G: Fahrzeugkosten (Ist)
+     H: Sonstige Betriebskosten
+     I: Projektkosten gesamt
+     J: Auftragswert (Soll)
+     K: Deckungsbeitrag
+     L: geplant / tatsaechlich
+
+52. Lager
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:W350  (6946 Formeln)
+   Titel/Kopftexte: Lagerbestand | DEV-25.4 · WARENEINGANG & AUTOMATISCHE LAGERBUCHUNG | ← Zurück Bestellungen
+   Spaltenkopf in Zeile 3 (23 Spalten), Datenzeilen darunter: 4
+     A: Material-ID
+     B: Bezeichnung
+     C: Einheit
+     D: Istbestand
+     E: Reserviert
+     F: Verfügbar
+     G: Mindestbestand
+     H: Lagerstatus
+     I: Lagerort
+     J: Aktion
+     K: Bestell-ID
+     L: Material-ID
+     M: Bezeichnung
+     N: Bestellt
+     O: Geliefert kumuliert
+     P: Eingelagert kumuliert
+     Q: Rest Lieferung
+     R: Wareneingang
+     S: Lageraktion
+     T: Bestellstatus
+     U: ⑤ Einlagerung bestätigen
+     V: ⑤ Kumuliert eingelagert
+     W: ⑤ Startbestand / Korrektur
+
+53. Warnungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:M34  (100 Formeln)
+   Titel/Kopftexte: Warnungen & Risiken | ← Zurück Cockpit | Weiter → Ablauf
+   Spaltenkopf in Zeile 3 (13 Spalten), Datenzeilen darunter: 0
+     A: Warn-ID
+     B: Projekt-ID
+     C: Quelle
+     D: Warnung
+     E: Schwere
+     F: Auswirkung
+     G: Empfohlene Aktion
+     H: Status
+     I: Verantwortlich
+     J: Material-Bezug
+     K: Live-Status (aus Material/Lager)
+     L: Prioritaet (vereinheitlicht)
+     M: Verknuepfte Freigabe (Zeile)
+
+54. Freigaben
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AH350  (3560 Formeln)
+   Titel/Kopftexte: PROJEKTFREIGABEN · Vorgang prüfen und Entscheidung anklicken | BESTELLFREIGABEN · Menge prüfen und Entscheidung anklicken | ← Zurück Ablauf
+   Spaltenkopf in Zeile 3 (34 Spalten), Datenzeilen darunter: 289
+     A: Freigabe-ID
+     B: Projekt-ID
+     C: Gegenstand (Vorgang auswählen)
+     D: Angefordert von
+     E: Angefordert am
+     F: Entscheidung (anklicken)
+     G: Entschieden von (auto)
+     H: Entscheidungsdatum (auto)
+     I: Auflage / nötige Überarbeitung
+     J: Tage offen
+     K: Dringlichkeit
+     L: Vorgangs-ID (automatisch)
+     M: Freigabetyp
+     N: Wiedervorlage
+     O: Versionsprüfung
+     P: Status (automatisch)
+     Q: Nächster Schritt (anklicken)
+     R: Entscheidung
+     S: Entschieden von
+     T: Datum
+     U: Kommentar
+     V: Aktion
+     W: Freigabe-ID
+     X: Vorschlag
+     Y: Material-ID
+     Z: Gegenstand
+     AA: Bestellgrund
+     AB: Projektbezug
+     AC: Entscheidung (Button)
+     AD: Entschieden von (auto)
+     AE: Entscheidungsdatum (auto)
+     AF: Vorschlag / genehmigte Menge
+     AG: Grund / Rückfrage
+     AH: Verbindlicher Status
+
+55. Pruefprotokoll
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J271  (5 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZENTRALES TESTZENTRUM | ← Zurück Systemcheck | Weiter → Ablauf
+   Spaltenkopf in Zeile 3 (10 Spalten), Datenzeilen darunter: 236
+     A: Prüf-ID
+     B: Phase
+     C: Testfall
+     D: Soll
+     E: Ist (bei Test ausfüllen)
+     F: Ergebnis
+     G: Kritik / Abweichung
+     H: Maßnahme
+     I: Verantwortlich
+     J: Retest
+
+56. Listen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:BI202  (788 Formeln)
+   Titel/Kopftexte: Pfalz-Werk – Listen für Eingaben | ← Zurück Benutzer | Weiter → Ablauf
+   Spaltenkopf in Zeile 1 (4 Spalten), Datenzeilen darunter: 18
+     A: Pfalz-Werk – Listen für Eingaben
+     AZ: Kalender-Mitarbeiterfilter
+     BA: Kalender-Bereichfilter
+     BB: Kalender-Projektfilter
+
+57. andere
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AG16  (5 Formeln)
+   Titel/Kopftexte: 👷 Mitarbeiter | JA/Nein | Verfügbarkeiten
+   Spaltenkopf in Zeile 1 (28 Spalten), Datenzeilen darunter: 15
+     B: JA/Nein
+     C: Verfügbarkeiten
+     D: Bewertung
+     E: Verfügbarkeiten
+     F: Arbeitszeit von bis
+     G: Uhrzeit
+     H: Berufsschule von bis
+     I: Anstellung
+     J: Angestellt seit Datum
+     K: Quallifizierung / Lohn € Netto
+     L: Quallifizierung / Lohn € Brutto
+     M: Azubi Tariflohn Netto
+     N: Azubi Tariflohn Brutto
+     O: Arbeitszeitmodell
+     P: Projektstatus
+     Q: Freigabeentscheidung
+     R: Bestellstatus
+     S: Terminart
+     T: Priorität
+     U: Auftragsstatus
+     V: Kontaktart
+     W: Änderungstyp
+     X: Änderungsstatus
+     Y: Abschlussstatus
+     Z: Team-Typ
+     AA: Team-Status
+     AB: Projektfreigabe
+     AC: Dokumentstatus
+
+58. Aenderungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N100  (394 Formeln)
+   Titel/Kopftexte: PFALZ-WERK – ÄNDERUNGEN & KUNDENWÜNSCHE | ← Zurück Projektakte | Weiter → Kalkulation
+   Spaltenkopf in Zeile 3 (14 Spalten), Datenzeilen darunter: 1
+     A: Änderungs-ID
+     B: Datum
+     C: Projekt-ID
+     D: Projektname
+     E: Kunden-ID
+     F: Änderungstyp
+     G: Änderung / Wunsch
+     H: Material-Auswirkung
+     I: Zeit-Auswirkung
+     J: Kosten-Auswirkung €
+     K: Freigabe nötig
+     L: Verantwortlich
+     M: Status
+     N: Nächster Schritt
+
+59. Abschluss
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:L100  (979 Formeln)
+   Titel/Kopftexte: PFALZ-WERK – PROJEKTABSCHLUSS | ← Zurück Montageplan | Weiter → Ablauf
+   Spaltenkopf in Zeile 3 (12 Spalten), Datenzeilen darunter: 0
+     A: Projekt-ID
+     B: Projektname
+     C: Kunden-ID
+     D: Projektstatus
+     E: Offene Aufgaben
+     F: Offene Freigaben
+     G: Offene Bestellungen
+     H: Nachkalkulation
+     I: Abschlussprüfung
+     J: Abschlussstatus (automatisch)
+     K: Abschlussdatum (Eingabe)
+     L: Nächster Schritt (automatisch)
+
+60. Einsatzplanung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AG100  (1663 Formeln)
+   Titel/Kopftexte: ANSICHT · WERKSTATT / BAUSTELLE / MONTAGE · ZENTRALE KAPAZITÄT | Operative Einsatzansicht – zentrale Pflege ausschließlich im Zeitplan. | PERSONALVERFÜGBARKEIT · TAGESÜBERSICHT
+   Spaltenkopf in Zeile 1 (4 Spalten), Datenzeilen darunter: 6
+     A: ANSICHT · WERKSTATT / BAUSTELLE / MONTAGE · ZENTRALE KAPAZIT
+     J: Operative Einsatzansicht – zentrale Pflege ausschließlich im
+     M: PERSONALVERFÜGBARKEIT · TAGESÜBERSICHT
+     X: PERSONAL-LEITSTAND · KAPAZITÄT, ABWESENHEITEN UND AUSLASTUNG
+
+61. Kalkulationsvergleich
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H17  (62 Formeln)
+   Titel/Kopftexte: PFALZ-WERK – KALKULATIONSVERGLEICH | ← Zurück Kalkulation | Weiter → Abschluss
+   Spaltenkopf in Zeile 3 (3 Spalten), Datenzeilen darunter: 12
+     A: Projekt-ID auswählen
+     B: Projektname
+     H: STATUS
+
+62. Inventur Cockpit
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K19  (31 Formeln)
+   Titel/Kopftexte: PFALZ-WERK INVENTUR – Steuerzentrale | ← Zurück Inventur | Weiter → Einstellungen
+   Spaltenkopf in Zeile 5 (4 Spalten), Datenzeilen darunter: 7
+     A: Typ
+     D: Positionen
+     G: Gezählt
+     J: Fortschritt
+
+63. Inventur Erfassung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:T103  (1808 Formeln)
+   Titel/Kopftexte: Inventur – Erfassung | ← Zurück Inventur Mobile | Weiter → Abweichungen
+   Spaltenkopf in Zeile 3 (20 Spalten), Datenzeilen darunter: 0
+     A: Inventur-ID
+     B: Lagerbereich
+     C: Material-ID
+     D: Bezeichnung
+     E: Einheit
+     F: Stichtagsbestand
+     G: Ist-Zählung
+     H: Differenz
+     I: Differenz %
+     J: Wertdifferenz €
+     K: Status
+     L: Nachzählung
+     M: Freigegebener Ist
+     N: Zähler
+     O: Zeitpunkt
+     P: Bemerkung
+     Q: Abw.-Index
+     R: Snapshot intern
+     S: Nachzählindex
+     T: Snapshot-Live-Flag
+
+64. Inventur Abweichungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q103  (1408 Formeln)
+   Titel/Kopftexte: Inventur – Abweichungen, Nachzählung & Freigabe | ← Zurück Inventur Erfassung | Weiter → Nachzählung
+   Spaltenkopf in Zeile 3 (17 Spalten), Datenzeilen darunter: 0
+     A: Inventur-ID
+     B: Material-ID
+     C: Bezeichnung
+     D: Soll
+     E: Erstzählung
+     F: Nachzählung
+     G: Freigabe-Ist
+     H: Differenz
+     I: Wertdifferenz €
+     J: Bewertung
+     K: Ursache / Bemerkung
+     L: Prüfer
+     M: Freigabe
+     N: Korrekturmenge
+     O: Buchungsstatus
+     P: Quellzeile
+     Q: Buchungsindex
+
+65. Inventur Historie
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:O4  (8 Formeln)
+   Titel/Kopftexte: Inventur – Historie & Abschlussprotokoll | ← Zurück Inventur Bericht | Weiter → Positionsarchiv
+   Spaltenkopf in Zeile 4 (15 Spalten), Datenzeilen darunter: 0
+     A: Inventur-ID
+     B: Stichtag
+     C: Typ
+     D: Bereich
+     E: Verantwortlicher
+     F: Zählmodus
+     G: Positionen
+     H: Gezählt
+     I: Abweichungen
+     J: Wertdifferenz €
+     K: Status
+     L: Abgeschlossen am
+     M: Freigeber
+     N: Abschlussstatus
+     O: Archivprüfung
+
+66. Inventur Positionsarchiv
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:P5  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · INVENTUR-POSITIONSARCHIV | ← Zurück Inventur Historie | Weiter → Lageranalyse
+   Spaltenkopf in Zeile 5 (16 Spalten), Datenzeilen darunter: 0
+     A: Inventur-ID
+     B: Abschlussdatum
+     C: Material-ID
+     D: Bezeichnung
+     E: Lagerort
+     F: Einheit
+     G: Soll
+     H: Ist
+     I: Differenz
+     J: Differenz %
+     K: Wertdifferenz €
+     L: Status
+     M: Zähler
+     N: Freigeber
+     O: Ursache / Notiz
+     P: Archiv geprüft
+
+67. Lageranalyse
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K104  (1103 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · LAGERANALYSE | ← Zurück Positionsarchiv | Weiter → Ablauf
+   Spaltenkopf in Zeile 4 (11 Spalten), Datenzeilen darunter: 0
+     A: Material-ID
+     B: Bezeichnung
+     C: Lagerort
+     D: Inventuren
+     E: Differenzen
+     F: Minusfälle
+     G: Plusfälle
+     H: Ø |Differenz|
+     I: Wertwirkung €
+     J: Differenzquote
+     K: Bewertung
+
+68. Inventur Einstellungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Z34  (11 Formeln)
+   Titel/Kopftexte: Inventur – Einstellungen & Berechtigungen | 🟡 Snapshot noch LIVE | ← Zurück Inventur Cockpit
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+69. Lagerbewegungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N25  (208 Formeln)
+   Titel/Kopftexte: Lagerbewegungen – Buchungsjournal | ← Zurück Lager | Weiter → Lageranalyse
+   Spaltenkopf in Zeile 5 (9 Spalten), Datenzeilen darunter: 0
+     A: Vorschlag-ID
+     B: Datum
+     C: Material-ID
+     D: Bezeichnung
+     E: Bewegungsart
+     F: Menge +/-
+     G: Einheit
+     H: Inventur-ID
+     I: Status
+
+70. Produktion Routenvorlagen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J66  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION ROUTENVORLAGEN | ← Zurück AG-Bibliothek | Weiter → Routenplaner
+   Spaltenkopf in Zeile 4 (10 Spalten), Datenzeilen darunter: 57
+     A: SCHLÜSSEL
+     B: ROUTENVORLAGE
+     C: WERKSTOFFGRUPPE
+     D: SCHRITT
+     E: AG-CODE
+     F: ARBEITSGANG
+     G: TYP
+     H: PLAN-STD. RICHTWERT
+     I: WARTEZEIT STD.
+     J: QM / HINWEIS
+
+71. Produktion Routenplaner
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:M54  (409 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION ROUTENPLANER | ← Zurück Zeitplan | Weiter → Übergabeprüfung
+   Spaltenkopf in Zeile 10 (3 Spalten), Datenzeilen darunter: 10
+     A: Freigabestatus
+     B: Entwurf
+     L: Mitarbeiter / Team
+
+72. Produktion Übergabe
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:S48  (629 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION ÜBERGABE · FREIGABESCHLEUSE | ← Zurück Routenplaner | Weiter → Fertigungsweg
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+73. Produktion Snapshot-Archiv
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:V4  (4 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PRODUKTION SNAPSHOT-ARCHIV | ← Zurück Übergabeprüfung | Weiter → Produktion
+   Spaltenkopf in Zeile 4 (22 Spalten), Datenzeilen darunter: 0
+     A: SNAPSHOT-ID
+     B: REV
+     C: FREIGABEZEIT
+     D: FREIGEGEBEN VON
+     E: ROUTE-ID
+     F: AUFTRAG
+     G: PROJEKT
+     H: BAUTEIL
+     I: VORLAGE
+     J: SCHRITT
+     K: AG-ID
+     L: ARBEITSGANG
+     M: TYP
+     N: PLAN-STD.
+     O: WARTE STD.
+     P: QM / HINWEIS
+     Q: VORGÄNGER
+     R: TEAM
+     S: QUELL-CODE
+     T: OPERATIV ÜBERNOMMEN
+     U: ÜBERNAHMEZEIT
+     V: STATUS
+
+74. Ideenplaner
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q86  (251 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · IDEENPLANER | ← Zurück Projektakte | Weiter → Ideenübergabe
+   Spaltenkopf in Zeile 5 (3 Spalten), Datenzeilen darunter: 32
+     A: 1 · PROJEKT VERKNÜPFEN
+     E: 2 · PLANUNGSART
+     I: 3 · MODULSTATUS
+
+75. Ideen-Uebergabe
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AC22  (41 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · IDEENPLANER-ÜBERGABE | Freigegebene Vorplanung verständlich prüfen, als Snapshot sichern und  | ← Zurück Ideenplaner
+   Spaltenkopf in Zeile 5 (3 Spalten), Datenzeilen darunter: 12
+     A: Projekt-ID
+     D: FREIGABESTATUS
+     H: SO ENTSTEHT EINE FREIGEGEBENE ÜBERGABE
+
+76. Stuecklisten-Transfer
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:AD31  (249 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · STÜCKLISTEN-VORBEREITUNG | DEV-25.3 · Freigegebene Bauteile materialweise aggregieren und kontrol | ← Zurück Bauteile
+   Spaltenkopf in Zeile 5 (4 Spalten), Datenzeilen darunter: 21
+     A: Übergabe-ID
+     D: Projektname
+     G: ÜBERGABECHECK
+     L: BEDIENUNG
+
+77. Fertigungs-Stueckliste
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AG41  (545 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · STÜCKLISTENZENTRUM · BAUTEILE & FERTIGUNG | ANSICHT 1 VON 2 · Projekt wählen, Bauteile prüfen und Materialübergabe | ← Zurück Ideenplaner
+   Spaltenkopf in Zeile 5 (6 Spalten), Datenzeilen darunter: 11
+     A: 1. Projekt-ID (auswählen)
+     B: SCH-TRE01-09-2026
+     D: Materialreserve
+     G: ABLAUF IN DIESER ANSICHT
+     O: WAS MUSS ICH JETZT TUN?
+     X: NEUKUNDENDATEN · AUTOMATISCH
+
+78. Material-Quellen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:L105  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · MATERIALSTAMM UND QUELLEN | DEV-23.4 · Herstellerneutraler Startkatalog · Preise und Lieferkonditi | ← Zurück Material
+   Spaltenkopf in Zeile 9 (12 Spalten), Datenzeilen darunter: 96
+     A: Material-ID
+     B: Kategorie
+     C: Hersteller / Referenz
+     D: Referenzprodukt
+     E: Typische Spezifikation
+     F: Einsatzbereich
+     G: Einheit
+     H: Mindestbestand Startwert
+     I: EK-Status
+     J: Lieferantenstatus
+     K: Geprüft am
+     L: Quelle
+
+79. Zeitdaten
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N350  (648 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZENTRALE MITARBEITERZEITEN & ABWESENHEITEN | ← Zurück Teams | Weiter → Terminzentrum
+   Spaltenkopf in Zeile 3 (14 Spalten), Datenzeilen darunter: 3
+     A: Zeit-ID
+     B: Mitarbeiter
+     C: Von
+     D: Bis
+     E: Zeitart
+     F: Umfang
+     G: Einheit
+     H: Status
+     I: Auswirkung
+     J: Zeitkonto +/- h
+     K: Projekt-ID
+     L: Hinweis
+     M: Erfasst von
+     N: Prüfung
+
+80. Marken-Vorlagen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:E44  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · MARKEN- & LOGOVORLAGEN | ← Benutzerportal | Cockpit
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+81. Datenquellen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H41  (19 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · DATENQUELLEN & IMPORTZENTRUM | Zentrale Einstiegsseite für Ordneranbindung, Katalogprüfung und kontro | ↩ Benutzerportal
+   Spaltenkopf in Zeile 5 (8 Spalten), Datenzeilen darunter: 32
+     A: Nr.
+     B: Datenquelle
+     C: Pfad / Wert
+     D: Dateityp
+     E: Zielbereich
+     F: Aktualisierung
+     G: Status
+     H: Hinweis
+
+82. Katalog-Import
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AA1061  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · KATALOG-IMPORT | Statischer Entwicklungsstand: 1.057 geladene Katalogartikel. Die endgü | → Import-Prüfung
+   Spaltenkopf in Zeile 4 (27 Spalten), Datenzeilen darunter: 1057
+     A: Source.Name
+     B: Import-ID
+     C: Dateiquelle
+     D: Blattquelle
+     E: Lieferant
+     F: Lieferanten-Artikelnr.
+     G: Hersteller
+     H: Hersteller-Artikelnr.
+     I: Produktgruppe
+     J: Bezeichnung
+     K: Beschreibung
+     L: Einheit
+     M: Stärke mm
+     N: Länge mm
+     O: Breite mm
+     P: Brutto
+     Q: Rabatt %
+     R: EK netto
+     S: Lieferzeit Tage
+     T: Mindestbestand
+     U: Zielbestand
+     V: Katalogquelle
+     W: Katalogseite
+     X: Preisstand
+     Y: Prüfstatus
+     Z: Prüfhinweis
+     AA: Material-ID
+
+83. Import-Zuordnung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:H33  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · IMPORT-ZUORDNUNG | Zentrale, sichtbare Übersetzung der Katalogwerte in die Bezeichnungen  | ↩ Import-Prüfung
+   Spaltenkopf in Zeile 4 (6 Spalten), Datenzeilen darunter: 29
+     A: Produktgruppe Katalog
+     B: Kategorie Material
+     D: Lieferant Katalog
+     E: Lieferant Material
+     G: Status
+     H: Bedeutung
+
+84. Import-Analyse
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AA1061  (28542 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · IMPORT-ANALYSE & FREIGABEWARTESCHLANGE | Automatische Prüfung aller geladenen Katalogartikel. Entscheidung auss | ↩ Import-Prüfung
+   Spaltenkopf in Zeile 4 (27 Spalten), Datenzeilen darunter: 0
+     A: Quellzeile
+     B: Import-ID
+     C: Lieferant Quelle
+     D: Lieferanten-Artikelnr.
+     E: Produktgruppe Quelle
+     F: Bezeichnung
+     G: Einheit
+     H: EK netto
+     I: Mindestbestand
+     J: Zielbestand
+     K: Preisstand
+     L: Prüfstatus
+     M: Pflichtfelder
+     N: Artikel-Schlüssel
+     O: Dublette
+     P: Preisprüfung
+     Q: Bestandsprüfung
+     R: Kategorie Material
+     S: Lieferant Material
+     T: Gesamtprüfung
+     U: Übernahme
+     V: Material-ID
+     W: Nächster Schritt
+     X: ID-Konflikt
+     Y: Stamm-Dublette
+     Z: Transferprüfung
+     AA: Freigabe-Rang
+
+85. Import-Prüfung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J15  (11 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · IMPORTZENTRUM | Ein geführter Ablauf von der Datenquelle über Prüfung und Zuordnung bi | → Prüfstatus bearbeiten
+   Spaltenkopf in Zeile 5 (9 Spalten), Datenzeilen darunter: 9
+     A: KENNZAHL
+     B: WERT
+     D: SCHRITT
+     E: ORT
+     F: EINGABE / PRÜFUNG
+     G: ERGEBNIS
+     H: FARBE
+     I: STATUS
+     J: NÄCHSTE AKTION
+
+86. Material-Übernahme
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:Q118  (1510 Formeln)
+   Titel/Kopftexte: MATERIAL-ÜBERNAHME · SICHERES GATE | Nur freigegebene, vollständig geprüfte und konfliktfreie Katalogartike | ← Zurück Importzentrum
+   Spaltenkopf in Zeile 4 (8 Spalten), Datenzeilen darunter: 9
+     A: Freigegeben
+     B: Prüfung BEREIT
+     C: ID-Konflikte
+     D: Stamm-Dubletten
+     E: Transferbereit
+     F: Übernommen
+     G: Gate-Status
+     H: Nächster Schritt
+
+87. Material-Übernahmeprotokoll
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:I6  (1 Formeln)
+   Titel/Kopftexte: MATERIAL-ÜBERNAHMEPROTOKOLL | Dieses Blatt ist die dauerhafte Nachweisspur. In DEV-26.6 wird noch ni | ← Zurück Material-Übernahme
+   Spaltenkopf in Zeile 5 (9 Spalten), Datenzeilen darunter: 1
+     A: Transfer-ID
+     B: Datum
+     C: Benutzer
+     D: Material-ID
+     E: Import-ID
+     F: Aktion
+     G: Status
+     H: Hinweis
+     I: Quellzeile
+
+88. Makro-Steuerung
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:L23  (2 Formeln)
+   Titel/Kopftexte: MAKRO-STEUERUNG · MATERIALÜBERNAHME | ← Zurück Material-Übernahme | Übersicht Alle Wege
+   Spaltenkopf in Zeile 4 (7 Spalten), Datenzeilen darunter: 16
+     A: Parameter
+     B: Wert
+     D: Quelle
+     E: Ziel Material
+     F: Feld
+     G: Typ
+     H: Regel
+
+89. __PW_Schutzmatrix
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:K100  (0 Formeln)
+   Titel/Kopftexte: Blatt | Alle | Chef
+   Spaltenkopf in Zeile 1 (11 Spalten), Datenzeilen darunter: 99
+     A: Blatt
+     B: Alle
+     C: Chef
+     D: Meister
+     E: AV
+     F: Geselle
+     G: Azubi
+     H: Buchhaltung
+     I: CNC
+     J: Einkauf
+     K: Hinweis
+
+90. Personal-Leitstand
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K38  (341 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · PERSONAL-LEITSTAND · DEV-27.2 | ← Cockpit | Zeitdaten
+   Spaltenkopf in Zeile 5 (5 Spalten), Datenzeilen darunter: 2
+     A: Aktive Mitarbeiter
+     C: Einsatzbereit
+     E: Blockiert
+     G: Geplant h
+     I: Freie Kapazität h
+
+91. Arbeitsvertraege
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AB207  (1409 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ARBEITSVERTRÄGE · DEV-27.3.1 | ← Cockpit | Benutzerverwaltung
+   Spaltenkopf in Zeile 5 (4 Spalten), Datenzeilen darunter: 13
+     A: Verträge gesamt
+     D: Aktiv
+     G: Entwurf
+     J: Prüfbedarf
+
+92. Vertragsprotokoll
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:K5  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · VERTRAGSÜBERNAHMEPROTOKOLL | ← Arbeitsverträge | Benutzerverwaltung
+   Spaltenkopf in Zeile 5 (11 Spalten), Datenzeilen darunter: 0
+     A: Transfer-ID
+     B: Zeitpunkt
+     C: Benutzer
+     D: Vertrags-ID
+     E: Mitarbeiter
+     F: Aktion
+     G: Status
+     H: Hinweis
+     I: Quellzeile
+     J: Altwerte
+     K: Neue Werte
+
+93. Vertragswarnungen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:J207  (2006 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · VERTRAGSWARNUNGEN · DEV-27.3.3 | ← Arbeitsverträge | Personal-Leitstand
+   Spaltenkopf in Zeile 5 (3 Spalten), Datenzeilen darunter: 1
+     A: Rote Hinweise
+     D: Orange Hinweise
+     G: Geplante Eintritte
+
+94. SQL-Vergleich
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:M9  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - SQL-Vergleich Kunden und Projekte | Zusammenfassung | ← Zurück Benutzerportal
+   Spaltenkopf in Zeile 4 (7 Spalten), Datenzeilen darunter: 4
+     A: Bereich
+     B: Schluessel
+     C: Excel-Bezeichnung
+     D: SQL-Bezeichnung
+     E: Excel
+     F: SQL / Ergebnis
+     H: Excel-Projekte
+
+95. __PW_SQL_Versionen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:E3  (0 Formeln)
+   Titel/Kopftexte: Typ | Nummer | SQL-Version
+   Spaltenkopf in Zeile 1 (5 Spalten), Datenzeilen darunter: 2
+     A: Typ
+     B: Nummer
+     C: SQL-Version
+     D: Erfasst am
+     E: Excel-Fingerprint
+
+96. __PW_SQL_MaterialVersionen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:E290  (0 Formeln)
+   Titel/Kopftexte: Material-ID | SQL-Materialversion | SQL-Lagerversion
+   Spaltenkopf in Zeile 1 (5 Spalten), Datenzeilen darunter: 289
+     A: Material-ID
+     B: SQL-Materialversion
+     C: SQL-Lagerversion
+     D: Excel-Pruefsumme
+     E: Stand
+
+97. Bauteilzerlegung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:P129  (1116 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · BAUTEILZERLEGUNG · LAMELLEN- UND ROHMATERIALPLANUNG | Weiter → Stückliste | Übersicht Alle Wege
+   Spaltenkopf in Zeile 5 (4 Spalten), Datenzeilen darunter: 21
+     A: Projekt-ID
+     D: Projektname (automatisch)
+     G: Bauteil-ID / Bezeichnung
+     J: Bauteilanzahl
+
+98. Wissensdatenbank
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N33  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · WISSENSDATENBANK SCHREINERHANDWERK | Sammlung von Fachwissen, Formeln und Erfahrungswerten rund ums Schrein | Eintrag-ID
+   Spaltenkopf in Zeile 3 (11 Spalten), Datenzeilen darunter: 30
+     A: Eintrag-ID
+     B: Kategorie
+     C: Thema
+     D: Bezeichnung
+     E: Beschreibung / Inhalt
+     F: Kennwerte / Formel
+     G: Anwendung
+     H: Niveau
+     I: Quelle / Regelwerk
+     J: Verknüpfung im System
+     K: Stand
+
+99. Handy-Steuerung
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:N207  (1607 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · HANDY-STEUERUNG | ← Zurück Dashboard Steuerung | Weiter → Handy-Eingang
+   Spaltenkopf in Zeile 3 (3 Spalten), Datenzeilen darunter: 11
+     A: OneDrive-Ordner
+     B: C:\Users\schoe\OneDrive\PFALZ-WERK Handy
+     K: Personen mit Handy
+
+100. Handy-Eingang
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:O3  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · HANDY-EINGANG (Protokoll aller Handy-Meldungen) | ← Zurück Handy-Steuerung | Weiter → Aufgaben
+   Spaltenkopf in Zeile 3 (9 Spalten), Datenzeilen darunter: 0
+     A: Zeitpunkt
+     B: Kürzel
+     C: Name
+     D: Seite
+     E: Bezug
+     F: Meldung
+     G: Wert
+     H: Text
+     I: Ergebnis
+
+101. Möbel-Regeln
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:BJ122  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - MÖBEL-REGELN | ← Zurück Möbelrechner | Weiter → Möbel-Positionen
+   Spaltenkopf in Zeile 3 (52 Spalten), Datenzeilen darunter: 119
+     A: Schlüssel
+     B: Wert
+     C: Einheit
+     D: Bedeutung
+     F: Möbeltyp
+     G: Bauweise
+     H: Rückwandart
+     I: Sockel
+     J: Türen
+     K: Türart
+     L: Verbindung
+     M: Oberer Abschluss
+     O: Beschlagsystem
+     P: Topfband
+     Q: Montageplatte
+     R: Bodenträger
+     S: Sockelfuß
+     T: Sockelclip
+     U: Schrankaufhänger
+     V: Aufhängeschiene
+     W: Griff
+     Y: Türhöhe bis mm
+     Z: Bänder
+     AB: Stärke bis mm
+     AC: Spannweite max mm
+     AE: Verbindung
+     AF: Material-ID
+     AG: Abstand mm
+     AI: Holzart (Material-ID)
+     AJ: Quellmass tangential % je % Holzfeuchte
+     AK: radial % je % Holzfeuchte
+     AM: Plattenmaterial (Liste)
+     AN: Kanten (Liste)
+     AP: Nennlängen mm
+     AQ: Zonenart
+     AR: Teilungsregel
+     AS: Schubkastensystem
+     AT: Kastenverbindung
+     AU: Ja/Nein
+     AW: Oberfläche
+     ... und 12 weitere Spalten
+
+102. Möbel-Positionen
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:BC5  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - MÖBEL-POSITIONEN | ← Zurück Möbelrechner | Weiter → Möbel-Teile
+   Spaltenkopf in Zeile 3 (55 Spalten), Datenzeilen darunter: 2
+     A: Position-ID
+     B: Projekt-ID
+     C: Position
+     D: Bezeichnung
+     E: Status
+     F: Version
+     G: Gespeichert am
+     H: Von
+     I: Projekt-ID
+     J: Position
+     K: Bezeichnung
+     L: Möbeltyp
+     M: Anzahl (Stück)
+     N: Breite mm
+     O: Höhe mm (gesamt)
+     P: Tiefe mm (Korpus)
+     Q: Bauweise
+     R: Oberer Abschluss
+     S: Korpusmaterial
+     T: Frontmaterial
+     U: Rückwandmaterial
+     V: Rückwandart
+     W: Sockel
+     X: Sockelhöhe mm
+     Y: Kante Korpus
+     Z: Kante Front
+     AA: Türen
+     AB: Türart
+     AC: Fachböden
+     AD: Verbindung
+     AE: Beschlagsystem
+     AF: Raumhöhe mm (optional)
+     AG: Fuge außen
+     AH: Fuge Mitte
+     AI: Fuge oben
+     AJ: Fuge Einlage
+     AK: Nuttiefe
+     AL: Nutabstand
+     AM: Traversenbreite
+     AN: Verschnitt %
+     ... und 15 weitere Spalten
+
+103. Möbel-Teile
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:V69  (2 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - MÖBEL-TEILE | ← Zurück Möbel-Positionen | Übersicht Alle Wege
+   Spaltenkopf in Zeile 3 (22 Spalten), Datenzeilen darunter: 66
+     A: Position-ID
+     B: Teile-ID
+     C: Teil
+     D: Gruppe
+     E: Menge
+     F: Fertig L
+     G: Fertig B
+     H: Stärke
+     I: Zuschnitt L
+     J: Zuschnitt B
+     K: Material-ID
+     L: Kante L1 (vorn)
+     M: Kante L2
+     N: Kante B1
+     O: Kante B2
+     P: Maserung
+     Q: Bearbeitung
+     R: Einbauort
+     S: Soll-Diagonale
+     T: Netto m²
+     U: Hinweis
+     V: Status
+
+104. Möbelrechner
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:AB94  (4 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - MÖBELRECHNER | ← Zurück Projektakte | Weiter → Stückliste
+   Spaltenkopf in Zeile 4 (4 Spalten), Datenzeilen darunter: 73
+     A: EINGABEN
+     E: ABWEICHUNG VON DER REGEL (leer = Regel)
+     H: PRÜFUNG (Quer-, Längs-, Höhen-, Diagonalschnitt)
+     L: ARBEITSGÄNGE (automatisch, nach Standardfolge)
+
+105. Möbel-Formteile
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:R6  (3 Formeln)
+   Titel/Kopftexte: PFALZ-WERK - MÖBEL-FORMTEILE (Rundungen) | ← Zurück Möbelrechner | Weiter → Möbel-Positionen
+   Spaltenkopf in Zeile 3 (18 Spalten), Datenzeilen darunter: 3
+     A: Position-ID
+     B: Bezeichnung
+     C: Verfahren
+     D: Radius innen mm
+     E: Winkel °
+     F: Höhe (Achse) mm
+     G: Dicke (radial) mm
+     H: Material-ID
+     I: Anzahl
+     J: Lagen-/Segmentmaß mm (leer = Material)
+     K: Form vorhanden?
+     L: Bogen innen mm
+     M: Bogen außen mm
+     N: Sehne / Stich mm
+     O: Lagen / Segmente / Kerben
+     P: Zuschnitt
+     Q: Prüfung
+     R: Hinweis
+
+106. Möbel-Druck
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:K53  (0 Formeln)
+   Titel/Kopftexte: Teile- und Beschlagliste  ·  SCH-TRE01-10-2026-M01  Kommode Flur | PROJEKT  SCH-TRE01-10-2026 · Treppe      KUNDE  Schönborn Christian    | MÖBEL  Kommode · 1000 × 900 × 450 mm      KORPUS / FRONT  PL-WEI-P2-19
+   Spaltenkopf in Zeile 5 (11 Spalten), Datenzeilen darunter: 43
+     A: Nr.
+     B: Teil
+     C: Stk
+     D: Fertig L × B
+     E: Zuschnitt L × B
+     F: St.
+     G: Material
+     H: Kanten
+     I: Maserung
+     J: Bearbeitung / Einbauort
+     K: ✓
+
+107. Firmendaten
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:C27  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · FIRMENDATEN FÜR RECHNUNGEN | Feld | Wert
+   Spaltenkopf in Zeile 3 (3 Spalten), Datenzeilen darunter: 24
+     A: Feld
+     B: Wert
+     C: Hinweis
+
+108. Rechnungen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:AC503  (1500 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · AUSGANGSRECHNUNGEN | RE-Nr | Datum
+   Spaltenkopf in Zeile 3 (29 Spalten), Datenzeilen darunter: 0
+     A: RE-Nr
+     B: Datum
+     C: Art
+     D: Projekt-ID
+     E: Auftrags-ID
+     F: Kunden-ID
+     G: Kunde
+     H: Kundentyp
+     I: Leistungszeitraum
+     J: Netto
+     K: USt %
+     L: USt
+     M: Brutto
+     N: Ziel Tage
+     O: Fällig
+     P: Bezahlt
+     Q: Offen
+     R: Status
+     S: Mahnstufe
+     T: Mahndatum
+     U: Storno von
+     V: Storniert durch
+     W: PDF
+     X: XML
+     Y: erstellt von
+     Z: Skonto %
+     AA: Skonto Tage
+     AB: Prüfsumme
+     AC: Festgeschrieben
+
+109. Rechnungspositionen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:H3  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · RECHNUNGSPOSITIONEN | RE-Nr | Pos
+   Spaltenkopf in Zeile 3 (8 Spalten), Datenzeilen darunter: 0
+     A: RE-Nr
+     B: Pos
+     C: Text
+     D: Menge
+     E: Einheit
+     F: Einzelpreis
+     G: Gesamt
+     H: USt %
+
+110. Zahlungen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:I3  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ZAHLUNGEN | Z-ID | Datum
+   Spaltenkopf in Zeile 3 (9 Spalten), Datenzeilen darunter: 0
+     A: Z-ID
+     B: Datum
+     C: Richtung
+     D: Beleg
+     E: Betrag
+     F: Skonto
+     G: Konto
+     H: erfasst von
+     I: Notiz
+
+111. Eingangsrechnungen
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:T1003  (3000 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · EINGANGSRECHNUNGEN | ER-ID | Lieferant
+   Spaltenkopf in Zeile 3 (20 Spalten), Datenzeilen darunter: 0
+     A: ER-ID
+     B: Lieferant
+     C: Lief.-Rechnungsnr.
+     D: Datum
+     E: Kategorie
+     F: Projekt
+     G: Bestellung
+     H: Netto
+     I: USt %
+     J: USt
+     K: Brutto
+     L: Ziel Tage
+     M: Fällig
+     N: Skonto %
+     O: Skonto bis
+     P: Bezahlt
+     Q: Offen
+     R: Status
+     S: Beleg
+     T: Abgleich
+
+112. Rechnungsvorlage
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:A1  (0 Formeln)
+   Aufbau: Oberfläche/Formular ohne durchgehende Tabellenkopfzeile
+
+113. Finanz-Cockpit
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:P20  (37 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · FINANZ-COCKPIT | alle Beträge aus Rechnungen, Eingangsrechnungen und Zahlungen
+   Spaltenkopf in Zeile 4 (4 Spalten), Datenzeilen darunter: 7
+     A: UMSATZ 2026 (NETTO)
+     C: OFFENE FORDERUNGEN
+     E: OFFENE VERBINDLICHK.
+     H: USt-ZAHLLAST VORMONAT
+
+114. Fehlerprotokoll
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:H4  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · FEHLERPROTOKOLL | Angebunden: 0 neue Fehlerstellen am 04.11.2026 22:37 | Jeder abgefangene Fehler landet hier. Die ältesten Einträge werden ab 
+   Spaltenkopf in Zeile 3 (7 Spalten), Datenzeilen darunter: 1
+     A: Zeit
+     B: Benutzer
+     C: Modul
+     D: Prozedur
+     E: Fehler-Nr.
+     F: Meldung
+     G: Zusatz
+
+115. Abnahmetest
+   Sichtbarkeit: sichtbar
+   Belegter Bereich: A1:D14  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · ABNAHMETEST | Letzter Lauf: 04.11.2026 22:40  ·  Administrator  ·  17 Sek.
+   Spaltenkopf in Zeile 4 (4 Spalten), Datenzeilen darunter: 10
+     A: Nr
+     B: Prüfung
+     C: Ergebnis
+     D: Details
+
+116. Update-Protokoll
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:H10  (0 Formeln)
+   Titel/Kopftexte: Datum | Ordner | Modul
+   Spaltenkopf in Zeile 1 (8 Spalten), Datenzeilen darunter: 9
+     A: Datum
+     B: Ordner
+     C: Modul
+     D: Aktion
+     E: Zeilen alt
+     F: Zeilen neu
+     G: Ergebnis
+     H: Benutzer
+
+117. Belegprotokoll
+   Sichtbarkeit: versteckt (nur per VBA)
+   Belegter Bereich: A1:E3  (0 Formeln)
+   Titel/Kopftexte: PFALZ-WERK · BELEGPROTOKOLL | Jede Erstellung, Zahlung, Mahnung und Stornierung einer Rechnung. Eint | Zeit
+   Spaltenkopf in Zeile 3 (5 Spalten), Datenzeilen darunter: 0
+     A: Zeit
+     B: Benutzer
+     C: Beleg
+     D: Aktion
+     E: Details
