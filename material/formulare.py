@@ -20,7 +20,7 @@ class MaterialFormular(forms.ModelForm):
     class Meta:
         model = Material
         fields = ["materialnr", "bezeichnung", "produktgruppe", "untergruppe", "einheit", "staerke_mm", "format",
-                  "ek_netto", "referenzpreis_brutto", "preisquelle", "preisstand", "preis_hinweis",
+                  "lieferant", "ek_netto", "referenzpreis_brutto", "preisquelle", "preisstand", "preis_hinweis",
                   "lagerartikel", "lagerplatz", "mindestbestand", "zielbestand", "beschaffungsart",
                   "lieferzeit_tage", "hinweise", "aktiv"]
         widgets = {"hinweise": forms.Textarea(attrs={"rows": 3}), "preisstand": DatumFeld()}
@@ -36,6 +36,12 @@ class MaterialFormular(forms.ModelForm):
         }
         for feld in self.vorschlaege:
             self.fields[feld].widget.attrs["list"] = f"liste-{feld}"
+        from lieferanten.models import Lieferant
+        lieferanten = Lieferant.objects.filter(aktiv=True)
+        if self.instance.pk and self.instance.lieferant_id:
+            lieferanten = lieferanten | Lieferant.objects.filter(pk=self.instance.lieferant_id)
+        self.fields["lieferant"].queryset = lieferanten.order_by("name")
+        self.fields["lieferant"].empty_label = "– kein Lieferant –"
         for feld in ("staerke_mm", "ek_netto", "referenzpreis_brutto", "mindestbestand", "zielbestand"):
             self.fields[feld].localize = True
             self.fields[feld].widget = forms.TextInput(attrs={"inputmode": "decimal"})

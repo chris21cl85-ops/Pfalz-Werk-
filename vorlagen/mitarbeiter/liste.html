@@ -1,0 +1,27 @@
+{% extends "basis.html" %}
+{% block titel %}Mitarbeiter – PFALZ-WERK{% endblock %}
+{% block pfad %} › Mitarbeiter{% endblock %}
+{% block inhalt %}
+<h1>Mitarbeiter</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Name, Kürzel, Rolle …" autofocus>
+    {% if alle %}<input type="hidden" name="alle" value="1">{% endif %}
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  <a class="knopf" href="{% url 'mitarbeiter:neu' %}">+ Neuer Mitarbeiter</a>
+</div>
+<p class="grau">{{ leute|length }} Mitarbeiter.
+  {% if alle %}<a href="?suche={{ suche|urlencode }}">Nur aktive zeigen</a>{% else %}<a href="?alle=1&suche={{ suche|urlencode }}">Auch ausgeschiedene zeigen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Kürzel</th><th>Name</th><th>Rolle</th><th class="breit">Montage leiten</th><th class="breit">Wochenstd.</th><th class="breit">Zugang</th></tr>
+  {% for m in leute %}
+  <tr class="klickbar" onclick="location.href='{{ m.get_absolute_url }}'">
+    <td>{{ m.kuerzel }}</td><td><a href="{{ m.get_absolute_url }}">{{ m.name }}</a>{% if not m.aktiv %} <span class="marke-inaktiv">ausgeschieden</span>{% endif %}</td>
+    <td>{{ m.rolle }}</td><td class="breit">{{ m.kann_montage_leiten|yesno:"Ja,–" }}</td>
+    <td class="breit">{{ m.wochenstunden|floatformat:"-2"|default:"" }}</td>
+    <td class="breit">{% if m.benutzer %}{{ m.benutzer.username }}{% else %}<span class="grau">–</span>{% endif %}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6">Noch keine Mitarbeiter. Über „Excel-Import“ übernehmen oder „+ Neuer Mitarbeiter“.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

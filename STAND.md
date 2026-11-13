@@ -10,7 +10,7 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.5 (Blattvorschau).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 1.6 (Etappe 1 komplett).
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
 
 ## Etappe 0 – Fundament: ABGENOMMEN am 09.11.2026
@@ -49,7 +49,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 4. Als Chef: „Excel-Import“ → PFALZ-WERK-Excel wählen → „Datei prüfen“ → Liste der Tabellenblätter mit Zeilenzahl.
 5. Als Chef: „Protokoll“ → Anmeldungen, Fehlversuch (vorher falsches Passwort tippen), Sicherung sind sichtbar.
 
-## Etappe 1 – Kern: in Arbeit
+## Etappe 1 – Kern: alle Pakete gebaut, Lieferanten + Mitarbeiter warten auf Abnahme
 
 ### Paket 1: Kunden – ABGENOMMEN am 10.11.2026
 - Echte Excel importiert: 2 Kunden, keine Probleme (Chris bestätigt: stimmt).
@@ -100,8 +100,25 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 ### Offen
 - Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
 
+### Paket 4+5: Lieferanten und Mitarbeiter – gebaut, wartet auf Abnahme durch Chris
+- Lieferanten: Liste/Suche, Karte mit allem Material des Lieferanten, Anlegen/Bearbeiten (Adresse, Portal,
+  unsere Kunden-Nr., Zahlungsziel, Skonto). Sehen/bearbeiten: Chef, Admin, Buchhaltung, Meister.
+  Ein eigenes Lieferanten-Blatt gibt es in der Excel nicht – Lieferanten entstehen beim Import aus
+  Material-Spalte G; bei schon vorhandenem Material wird ein fehlender Lieferant ergänzt (sonst nichts geändert).
+- Material hat jetzt ein Feld „Lieferant“ (Auswahl im Formular, Anzeige auf der Karte).
+- Mitarbeiter (nur Chef/Admin): Kürzel, Name, Rolle im Betrieb, Telefon, Team-täglich verfügbar, Montage leiten,
+  Verfügbarkeit, Arbeitstage/-zeit, Eintritt, Wochenstunden, Urlaub, Stundensatz (für Kalkulation, von Hand),
+  Verknüpfung mit Programm-Zugang. Ausgeschiedene = inaktiv, nie löschen.
+- Import Blatt „Mitarbeiter“ (A–J, ab Zeile 4) + „Dashboard Steuerung“ (A, AB, AD, AJ ab Zeile 6, füllt nur
+  leere Felder). PINs werden nicht übernommen; eine PIN im Hinweistext wird geschwärzt.
+- Import-Bericht zeigt „+ x ergänzt“ und neu angelegte Lieferanten; Blattvorschau (Zeilen 1–5) für alle
+  nicht angebundenen Blätter, damit der Excel-Aufbau ohne Excel sichtbar ist.
+- 175 automatische Tests, alle grün.
+
 ## Nächstes Paket
-Etappe 1, Paket 4: **Lieferanten** und Paket 5: **Mitarbeiter** – wartet auf Bildschirmfotos von Chris.
+Nach Abnahme von Lieferanten + Mitarbeitern: **Etappe 2 – Geld**, Paket 1: **Rechnungen** (PDF, gesperrt nach
+Erstellen, XRechnung). Vorher klären: vorhandenen XRechnung-/DATEV-Code von Chris bekommen; Firmendaten
+(Blatt „Firmendaten“, versteckt) und Blätter „Rechnungen“/„Rechnungspositionen“ (versteckt) per Blattvorschau ansehen.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
@@ -118,7 +135,7 @@ Etappe 1, Paket 4: **Lieferanten** und Paket 5: **Mitarbeiter** – wartet auf B
 - Kein Makro gefunden. Laut Bildschirmfoto (13.11.) steht im Blatt **„Material“, Spalte G „Lieferant“**
   (Name, z. B. „Wickert“) – wird bisher nicht importiert. Beim Lieferanten-Paket: Lieferanten aus G anlegen
   und Material verknüpfen. Weitere Material-Überschriften Zeile 3: J Lagerbestand, K Reserviert(?).
-- Ob es ein eigenes Blatt „Lieferanten“ gibt, ist offen. Blatt „Mitarbeiter“ existiert (Aufbau offen).
+- Es gibt KEIN eigenes Blatt „Lieferanten“ (Blattliste 13.11. geprüft). Blatt „Mitarbeiter“: siehe Paket 5.
 
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)

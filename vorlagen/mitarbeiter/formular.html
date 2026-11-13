@@ -1,0 +1,19 @@
+{% extends "basis.html" %}
+{% block titel %}{{ titel }}{% endblock %}
+{% block pfad %} › <a href="{% url 'mitarbeiter:liste' %}">Mitarbeiter</a>{% if m %} › <a href="{{ m.get_absolute_url }}">{{ m.kuerzel }}</a> › Bearbeiten{% else %} › Neuer Mitarbeiter{% endif %}{% endblock %}
+{% block inhalt %}
+<h1>{{ titel }}</h1>
+<form method="post" class="karte">{% csrf_token %}
+  {% for feld in formular %}
+    {% if feld.field.widget.input_type == "checkbox" %}<label style="display:flex;gap:10px;align-items:center">{{ feld }} {{ feld.label }}</label>
+    {% else %}<label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>{{ feld }}{% endif %}
+    {% if feld.help_text %}<div class="hilfe">{{ feld.help_text }}</div>{% endif %}
+    {% if feld.name == "benutzer" %}<div class="hilfe">Nur nötig, wenn die Person sich selbst anmelden soll. Zugänge legst du unter „Benutzer“ an.</div>{% endif %}
+    {% if feld.name == "aktiv" %}<div class="hilfe">Ohne Haken = ausgeschieden. Mitarbeiter werden nicht gelöscht.</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+  {% endfor %}
+  {% for name, werte in formular.vorschlaege.items %}<datalist id="liste-{{ name }}">{% for w in werte %}<option value="{{ w }}">{% endfor %}</datalist>{% endfor %}
+  <p><button class="knopf" type="submit">Speichern</button>
+     <a class="knopf zweit" href="{% if m %}{{ m.get_absolute_url }}{% else %}{% url 'mitarbeiter:liste' %}{% endif %}">Abbrechen</a></p>
+</form>
+{% endblock %}

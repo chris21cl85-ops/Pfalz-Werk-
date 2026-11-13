@@ -1,0 +1,33 @@
+{% extends "basis.html" %}
+{% block titel %}{{ l.name }} – Lieferanten{% endblock %}
+{% block pfad %} › <a href="{% url 'lieferanten:liste' %}">Lieferanten</a> › {{ l.name }}{% endblock %}
+{% block inhalt %}
+<div class="leiste">
+  <a class="pfeil" href="{% url 'lieferanten:liste' %}">↑ Alle Lieferanten</a>
+  {% if vorheriger %}<a class="pfeil" href="{{ vorheriger.get_absolute_url }}">‹ Vorheriger</a>{% endif %}
+  {% if naechster %}<a class="pfeil" href="{{ naechster.get_absolute_url }}">Nächster ›</a>{% endif %}
+  <span class="grau">Lieferant {{ position }} von {{ gesamt }}</span>
+</div>
+<h1>{{ l.name }} {% if not l.aktiv %}<span class="marke-inaktiv">inaktiv</span>{% endif %}</h1>
+<div class="karte"><dl class="daten">
+  <dt>Ansprechpartner</dt><dd>{{ l.ansprechpartner|default:"–" }}</dd>
+  <dt>Telefon</dt><dd>{% if l.telefon %}<a href="tel:{{ l.telefon }}">{{ l.telefon }}</a>{% else %}–{% endif %}</dd>
+  <dt>E-Mail</dt><dd>{% if l.email %}<a href="mailto:{{ l.email }}">{{ l.email }}</a>{% else %}–{% endif %}</dd>
+  <dt>Adresse</dt><dd>{% if l.strasse %}{{ l.strasse }}
+{% endif %}{{ l.plz }} {{ l.ort }}{% if not l.strasse and not l.ort %}–{% endif %}</dd>
+  <dt>Webseite / Portal</dt><dd>{% if l.webseite %}<a href="{% if '://' not in l.webseite %}https://{% endif %}{{ l.webseite }}" target="_blank" rel="noopener">{{ l.webseite }}</a>{% else %}–{% endif %}</dd>
+  <dt>Unsere Kunden-Nr.</dt><dd>{{ l.unsere_kundennr|default:"–" }}</dd>
+  <dt>Zahlungsziel / Skonto</dt><dd>{% if l.zahlungsziel_tage is not None %}{{ l.zahlungsziel_tage }} Tage{% else %}–{% endif %} / {{ l.skonto|default:"–" }}</dd>
+  <dt>Hinweise</dt><dd>{{ l.hinweise|default:"–" }}</dd>
+</dl></div>
+<p><a class="knopf" href="{% url 'lieferanten:bearbeiten' l.pk %}">Bearbeiten</a></p>
+<h2>Material von diesem Lieferanten ({{ material|length }})</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Bezeichnung</th><th class="breit">Einheit</th><th style="text-align:right">EK netto</th></tr>
+  {% for m in material %}
+  <tr class="klickbar" onclick="location.href='{{ m.get_absolute_url }}'"><td class="nowrap">{{ m.materialnr }}</td>
+    <td><a href="{{ m.get_absolute_url }}">{{ m.bezeichnung }}</a></td><td class="breit">{{ m.einheit }}</td>
+    <td style="text-align:right" class="nowrap">{% if m.ek_netto is not None %}{{ m.ek_netto|floatformat:2 }} €{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4">Noch kein Material zugeordnet.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

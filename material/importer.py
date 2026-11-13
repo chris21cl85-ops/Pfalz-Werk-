@@ -7,6 +7,8 @@ from decimal import Decimal, InvalidOperation
 from importe.dienst import Importer, als_text, registrieren
 from projekte.importer import als_datum
 
+from lieferanten.models import Lieferant
+
 from .models import Material
 
 
@@ -45,7 +47,7 @@ class MaterialImporter(Importer):
     titel = "Material"
     reihenfolge = 30
     spalten = {"A": "materialnr", "B": "produktgruppe", "C": "bezeichnung", "D": "einheit",
-               "E": "ek_netto", "F": "mindestbestand", "H": "lieferzeit_tage", "I": "preis_hinweis",
+               "E": "ek_netto", "F": "mindestbestand", "G": "lieferant", "H": "lieferzeit_tage", "I": "preis_hinweis",
                "T": "untergruppe", "U": "staerke_mm", "V": "format", "W": "lagerartikel",
                "X": "aktiv", "Y": "beschaffungsart", "AF": "zielbestand", "AH": "lagerplatz",
                "AI": "referenzpreis_brutto", "AK": "preisquelle", "AL": "preisstand"}
@@ -54,6 +56,24 @@ class MaterialImporter(Importer):
 
     def __init__(self):
         self.gesehen = set()
+        self.neue_lieferanten = []
+
+    def _lieferant(self, zeile):
+        """Lieferant aus Spalte G – wird bei Bedarf neu angelegt."""
+        name = als_text(zeile.get("lieferant"))
+        if not name:
+            return None
+        lieferant = Lieferant.objects.filter(name__iexact=name).first()
+        if lieferant is None:
+            lieferant = Lieferant.objects.create(name=name, hinweise="Aus Excel (Blatt Material, Spalte G) übernommen.")
+            self.neue_lieferanten.append(name)
+        return lieferant
+
+    def zusatz(self):
+        if not self.neue_lieferanten:
+            return ""
+        return (f"{len(self.neue_lieferanten)} Lieferant(en) neu: " + ", ".join(self.neue_lieferanten[:15])
+                + (" …" if len(self.neue_lieferanten) > 15 else ""))
 
     def zeile_pruefen(self, zeile):
         nr = als_text(zeile["materialnr"])
@@ -69,8 +89,14 @@ class MaterialImporter(Importer):
 
     def zeile_uebernehmen(self, zeile):
         nr = als_text(zeile["materialnr"])
-        if Material.objects.filter(materialnr__iexact=nr).exists():
-            return "unveraendert"  # vorhandene Materialnummern werden nicht verändert (wie im Makro)
+        vorhanden = Material.objects.filter(materialnr__iexact=nr).first()
+        if vorhanden:
+            # Vorhandenes wird nicht verändert (wie im Makro) – nur ein fehlender Lieferant wird ergänzt
+            if vorhanden.lieferant_id is None and als_text(zeile.get("lieferant")):
+                vorhanden.lieferant = self._lieferant(zeile)
+                vorhanden.save(update_fields=["lieferant", "geaendert_am"])
+                return "geaendert"
+            return "unveraendert"
         werte, hinweise = {}, []
         for feld, titel in ZAHLFELDER.items():
             zahl = als_zahl(zeile[feld])
@@ -96,6 +122,7 @@ class MaterialImporter(Importer):
             lagerplatz=als_text(zeile["lagerplatz"]),
             preisquelle=als_text(zeile["preisquelle"]),
             preisstand=als_datum(zeile["preisstand"]),
+            lieferant=self._lieferant(zeile),
             hinweise="\n".join(hinweise),
             **werte,
         )

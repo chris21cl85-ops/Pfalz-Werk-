@@ -16,6 +16,7 @@
   <dt>Einheit</dt><dd>{{ m.einheit|default:"–" }}</dd>
   <dt>Stärke</dt><dd>{% if m.staerke_mm is not None %}{{ m.staerke_mm|floatformat:"-2" }} mm{% else %}–{% endif %}</dd>
   <dt>Format / Abmessung</dt><dd>{{ m.format|default:"–" }}</dd>
+  <dt>Lieferant</dt><dd>{% if m.lieferant %}{% if preise %}<a href="{{ m.lieferant.get_absolute_url }}">{{ m.lieferant.name }}</a>{% else %}{{ m.lieferant.name }}{% endif %}{% else %}–{% endif %}</dd>
   {% if preise %}
   <dt>Einkaufspreis netto</dt><dd>{% if m.ek_netto is not None %}{{ m.ek_netto|floatformat:2 }} € je {{ m.einheit|default:"Einheit" }}{% else %}–{% endif %}</dd>
   <dt>Referenzpreis brutto</dt><dd>{% if m.referenzpreis_brutto is not None %}{{ m.referenzpreis_brutto|floatformat:2 }} €{% else %}–{% endif %}</dd>
@@ -30,6 +31,6 @@
   <dt>Angelegt / geändert</dt><dd>{{ m.angelegt_am|date:"d.m.Y H:i" }} / {{ m.geaendert_am|date:"d.m.Y H:i" }}</dd>
 </dl>
 </div>
-<p class="grau">Aktueller Lagerbestand und Lieferanten folgen in den nächsten Paketen.</p>
+<p class="grau">Der aktuelle Lagerbestand folgt mit Etappe 3 (Lager).</p>
 {% if darf_bearbeiten %}<p><a class="knopf" href="{% url 'material:bearbeiten' m.pk %}">Bearbeiten</a></p>{% endif %}
 {% endblock %}

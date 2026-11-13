@@ -1,0 +1,27 @@
+{% extends "basis.html" %}
+{% block titel %}{{ m.name }} – Mitarbeiter{% endblock %}
+{% block pfad %} › <a href="{% url 'mitarbeiter:liste' %}">Mitarbeiter</a> › {{ m.kuerzel }}{% endblock %}
+{% block inhalt %}
+<div class="leiste">
+  <a class="pfeil" href="{% url 'mitarbeiter:liste' %}">↑ Alle Mitarbeiter</a>
+  {% if vorheriger %}<a class="pfeil" href="{{ vorheriger.get_absolute_url }}">‹ Vorheriger</a>{% endif %}
+  {% if naechster %}<a class="pfeil" href="{{ naechster.get_absolute_url }}">Nächster ›</a>{% endif %}
+  <span class="grau">Mitarbeiter {{ position }} von {{ gesamt }}</span>
+</div>
+<h1>{{ m.name }} ({{ m.kuerzel }}) {% if not m.aktiv %}<span class="marke-inaktiv">ausgeschieden</span>{% endif %}</h1>
+<div class="karte"><dl class="daten">
+  <dt>Rolle im Betrieb</dt><dd>{{ m.rolle|default:"–" }}</dd>
+  <dt>Telefon</dt><dd>{% if m.telefon %}<a href="tel:{{ m.telefon }}">{{ m.telefon }}</a>{% else %}–{% endif %}</dd>
+  <dt>Team-täglich verfügbar</dt><dd>{{ m.team_taeglich_verfuegbar|yesno:"Ja,Nein" }}</dd>
+  <dt>Kann Montage leiten</dt><dd>{{ m.kann_montage_leiten|yesno:"Ja,Nein" }}</dd>
+  <dt>Verfügbarkeit</dt><dd>{{ m.verfuegbarkeit|default:"–" }}</dd>
+  <dt>Arbeitstage / -zeit</dt><dd>{{ m.arbeitstage|default:"–" }}{% if m.arbeitszeit %} · {{ m.arbeitszeit }}{% endif %}</dd>
+  <dt>Eintritt</dt><dd>{{ m.eintritt|date:"d.m.Y"|default:"–" }}</dd>
+  <dt>Wochenstunden</dt><dd>{{ m.wochenstunden|floatformat:"-2"|default:"–" }}</dd>
+  <dt>Urlaubstage im Jahr</dt><dd>{{ m.urlaubstage|floatformat:"-1"|default:"–" }}</dd>
+  <dt>Stundensatz (Kalkulation)</dt><dd>{% if m.stundensatz is not None %}{{ m.stundensatz|floatformat:2 }} €{% else %}–{% endif %}</dd>
+  <dt>Zugang zum Programm</dt><dd>{% if m.benutzer %}{{ m.benutzer.username }} ({{ m.benutzer.get_rolle_display }}){% else %}keiner{% endif %}</dd>
+  <dt>Hinweise</dt><dd>{{ m.hinweise|default:"–" }}</dd>
+</dl></div>
+<p><a class="knopf" href="{% url 'mitarbeiter:bearbeiten' m.pk %}">Bearbeiten</a></p>
+{% endblock %}

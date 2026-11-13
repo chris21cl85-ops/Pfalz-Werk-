@@ -20,6 +20,8 @@ class Material(models.Model):
     preisquelle = models.CharField("Preisquelle", max_length=100, blank=True)
     preisstand = models.DateField("Preisstand", null=True, blank=True)
     preis_hinweis = models.CharField("Preishinweis", max_length=250, blank=True)
+    lieferant = models.ForeignKey("lieferanten.Lieferant", on_delete=models.PROTECT, null=True, blank=True,
+                                  related_name="material", verbose_name="Lieferant")
     lagerartikel = models.BooleanField("Lagerartikel", default=False)
     lagerplatz = models.CharField("Lagerplatz", max_length=100, blank=True)
     mindestbestand = models.DecimalField("Mindestbestand", max_digits=12, decimal_places=3, null=True, blank=True)

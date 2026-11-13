@@ -158,6 +158,8 @@ def ausfuehren(pfad, probelauf=True) -> dict:
                     # Auch im Probelauf wird „übernommen“ – am Ende aber alles zurückgerollt.
                     # So zeigt schon der Probelauf, was neu wäre und was schon da ist.
                     eintrag[imp.zeile_uebernehmen(zeile)] += 1
+                if hasattr(imp, "zusatz"):
+                    eintrag["zusatz"] = imp.zusatz()
                 bericht["blaetter"].append(eintrag)
             if probelauf:
                 transaction.set_rollback(True)

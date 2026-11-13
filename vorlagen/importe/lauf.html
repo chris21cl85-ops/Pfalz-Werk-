@@ -14,7 +14,8 @@
       <th>{% if lauf.bericht.probelauf %}Würde neu angelegt{% else %}Neu angelegt{% endif %}</th>
       <th>Schon vorhanden (bleibt unverändert)</th><th>Probleme</th></tr>
   {% for b in lauf.bericht.blaetter %}{% if b.importer %}
-  <tr><td><b>{{ b.blatt }}</b></td><td>{{ b.zeilen }}</td><td>{{ b.neu }}</td><td>{{ b.unveraendert }}</td>
+  <tr><td><b>{{ b.blatt }}</b>{% if b.zusatz %}<div class="hilfe">{{ b.zusatz }}</div>{% endif %}</td><td>{{ b.zeilen }}</td>
+      <td>{{ b.neu }}{% if b.geaendert %}<div class="hilfe">+ {{ b.geaendert }} ergänzt</div>{% endif %}</td><td>{{ b.unveraendert }}</td>
       <td>{% for f in b.fehler|slice:":10" %}<div class="fehler">{{ f }}</div>{% empty %}keine{% endfor %}
           {% if b.fehler|length > 10 %}<div class="grau">… und {{ b.fehler|length|add:"-10" }} weitere</div>{% endif %}</td></tr>
   {% endif %}{% endfor %}
