@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from kern.blaettern import aenderungen
@@ -55,7 +55,9 @@ def neu(request):
             rechnung = dienst.entwurf_anlegen(
                 projekt=d["projekt"], art=d["art"], benutzer=request.user,
                 leistungszeitraum=d["leistungszeitraum"], zahlungsziel=d["zahlungsziel"],
-                auftragswert=d.get("auftragswert"), abschlag_prozent=d.get("abschlag_prozent"))
+                auftragswert=d.get("auftragswert"), abschlag_prozent=d.get("abschlag_prozent"),
+                mit_xrechnung={"ja": True, "nein": False}.get(d["mit_xrechnung"]),
+                kaeufer_referenz=d["kaeufer_referenz"])
         except dienst.RechnungFehler as fehler:
             formular.add_error(None, str(fehler))
         else:
@@ -146,6 +148,17 @@ def pdf(request, pk):
     antwort = HttpResponse(inhalt, content_type="application/pdf")
     art = "attachment" if request.GET.get("laden") else "inline"
     antwort["Content-Disposition"] = f'{art}; filename="{name}"'
+    return antwort
+
+
+@rolle_erforderlich(*BUERO)
+def xml(request, pk):
+    rechnung = get_object_or_404(Rechnung, pk=pk)
+    if not rechnung.xml:
+        raise Http404("Zu dieser Rechnung gibt es keine XRechnung.")
+    protokolliere("rechnung_xml_abgerufen", rechnung.nummer, benutzer=request.user)
+    antwort = HttpResponse(bytes(rechnung.xml), content_type="application/xml; charset=utf-8")
+    antwort["Content-Disposition"] = f'attachment; filename="{rechnung.nummer}_XRechnung.xml"'
     return antwort
 
 

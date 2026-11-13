@@ -45,6 +45,12 @@ class NeueRechnungFormular(forms.Form):
                                       decimal_places=2)
     leistungszeitraum = forms.CharField(label="Leistungszeitraum", required=False, max_length=60)
     zahlungsziel = forms.ChoiceField(label="Zahlungsziel", choices=Rechnung.ZAHLUNGSZIELE, widget=forms.RadioSelect)
+    mit_xrechnung = forms.ChoiceField(
+        label="E-Rechnung (XRechnung)", widget=forms.RadioSelect, initial="auto", required=False,
+        choices=[("auto", "Automatisch: für Firmen und Behörden ja, für Privatkunden nein"),
+                 ("ja", "Ja, XRechnung mit erzeugen"), ("nein", "Nein, nur PDF")])
+    kaeufer_referenz = forms.CharField(label="Leitweg-ID / Bestellzeichen des Kunden", required=False,
+                                       max_length=100)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,7 +71,7 @@ class NeueRechnungFormular(forms.Form):
 class KopfFormular(forms.ModelForm):
     class Meta:
         model = Rechnung
-        fields = ["leistungszeitraum", "zahlungsziel"]
+        fields = ["leistungszeitraum", "zahlungsziel", "mit_xrechnung", "kaeufer_referenz"]
         widgets = {"zahlungsziel": forms.RadioSelect}
 
 
@@ -111,4 +117,16 @@ class FirmendatenFormular(forms.ModelForm):
         return neu
 
     def clean_iban(self):
-        return self.cleaned_data["iban"].replace(" ", "").upper()
+        iban = self.cleaned_data["iban"].replace(" ", "").upper()
+        if iban and not iban_gueltig(iban):
+            raise forms.ValidationError("Diese IBAN ist ungültig (Prüfziffer stimmt nicht). Bitte noch einmal abtippen.")
+        return iban
+
+
+def iban_gueltig(iban: str) -> bool:
+    """Prüfziffer nach ISO 13616 (Rest 1 bei Division durch 97) – wie BR-DE-19 der XRechnung."""
+    iban = iban.replace(" ", "").upper()
+    if len(iban) < 15 or not iban[:2].isalpha() or not iban[2:4].isdigit() or not iban.isalnum():
+        return False
+    umgestellt = iban[4:] + iban[:4]
+    return int("".join(str(int(z, 36)) for z in umgestellt)) % 97 == 1

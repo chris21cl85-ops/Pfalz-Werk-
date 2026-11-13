@@ -12,4 +12,5 @@ urlpatterns = [
     path("<int:pk>/festschreiben/", ansichten.festschreiben, name="festschreiben"),
     path("<int:pk>/verwerfen/", ansichten.verwerfen, name="verwerfen"),
     path("<int:pk>/pdf/", ansichten.pdf, name="pdf"),
+    path("<int:pk>/xrechnung/", ansichten.xml, name="xml"),
 ]

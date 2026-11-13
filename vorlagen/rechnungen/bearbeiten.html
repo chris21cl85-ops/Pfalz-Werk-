@@ -17,8 +17,14 @@
 <form method="post">{% csrf_token %}
   <div class="karte">
     {% for feld in kopf %}
+      {% if feld.field.widget.input_type == "checkbox" %}
+      <label style="display:flex;gap:10px;align-items:center">{{ feld }} {{ feld.label }}</label>
+      <div class="hilfe">Für Firmen und Behörden. Privatkunden brauchen nur das PDF.</div>
+      {% else %}
       <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
       {% if feld.name == "zahlungsziel" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+      {% endif %}
+      {% if feld.help_text %}<div class="hilfe">{{ feld.help_text }}</div>{% endif %}
       {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
     {% endfor %}
   </div>

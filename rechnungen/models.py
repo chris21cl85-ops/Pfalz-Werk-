@@ -131,6 +131,10 @@ class Rechnung(models.Model):
     status = models.CharField("Status", max_length=20, choices=Status.choices, default=Status.ENTWURF)
     leistungszeitraum = models.CharField("Leistungszeitraum", max_length=60, blank=True)
     zahlungsziel = models.CharField("Zahlungsziel", max_length=4, choices=ZAHLUNGSZIELE, default="14")
+    mit_xrechnung = models.BooleanField("E-Rechnung (XRechnung) mit erzeugen", default=False)
+    kaeufer_referenz = models.CharField(
+        "Leitweg-ID / Bestellzeichen des Kunden", max_length=100, blank=True,
+        help_text="Für Behörden die Leitweg-ID. Leer lassen = Kunden-Nr. wird verwendet.")
 
     # Wird beim Festschreiben gesetzt
     datum = models.DateField("Rechnungsdatum", null=True, blank=True)
@@ -146,6 +150,7 @@ class Rechnung(models.Model):
     empfaenger = models.TextField("Anschrift auf der Rechnung", blank=True)
     firma = models.JSONField("Firmendaten zum Zeitpunkt der Rechnung", default=dict, blank=True)
     pdf = models.BinaryField("PDF", null=True, blank=True, editable=False)
+    xml = models.BinaryField("XRechnung", null=True, blank=True, editable=False)
     pruefsumme = models.CharField("Prüfsumme", max_length=64, blank=True)
     festgeschrieben_am = models.DateTimeField("Festgeschrieben am", null=True, blank=True)
     festgeschrieben_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
@@ -227,6 +232,9 @@ class Rechnung(models.Model):
             "firma": self.firma,
             "pdf": hashlib.sha256(bytes(self.pdf or b"")).hexdigest(),
         }
+        if self.xml:  # nur wenn vorhanden – ältere Rechnungen ohne XRechnung behalten ihre Prüfsumme
+            daten["xml"] = hashlib.sha256(bytes(self.xml)).hexdigest()
+            daten["kaeufer_referenz"] = self.kaeufer_referenz
         return json.dumps(daten, ensure_ascii=False, sort_keys=True)
 
     def berechne_pruefsumme(self) -> str:

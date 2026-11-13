@@ -10,7 +10,7 @@ Letzte Aktualisierung: 13.11.2026
   die wirklich nur er tun kann (auf seinem Rechner, Passwörter, echte Daten, Abnahme).
   Kleine Entscheidungen trifft Claude mit der sicheren Variante und sagt es dazu.
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.0 (Etappe 2, Paket 1a).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.1 (Etappe 2, Paket 1b).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -124,7 +124,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 
 ## Etappe 2 – Geld: IN ARBEIT
 
-### Paket 1a: Rechnungen (Firmendaten, Entwurf, Festschreiben, PDF) – GEBAUT 13.11.2026, Abnahme offen
+### Paket 1a: Rechnungen (Firmendaten, Entwurf, Festschreiben, PDF) – ABGENOMMEN am 13.11.2026 („kann weiter gehen“)
 Fachliche Vorlage: Makro `PW_Rechnung.bas` (Drive, Stand 26.10.2026), vollständig gelesen.
 - Neue Kachel „Rechnungen“ und „Firmendaten“ (Bereich Geld). Rechte wie `Darf()` im Makro: Chef, Admin, Buchhaltung.
   Meister/Mitarbeiter sehen Rechnungen nicht (auch nicht auf der Projektkarte).
@@ -166,13 +166,44 @@ Vorher: `PFALZ-WERK starten.bat` doppelklicken (lädt die neue Fassung). Im Navi
    Paket 3). Zum Testen am besten erst mit einer Kopie arbeiten – oder bewusst die erste echte Rechnung nehmen.
 5. „Abschlagsrechnung“ mit Auftragswert 10.000,00 und 30 % → Entwurf zeigt 3.000,00 € netto.
 
+### Paket 1b: XRechnung – GEBAUT 13.11.2026, Abnahme offen
+Vorlage: `XmlSchreiben()`, `Einheitcode()`, `AdrXml()` aus `PW_Rechnung.bas` – Aufbau 1:1 übernommen
+(UN/CEFACT CII, XRechnung 3.0, Kennung `urn:xeinkauf.de:kosit:xrechnung_3.0`, Peppol-Prozess).
+- Pro Rechnung Auswahl „E-Rechnung (XRechnung)“: automatisch (Firmen/Behörden ja, Privatkunden nein), ja, nein.
+  Im Entwurf als Haken änderbar. Neues Feld „Leitweg-ID / Bestellzeichen des Kunden“ (BT-10); leer = Kunden-Nr.
+- XML wird beim Festschreiben erzeugt, in der Datenbank gespeichert (also in jeder Sicherung) und gehört zur
+  Prüfsumme. Ältere Rechnungen ohne XML behalten ihre Prüfsumme unverändert.
+- Knopf „⬇ XRechnung (XML)“ auf der Rechnungsseite; Abruf wird protokolliert.
+- Wie im Makro: Typ 380 Rechnung / 326 Abschlag; Kleinunternehmer = Steuerkategorie E mit Befreiungsgrund;
+  Skonto im Pflichtformat `#SKONTO#TAGE=7#PROZENT=2.00#`; Abzüge als negative Menge bei positivem Preis;
+  Einheiten: lfm/m→MTR, m²/qm→MTK, m³→MTQ, Std→HUR, kg→KGM, l→LTR, sonst C62.
+- Vor dem Festschreiben geprüft: Firmendaten Telefon + E-Mail + Steuernr./USt-IdNr.; Kunde braucht Straße, PLZ, Ort
+  in eigenen Feldern.
+- IBAN wird in den Firmendaten jetzt auf die Prüfziffer geprüft (Regel BR-DE-19).
+- **Prüfung**: Beim Bau alle Beispiele (Rechnung mit Skonto, Abschlag, Schluss mit Abzügen, Kleinunternehmer)
+  gegen das offizielle CII-Schema D16B geprüft → gültig. Alle Pflichtregeln BR-DE der XRechnung 3.0 und die
+  Summenregeln der EN 16931 sind als automatische Tests nachgebaut. Das offizielle KoSIT-Prüfprogramm (Java)
+  durfte in der Sitzung nicht laufen → siehe FEHLER.md Nr. 7 (einmal von Chris prüfen lassen).
+- 237 automatische Tests, alle grün.
+
+### So testest du es (Paket 1b)
+Vorher: `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.1“ stehen.
+1. Firmendaten: Telefon und E-Mail müssen ausgefüllt sein.
+2. Einen Kunden öffnen, der eine Firma ist (Kundenart nicht „Privat“) und Straße, PLZ, Ort hat → Projekt →
+   „+ Rechnung für dieses Projekt“ → bei „E-Rechnung“ steht „Automatisch“ → Entwurf anlegen, Position eintragen.
+3. Auf der Rechnungsseite steht „E-Rechnung: ja“. Festschreiben → Knopf „⬇ XRechnung (XML)“ erscheint.
+4. Prüfen beim Amt (kostenlos, ohne Anmeldung): Im Browser die Seite des offiziellen Prüfdienstes öffnen,
+   z. B. „xrechnung validator online“ suchen (Anbieter KoSIT oder ein bekannter Anbieter wie „ERPEL“ / „Belegmeister“),
+   die heruntergeladene XML-Datei hochladen → Ergebnis muss „gültig / valid“ sein. Ergebnis an Claude melden.
+5. Eine Rechnung für einen Privatkunden anlegen → „E-Rechnung: nein (nur PDF)“.
+
 ## Nächstes Paket
-**Etappe 2, Paket 1b: XRechnung** (CII-XML zur festgeschriebenen Rechnung). Vorlage: `XmlSchreiben()`,
-`Einheitcode()`, `AdrXml()` in `PW_Rechnung.bas` (Zeilen ~1116–1230). Im Makro wahlweise per Schalter „E-Rechnung“;
-braucht Telefon und E-Mail in den Firmendaten. XML gehört mit in die Prüfsumme → beim Festschreiben erzeugen.
-Danach: Paket 2 Zahlungen (Teil-/Skontozahlung, Status offen/bezahlt), Paket 3 Mahnungen + Storno
-(beide Logiken stehen in PW_Rechnung.bas: ZahlungBuchen, Mahnen, Stornieren), Paket 4 Eingangsrechnungen
-(PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
+**Etappe 2, Paket 2: Zahlungen** – Zahlungseingang buchen (voll, Teilzahlung, mit Skonto), Status offen/teilbezahlt/
+bezahlt, „Offen“-Betrag in der Liste. Vorlage: `ZahlungBuchen()` und Zahlungs-Teil von `Zusammenfassung()` in
+`PW_Rechnung.bas` (Blatt Zahlungen: Z-ID, Datum, Richtung, Beleg, Betrag, Skonto, Konto, erfasst von, Notiz).
+Wichtig: Rechnung bleibt gesperrt – Zahlungen sind eigene Datensätze; Status/Offen wird daraus berechnet.
+Danach: Paket 3 Mahnungen + Storno (`Mahnen()`, `Stornieren()`), Paket 4 Eingangsrechnungen (PW_Eingang.bas),
+Paket 5 Finanz-Übersicht + DATEV-Export.
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
 - **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen, XRechnung, Zahlung, Mahnung, Storno
 - **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF

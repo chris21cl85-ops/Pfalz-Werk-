@@ -19,10 +19,12 @@
   {% for feld in formular %}
     <div id="feld-{{ feld.name }}">
     <label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>
-    {% if feld.name == "art" or feld.name == "zahlungsziel" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+    {% if feld.name == "art" or feld.name == "zahlungsziel" or feld.name == "mit_xrechnung" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
     {% if feld.name == "projekt" %}<div class="hilfe">Der Kunde wird aus dem Projekt übernommen.</div>{% endif %}
     {% if feld.name == "abschlag_prozent" %}<div class="hilfe">Üblich: 30 oder 50.</div>{% endif %}
     {% if feld.name == "auftragswert" %}<div class="hilfe">Netto, mit Komma, z. B. 12500,00. Nur für Abschlags- und Schlussrechnung.</div>{% endif %}
+    {% if feld.name == "mit_xrechnung" %}<div class="hilfe">Die XRechnung ist die Rechnung als Datei für die Buchhaltung des Kunden. Behörden verlangen sie, Firmen müssen sie annehmen können.</div>{% endif %}
+    {% if feld.name == "kaeufer_referenz" %}<div class="hilfe">Nur nötig, wenn der Kunde eine verlangt (Behörden: Leitweg-ID). Sonst leer lassen.</div>{% endif %}
     {% if feld.name == "leistungszeitraum" %}<div class="hilfe">z. B. 11/2026 oder 01.10.–15.11.2026</div>{% endif %}
     {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
     </div>

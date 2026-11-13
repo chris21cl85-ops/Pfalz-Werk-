@@ -50,15 +50,22 @@ def letzter_auftragswert(projekt):
     return a.auftragswert if a else None
 
 
+def xrechnung_vorschlag(kunde) -> bool:
+    """E-Rechnung für Firmen und Behörden vorschlagen, nicht für Privatkunden."""
+    return "rivat" not in (kunde.kundenart or "")
+
+
 @transaction.atomic
 def entwurf_anlegen(*, projekt, art, benutzer, leistungszeitraum="", zahlungsziel="14",
-                    auftragswert=None, abschlag_prozent=None) -> Rechnung:
+                    auftragswert=None, abschlag_prozent=None, mit_xrechnung=None,
+                    kaeufer_referenz="") -> Rechnung:
     """Legt einen Entwurf an und schlägt Positionen vor (Abschlag/Schluss wie Positionen() im Makro)."""
     if art in (Rechnung.Art.ABSCHLAG, Rechnung.Art.SCHLUSS) and not auftragswert:
         raise RechnungFehler("Für Abschlags- und Schlussrechnungen bitte den Auftragswert (netto) eintragen.")
     rechnung = Rechnung.objects.create(
         projekt=projekt, kunde=projekt.kunde, art=art, leistungszeitraum=leistungszeitraum,
-        zahlungsziel=zahlungsziel, erstellt_von=benutzer,
+        zahlungsziel=zahlungsziel, erstellt_von=benutzer, kaeufer_referenz=kaeufer_referenz,
+        mit_xrechnung=xrechnung_vorschlag(projekt.kunde) if mit_xrechnung is None else mit_xrechnung,
         auftragswert=auftragswert if art != Rechnung.Art.RECHNUNG else None,
         abschlag_prozent=abschlag_prozent if art == Rechnung.Art.ABSCHLAG else None,
     )
@@ -114,6 +121,9 @@ def pruefen(rechnung) -> list[str]:
         fehlt.append("Der Rechnungsbetrag muss größer als 0 sein.")
     if not empfaenger_text(rechnung.kunde).count("\n"):
         fehlt.append(f"Beim Kunden {rechnung.kunde.kundennr} fehlt die Anschrift.")
+    if rechnung.mit_xrechnung:
+        from .xrechnung import fehlende_angaben
+        fehlt += fehlende_angaben(rechnung, fd)
     return fehlt
 
 
@@ -164,13 +174,17 @@ def festschreiben(rechnung, benutzer, heute: dt.date | None = None) -> Rechnung:
         rechnung.status = Rechnung.Status.OFFEN
         rechnung.festgeschrieben_von = benutzer
         rechnung.pdf = rechnung_pdf(rechnung)
+        if rechnung.mit_xrechnung:
+            from .xrechnung import xrechnung_xml
+            rechnung.xml = xrechnung_xml(rechnung)
         rechnung.pruefsumme = rechnung.berechne_pruefsumme()
         rechnung.festgeschrieben_am = timezone.now()
         rechnung.save()
         protokolliere("rechnung_festgeschrieben", rechnung.nummer, benutzer=benutzer, details=(
             f"{rechnung.titel} für {rechnung.kunde} · Projekt {rechnung.projekt.projektnr}\n"
             f"Netto {euro(rechnung.netto)} · USt {euro(rechnung.ust)} · Brutto {euro(rechnung.brutto)}\n"
-            f"Fällig {rechnung.faellig:%d.%m.%Y} · Prüfsumme {rechnung.pruefsumme}"))
+            f"Fällig {rechnung.faellig:%d.%m.%Y} · {'mit' if rechnung.xml else 'ohne'} XRechnung"
+            f" · Prüfsumme {rechnung.pruefsumme}"))
     return rechnung
 
 

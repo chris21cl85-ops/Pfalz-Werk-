@@ -20,6 +20,8 @@
   <dt>Zahlungsziel</dt><dd>{{ r.zahlungsziel_text }}</dd>
   {% endif %}
   <dt>Leistungszeitraum</dt><dd>{{ r.leistungszeitraum|default:"–" }}</dd>
+  <dt>E-Rechnung</dt><dd>{% if r.ist_festgeschrieben %}{% if r.xml %}XRechnung erzeugt{% else %}nein (nur PDF){% endif %}{% else %}{{ r.mit_xrechnung|yesno:"ja – XRechnung wird beim Festschreiben erzeugt,nein (nur PDF)" }}{% endif %}</dd>
+  {% if r.kaeufer_referenz %}<dt>Leitweg-ID / Bestellzeichen</dt><dd>{{ r.kaeufer_referenz }}</dd>{% endif %}
   {% if r.auftragswert %}<dt>Auftragswert netto</dt><dd>{{ r.auftragswert|floatformat:"2g" }} €</dd>{% endif %}
 </dl>
 </div>
@@ -42,7 +44,9 @@
 {% if r.ist_festgeschrieben %}
 <div class="karte" style="margin-top:20px">
   <p><a class="knopf" href="{% url 'rechnungen:pdf' r.pk %}" target="_blank">📄 PDF ansehen</a>
-     <a class="knopf zweit" href="{% url 'rechnungen:pdf' r.pk %}?laden=1">PDF herunterladen</a></p>
+     <a class="knopf zweit" href="{% url 'rechnungen:pdf' r.pk %}?laden=1">PDF herunterladen</a>
+     {% if r.xml %}<a class="knopf zweit" href="{% url 'rechnungen:xml' r.pk %}">⬇ XRechnung (XML)</a>{% endif %}</p>
+  {% if r.xml %}<p class="hilfe">Die XRechnung zusammen mit dem PDF an den Kunden schicken. Behörden laden sie in ihr Portal hoch.</p>{% endif %}
   <p class="grau">Festgeschrieben am {{ r.festgeschrieben_am|date:"d.m.Y H:i" }} von {{ r.festgeschrieben_von.get_full_name|default:r.festgeschrieben_von.username }}.
     Diese Rechnung kann nicht mehr geändert werden – Korrekturen später nur per Storno.</p>
   {% if pruefsumme_ok %}<p style="color:var(--gruen)">✔ Prüfsumme in Ordnung – die Rechnung ist unverändert.</p>
