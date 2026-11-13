@@ -101,7 +101,22 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
 
 ## Nächstes Paket
-Etappe 1, Paket 4: **Lieferanten** – Excel-Aufbau des Blatts klären (Bildschirmfoto der Kopfzeile von Chris oder Makro).
+Etappe 1, Paket 4: **Lieferanten** und Paket 5: **Mitarbeiter** – wartet auf Bildschirmfotos von Chris.
+
+### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
+- Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
+  A Kürzel (z. B. „CL“), B Name (z. B. „C.Lorenz“), M PIN (für die App „Mein Tag“),
+  AB Eintrittsdatum, AD Wochenstunden, AJ Urlaub; AC, AE–AI, AK = weitere Vertragswerte (Bedeutung offen).
+- Vertragswerte kommen aus Blatt „Arbeitsverträge“ (ab Zeile 8): A Vertrags-ID, B Mitarbeiter, E Status,
+  F→AB, G→AC, I→AD, J→AE, K→AF, L→AG, M→AH, N→AI, O→AJ, P→AK; Übernahme nur mit Freigabe + Protokoll.
+- PINs werden NICHT importiert (Regel: PINs gibt nur Chris ein).
+- Arbeitsgänge (Etappe 3/4) im Blatt „Produktion Arbeitsgänge“ ab Zeile 6: A AG-ID, C Projekt-ID,
+  E Arbeitsgang, G Mitarbeiter (Name oder Kürzel), K Status (Offen/In Arbeit/Fertig/Blockiert),
+  M Plan-Std., N Ist-Std., Q Begonnen am, R Fertig am.
+
+### Vorlage Lieferanten
+- Kein Makro gefunden; Blattname und Spalten unbekannt.
+
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
 Excel-Datei liegt in Chris' Google Drive: „Pfalz-Werk_Weniger_Buero_mehr_Handwerk_aktuell.xlsm“ (ca. 9 MB,
