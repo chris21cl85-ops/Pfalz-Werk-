@@ -115,7 +115,10 @@ Etappe 1, Paket 4: **Lieferanten** und Paket 5: **Mitarbeiter** – wartet auf B
   M Plan-Std., N Ist-Std., Q Begonnen am, R Fertig am.
 
 ### Vorlage Lieferanten
-- Kein Makro gefunden; Blattname und Spalten unbekannt.
+- Kein Makro gefunden. Laut Bildschirmfoto (13.11.) steht im Blatt **„Material“, Spalte G „Lieferant“**
+  (Name, z. B. „Wickert“) – wird bisher nicht importiert. Beim Lieferanten-Paket: Lieferanten aus G anlegen
+  und Material verknüpfen. Weitere Material-Überschriften Zeile 3: J Lagerbestand, K Reserviert(?).
+- Ob es ein eigenes Blatt „Lieferanten“ gibt, ist offen. Blatt „Mitarbeiter“ existiert (Aufbau offen).
 
 
 ### Vorlage: Excel-Fassung (aus Makro PFALZ_WERK_SQL_Erstuebertragung.bas, Stand DEV-28.4)
