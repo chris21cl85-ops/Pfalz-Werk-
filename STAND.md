@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 12.11.2026
+Letzte Aktualisierung: 13.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -70,7 +70,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - Das Navi-Rad der Excel selbst konnte Claude nicht sehen (nicht in den Makro-Dateien) – Aussehen ggf. nach
   Bildschirmfoto von Chris angleichen.
 
-### Paket 2: Projekte – gebaut, wartet auf Abnahme durch Chris
+### Paket 2: Projekte – ABGENOMMEN am 13.11.2026 (echter Import ok)
 - Projektliste mit Suche (Nr., Name, Kunde, Pate, Projektart, nächster Schritt) und Filter
   „Nur offene“ (ohne Abgeschlossen/Erledigt/Storniert/Abgerechnet/Archiviert) / „Alle“ / je Status.
 - Projektkarte mit Blätterpfeilen, Link zum Kunden; Anlegen/Bearbeiten mit Nummernvorschlag,
@@ -84,7 +84,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - Startprobleme 12.11.: alte Fassung lief noch; Startprogramm erkennt das jetzt und schreibt FEHLERBERICHT.txt.
   Danach lief Fassung 1.3 bei Chris („läuft“). Import der echten Projekte noch nicht von Chris gemeldet.
 
-### Paket 3: Material – gebaut, wartet auf Abnahme durch Chris
+### Paket 3: Material – ABGENOMMEN am 13.11.2026 (echter Import ok)
 - Materialliste mit Suche (Nr., Bezeichnung, Gruppe, Untergruppe, Format, Lagerplatz), Filter Produktgruppe,
   nur aktive / alle; Materialkarte mit Blätterpfeilen; Anlegen/Bearbeiten mit Komma-Zahlen, Vorschlagslisten.
 - Einkaufs- und Referenzpreise sehen nur Chef, Admin, Buchhaltung, Meister (nicht Mitarbeiter).
@@ -98,7 +98,6 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
 - 158 automatische Tests, alle grün.
 
 ### Offen
-- Abnahme Projekte und Material durch Chris inkl. Import mit der echten Excel.
 - Paket 4: Lieferanten, danach Mitarbeiter (Excel-Aufbau dieser Blätter noch unbekannt – kein Makro in Drive gefunden).
 
 ## Nächstes Paket
