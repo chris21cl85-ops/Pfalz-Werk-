@@ -1,0 +1,23 @@
+{% extends "basis.html" %}
+{% block titel %}Meine Arbeitsgänge – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'produktion:uebersicht' %}">Produktion</a> › Meine Arbeitsgänge{% endblock %}
+{% block inhalt %}
+{% include "produktion/_stil.html" %}
+<h1>Meine Arbeitsgänge</h1>
+{% if not m %}
+<div class="meldung info">Deinem Zugang ist noch kein Mitarbeiter zugeordnet. Das macht der Chef unter „Mitarbeiter“ (Feld „Zugang zum Programm“).</div>
+{% else %}
+<p class="grau" style="margin-top:-12px">{{ m.name }} · {{ ags|length }} offen · heute {{ heute|date:"l, d.m.Y" }}</p>
+{% for a in ags %}
+<div class="karte" id="ag-{{ a.pk }}" style="{% if a.status == 'In Arbeit' %}border-left:6px solid var(--tuerkis){% elif a.startbereit %}border-left:6px solid var(--minze){% endif %}">
+  <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div><b style="font-size:19px">{{ a.name }}</b>{% if a.prioritaet == "Hoch" %} <span class="fehler">● hoch</span>{% endif %}
+      <div class="hilfe">{{ a.projekt.projektnr }} · {{ a.projekt.name }}{% if a.bereich %} · {{ a.bereich }}{% endif %}</div>
+      <div class="hilfe">{% if a.plan_start %}Plan {{ a.plan_start|date:"D d.m." }}{% if a.plan_start < heute and a.status == "Geplant" %} <span class="fehler">überfällig</span>{% endif %} · {% endif %}{{ a.ist_std|floatformat:"-2" }} / {{ a.plan_std|floatformat:"-2" }} h</div></div>
+    <div style="text-align:right">{% if a.status == "In Arbeit" %}<b>▶ In Arbeit</b>{% else %}<span class="{% if a.startbereit %}ampel-gruen{% else %}ampel-grau{% endif %}">{{ a.startfreigabe }}</span>{% endif %}</div>
+  </div>
+  <div style="margin-top:10px">{% include "produktion/_ag_aktion.html" %}</div>
+</div>
+{% empty %}<p>Nichts offen – gute Arbeit. 🙂</p>{% endfor %}
+{% endif %}
+{% endblock %}

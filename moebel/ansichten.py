@@ -98,10 +98,21 @@ def detail(request, pk):
                 messages.success(request, f"{n} Materialpositionen als „Geplant“ in die Stückliste von "
                                           f"{position.projekt.projektnr} übernommen.")
             return redirect(position)
+        if aktion == "arbeitsgaenge":
+            from produktion import dienst as produktion
+            try:
+                n = produktion.aus_moebel(position, request.user)
+            except produktion.ProduktionsFehler as fehler:
+                messages.error(request, str(fehler))
+            else:
+                messages.success(request, f"{n} Arbeitsgänge angelegt ({position.positions_id}-AG01 … -AG{n:02d}). "
+                                          "Nächster Schritt: in der Produktion einplanen.")
+            return redirect(position)
     from kalkulation.models import Stuecklistenposition
     return render(request, "moebel/detail.html", {
         "p": position, "e": position.eingaben, "erg": _aufbereiten(position.ergebnis),
         "in_liste": Stuecklistenposition.objects.filter(moebel=position).select_related("material"),
+        "arbeitsgaenge": position.arbeitsgaenge.all(),
         "abweichungen": [(text, position.eingaben.get("abweichungen", {}).get(k)) for k, text in ABWEICHUNGEN
                          if position.eingaben.get("abweichungen", {}).get(k) is not None]})
 

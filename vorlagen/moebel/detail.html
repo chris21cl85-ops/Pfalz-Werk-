@@ -10,6 +10,8 @@
   <form method="post" style="display:contents">{% csrf_token %}<button class="knopf zweit" type="submit" name="aktion" value="kopieren">Als Variante kopieren</button></form>
   <form method="post" style="display:contents" onsubmit="return confirm('Materialbedarf als „Geplant“ in die Stückliste von {{ p.projekt.projektnr }} übernehmen?{% if in_liste %} Die bisherigen geplanten Zeilen dieses Möbels werden ersetzt.{% endif %}')">{% csrf_token %}
     <button class="knopf zweit" type="submit" name="aktion" value="stueckliste" {% if erg.ampel == 2 %}disabled title="Ampel rot – erst die Fehler beheben"{% endif %}>In Stückliste übernehmen</button></form>
+  {% if p.status != "Gespeichert" %}<form method="post" style="display:contents" onsubmit="return confirm('Arbeitsgänge für {{ p.positions_id }} in der Produktion anlegen (Status Geplant)?{% if arbeitsgaenge %} Noch geplante Arbeitsgänge dieser Position werden ersetzt.{% endif %}')">{% csrf_token %}
+    <button class="knopf zweit" type="submit" name="aktion" value="arbeitsgaenge">Arbeitsgänge übernehmen</button></form>{% endif %}
 </div>
 <div class="karte">
   <h3 style="margin-top:0">Eingaben</h3>
@@ -31,6 +33,11 @@
 <div class="karte"><h3 style="margin-top:0">In der Stückliste ({{ in_liste|length }} Zeilen)</h3>
   {% for x in in_liste %}<div>{{ x.bezeichnung }} – {{ x.menge|floatformat:"-3g" }} {{ x.einheit }} · <b>{{ x.status }}</b></div>{% endfor %}
   <p class="hilfe">Erneutes Übernehmen ersetzt diese Zeilen, solange sie „Geplant“ sind. Auf „Benötigt“ stellen geht in der <a href="{% url 'kalkulation:projekt' p.projekt.pk %}">Stückliste</a>.</p></div>
+{% endif %}
+{% if arbeitsgaenge %}
+<div class="karte"><h3 style="margin-top:0">Arbeitsgänge ({{ arbeitsgaenge|length }})</h3>
+  {% for a in arbeitsgaenge %}<div>{{ a.agid|slice:"-4:" }} · {{ a.name }} · <b>{{ a.status }}</b></div>{% endfor %}
+  <p class="hilfe"><a href="{% url 'produktion:projekt' p.projekt.pk %}">→ in der Produktion einplanen</a></p></div>
 {% endif %}
 {% include "moebel/_ergebnis.html" %}
 {% endblock %}

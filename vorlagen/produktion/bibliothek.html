@@ -1,0 +1,18 @@
+{% extends "basis.html" %}
+{% block titel %}Arbeitsgangbibliothek – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'produktion:uebersicht' %}">Produktion</a> › Bibliothek & Routen{% endblock %}
+{% block inhalt %}
+<h1>Bibliothek & Routen</h1>
+<p class="grau" style="margin-top:-12px">Wie Blätter „Produktion Arbeitsgangbibliothek“ und „Produktion Routenvorlagen“. Änderungen über den Excel-Import.</p>
+<h2 class="abschnitt">Arbeitsgangbibliothek ({{ vorlagen|length }})</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Code</th><th>Arbeitsgang</th><th class="breit">Kategorie</th><th>Typ</th><th class="breit" style="text-align:right">Folge</th><th class="breit">QM danach</th><th class="breit">Wartezeit</th></tr>
+  {% for v in vorlagen %}<tr><td class="nowrap">{{ v.code }}</td><td>{{ v.name }}</td><td class="breit">{{ v.kategorie }}</td><td>{{ v.typ }}</td>
+    <td class="breit" style="text-align:right">{{ v.standardfolge }}</td><td class="breit">{{ v.qm_danach|yesno:"Ja,–" }}</td><td class="breit">{{ v.wartezeit_moeglich|yesno:"möglich,–" }}</td></tr>{% endfor %}
+</table></div>
+<h2 class="abschnitt">Routenvorlagen</h2>
+{% for r in routen %}
+<details class="karte"><summary style="cursor:pointer;font-weight:600">{{ r.name }} <span class="grau">· {{ r.werkstoffgruppe }} · {{ r.schritte.all|length }} Schritte</span></summary>
+  <ol style="margin:10px 0 0">{% for s in r.schritte.all %}<li>{{ s.name }} <span class="hilfe">{{ s.code }}{% if s.plan_std %} · {{ s.plan_std|floatformat:"-2" }} h{% endif %}{% if s.wartezeit_std %} · Wartezeit {{ s.wartezeit_std|floatformat:"-2" }} h{% endif %}{% if s.hinweis %} · {{ s.hinweis }}{% endif %}</span></li>{% endfor %}</ol></details>
+{% empty %}<p>Keine Routen.</p>{% endfor %}
+{% endblock %}

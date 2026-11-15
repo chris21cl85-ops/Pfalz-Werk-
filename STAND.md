@@ -12,7 +12,7 @@ Letzte Aktualisierung: 15.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.2 (Etappe 3, Paket 2b).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.3 (Etappe 3, Paket 3a).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -429,7 +429,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Kalkulation ausfüllen → „Kalkulation speichern“ → VK erscheint → „Auftrag anlegen“ (Preis = VK vorgeschlagen).
 5. Freigaben: als Chef „Freigegeben“ bei Chef; Meister-Zeile ist für den Chef grau.
 
-### Paket 2b: Möbelrechner – GEBAUT 15.11.2026, Abnahme offen
+### Paket 2b: Möbelrechner – weitergegeben am 15.11.2026 (Chris: „dann weiter mit Teil B“)
 Vorlage: `PW_Moebelrechner.bas` (Stufe 1: TypVorgabe, TeilNeu, BedarfFinal, PlattenZaehlen, Prüfungen, RegelnAnlegen),
 Blätter „Möbel-Regeln“, „Möbel-Positionen“, „Möbelrechner“, „Möbel-Druck“. Neue App `moebel`.
 - Kachel „Möbelrechner“ (Chef, Admin, Meister). Aus „Kalkulation & Aufträge“ je Projekt: „📐 Möbelrechner“ / „+ Möbel rechnen“.
@@ -464,10 +464,53 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. „Teileliste drucken (PDF)“ und „Als Variante kopieren“ ausprobieren.
 5. Absichtlich falsch: Fachböden bei Breite 1200 und 2 Türen → Ampel rot, Übernahme gesperrt.
 
+### Paket 3a: Produktion + QM – GEBAUT 15.11.2026, Abnahme offen
+Teil (b) ist zu groß für ein Paket → 3a Produktion + QM (dieses), 3b Teams, Montageplan, Abwesenheiten, Kalender.
+Vorlage: `PW_Produktion.bas` (Produktions-Assistent Planen → Fertigung → QM → Montage → Fertig), `PW_Moebel_Arbeitsgaenge`
+im Möbelrechner, Blätter „Produktion Arbeitsgänge“ (Formeln Spalten V–AJ), „Produktion QM“ (Formel O),
+„Produktion Arbeitsgangbibliothe(k)“, „Produktion Routenvorlagen“. Neue App `produktion`.
+- Kachel „Produktion“ (alle Rollen): Projekte mit aktuellem Schritt, Zähler je Schritt, Suche; „Meine Arbeitsgänge“.
+- **Arbeitsgänge** entstehen (a) im Möbelrechner mit „Arbeitsgänge übernehmen“ (erst nach Stückliste; Codes wie
+  ArbeitsgaengeBilden: VOR-010, PL-010/020, KA-010, BE-010 bzw. CNC bei Regel CNC_JA, QM-010/020/040, MO-010/020,
+  LOG-010, Sortierung nach Standardfolge; IDs P-…-M01-AG01; geplante werden ersetzt, begonnene sperren),
+  (b) aus einer **Routenvorlage** (Plattenmöbel Standard, Massivholz verleimt, MDF lackiert – Startwerte aus der Excel),
+  (c) einzeln aus der **Arbeitsgangbibliothek** (28 Codes). Vorgänger-Kette automatisch.
+- **Startfreigabe** wie Spalte Z: 🟢 Start möglich, wenn Vorgänger fertig und seine QM-Prüfung freigegeben (oder keine);
+  🔒 wartet; 🔒 Nacharbeit/QM offen; Wartezeit-Arbeitsgänge (Trocknen) ⏱ bis Vorgänger-fertig + Wartezeit.
+- **Einplanen** (Chef/Admin/Meister): Startdatum + Mitarbeiter (nur wo leer) → Plan-Start/-Ende nach Plan-Stunden,
+  8 h/Tag, ohne Wochenende (0 h zählt als 1 h, wie Makro). Arbeitsgang bearbeiten/entfernen (nur geplant, ohne Stunden).
+- **Fertigung** (alle): Starten (nur bei grüner Freigabe; Mitarbeiter = eigener, falls leer), Rückmelden mit Stunden
+  (Zwischenstand oder Fertig). Lohnkosten Ist = Ist-Std. × Stundensatz (Anzeige; fließt noch nicht in die Kalkulation).
+- **QM-Endkontrolle** (Chef/Admin/Meister) nach allen fertigen Arbeitsgängen: Bestanden → freigegeben; Nicht bestanden →
+  Arbeitsgang „Nacharbeit: …“ (P-…-NA01, Priorität hoch, morgen, letzter Mitarbeiter), Projekt zurück in die Fertigung.
+  Verbesserung zur Excel: Die spätere bestandene Nachprüfung schließt die alte gesperrte Prüfung (Nacharbeit erledigt,
+  Nachprüfung bestanden) – in der Excel blieb sie gesperrt.
+- **Import**: Bibliothek (aktualisiert Codes), Routenvorlagen (nur neue Routen), Arbeitsgänge (A–U, AD, AE; Vorgänger
+  am Ende verknüpft; vorhandene AG-IDs nie überschrieben), QM (A–N). Mitarbeiter über Kürzel oder Name.
+- Noch nicht: Montageplan, Teams, Abwesenheits-Warnung beim Planen, Kalender (→ 3b); „Produktion Fertigungsroute“ als
+  eigenes Blatt (Route wird direkt zu Arbeitsgängen), Handy-Ableger (dafür „Meine Arbeitsgänge“ im Browser).
+- 404 automatische Tests, alle grün.
+
+### So testest du es (Etappe 3, Paket 3a)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 3.3“ stehen.
+1. Excel-Import erneut → im Bericht: Arbeitsgangbibliothek, Routenvorlagen, Arbeitsgänge, QM-Prüfungen.
+2. Möbelrechner: ein Möbel „In Stückliste übernehmen“ → „Arbeitsgänge übernehmen“ → 11 Arbeitsgänge.
+3. Kachel „Produktion“ → Projekt → „Einplanen“ mit Startdatum und Mitarbeiter → Plan-Daten erscheinen.
+4. Ersten Arbeitsgang „▶ Starten“, Stunden eintragen (z. B. 2,5) → „✓ Fertig“ → der nächste wird grün.
+5. Alle fertig → QM „Nicht bestanden“ mit Mangel → Nacharbeit erscheint; fertig melden → QM „Bestanden“ → Schritt „Montage“.
+6. Optional: Mitarbeiter-Zugang mit Mitarbeiter verknüpfen → als dieser anmelden → „Meine Arbeitsgänge“.
+
 ## Nächstes Paket
-**Etappe 3 (b): Produktion + QM** – Blatt „Produktion Arbeitsgänge“, Routenvorlagen (70), AG-Bibliothek; danach
-Montageplan und Kalender. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (dort auch PW_Seitenrad.bas = Navi-Rad der Excel).
-- Möbelrechner-Ausbau (Stufen 2–6, s. o.) und Excel-Inventur (Blätter 25–32, 62–68) als eigene Pakete.
+**Etappe 3, Paket 3b: Teams, Montageplan, Abwesenheiten, Kalender** – Vorlage `PW_Produktion.bas` (MontageZeigen/
+MontageSpeichern, Teams), `PW_Kalender.bas` (Woche nach Team/Mitarbeiter/Projekt aus Zeitplan, Montageplan,
+Arbeitsgängen, Abwesenheiten), Blätter „Teams“ (A–L, Mitglieder ab Zeile 110: A Team-ID, B Mitarbeiter, F aktiv),
+„Montageplan“ (B Projekt, C Adresse, D Datum, E/F Zeit, G Team, I Aufgaben, L Fahrzeug, Q Ergebnis), „Zeitplan“
+(B MA, C Datum, D/E Zeit, F Projekt, H Aufgabe, I Ort, J Team, K Terminart), „Zeitdaten“ (B MA, C/D von–bis, E Zeitart,
+H Status). Danach Phase „Fertig“ (Montage bestanden) → Schlussrechnung.
+Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (PW_Kalender.bas 1U5_R_VN_KdWrryMP5L231L_Vr06c7pKv,
+PW_Produktion.bas 1ayWS6I25eCX8G3onNFkuBbg0_Ha-tjC0).
+- Möbelrechner-Ausbau (Stufen 2–6) und Excel-Inventur (Blätter 25–32, 62–68) als eigene Pakete.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

@@ -67,13 +67,14 @@ class MoebelPosition(models.Model):
     class Status(models.TextChoices):
         ENTWURF = "Gespeichert", "Gespeichert"
         STUECKLISTE = "In Stückliste", "In Stückliste (Geplant)"
+        ARBEITSGAENGE = "In Stückliste + Arbeitsgänge", "In Stückliste + Arbeitsgänge"
 
     projekt = models.ForeignKey("projekte.Projekt", on_delete=models.PROTECT, related_name="moebel")
     pos = models.CharField("Position", max_length=10)
     bezeichnung = models.CharField("Bezeichnung", max_length=200)
     eingaben = models.JSONField(default=dict)
     ergebnis = models.JSONField(default=dict)
-    status = models.CharField("Status", max_length=20, choices=Status.choices, default=Status.ENTWURF)
+    status = models.CharField("Status", max_length=40, choices=Status.choices, default=Status.ENTWURF)
     version = models.PositiveIntegerField("Version", default=1)
     gespeichert_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
                                         related_name="+")

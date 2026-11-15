@@ -1,0 +1,34 @@
+{% extends "basis.html" %}
+{% block titel %}Produktion – PFALZ-WERK{% endblock %}
+{% block pfad %} › Produktion{% endblock %}
+{% block inhalt %}
+{% include "produktion/_stil.html" %}
+<h1>Produktion</h1>
+<p class="grau" style="margin-top:-12px">Planen → Fertigung → QM → Montage → Fertig. Ein Projekt antippen.</p>
+<div class="zahlen" style="margin-bottom:20px">
+  {% for name, n in zaehler %}<div class="zahl {% if forloop.counter == 2 %}blau{% elif forloop.counter == 3 %}warn{% endif %}"><small>{{ name }}</small><b>{{ n }}</b><small>Projekte</small></div>{% endfor %}
+</div>
+<div class="leiste">
+  <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;flex:1">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen (Projekt, Kunde)" style="max-width:280px">
+    <select name="nur" style="max-width:260px" onchange="this.form.submit()">
+      <option value="offen" {% if nur == "offen" %}selected{% endif %}>Offene Projekte</option>
+      <option value="mit" {% if nur == "mit" %}selected{% endif %}>Nur mit Arbeitsgängen</option>
+      <option value="alle" {% if nur == "alle" %}selected{% endif %}>Alle Projekte</option>
+    </select></form>
+  {% if meine is not None %}<a class="knopf" href="{% url 'produktion:meine' %}">👷 Meine Arbeitsgänge ({{ meine }})</a>{% endif %}
+  <a class="knopf zweit" href="{% url 'produktion:bibliothek' %}">Bibliothek & Routen</a>
+</div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Projekt</th><th class="breit">Kunde</th><th>Schritt</th><th style="text-align:right">Arbeitsgänge</th><th class="breit" style="text-align:right">Std. Ist / Soll</th><th class="breit">QM</th></tr>
+  {% for z in zeilen %}
+  <tr class="klickbar" onclick="location.href='{% url 'produktion:projekt' z.p.pk %}'">
+    <td><a href="{% url 'produktion:projekt' z.p.pk %}">{{ z.p.projektnr }}</a><div class="hilfe">{{ z.p.name|truncatechars:40 }}</div></td>
+    <td class="breit">{{ z.p.kunde.name }}</td>
+    <td><span class="schritt jetzt" style="padding:4px 12px;font-size:14px">{{ z.schritt }}</span></td>
+    <td class="nowrap" style="text-align:right">{% if z.d.n %}{{ z.d.fertig }} / {{ z.d.n }}{% else %}–{% endif %}</td>
+    <td class="nowrap breit" style="text-align:right">{% if z.d.n %}{{ z.d.ist|floatformat:"-1" }} / {{ z.d.soll|floatformat:"-1" }} h{% else %}–{% endif %}</td>
+    <td class="breit">{% if z.d.qm == 1 %}<span class="ampel-gruen">✓ freigegeben</span>{% elif z.d.qm == 2 %}<span class="fehler">gesperrt</span>{% else %}<span class="grau">–</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6">Keine Projekte in dieser Ansicht.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

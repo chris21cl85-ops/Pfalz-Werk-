@@ -1,0 +1,1 @@
+<div class="schritte">{% for i, s in schritte %}<span class="schritt {% if i < phase %}fertig{% elif i == phase %}jetzt{% endif %}">{% if i < phase %}✓ {% endif %}{{ s }}</span>{% endfor %}</div>

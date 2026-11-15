@@ -30,5 +30,6 @@ urlpatterns = [
     path("lager/", include("lager.urls")),
     path("kalkulation/", include("kalkulation.urls")),
     path("moebel/", include("moebel.urls")),
+    path("produktion/", include("produktion.urls")),
     path("verwaltung/", admin.site.urls),
 ]

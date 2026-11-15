@@ -1,0 +1,9 @@
+{# Starten / Rückmelden für einen Arbeitsgang a #}
+{% if a.status == "Geplant" %}
+  {% if a.startbereit %}<form method="post" class="inline">{% csrf_token %}<input type="hidden" name="ag" value="{{ a.pk }}"><button class="knopf" name="aktion" value="starten">▶ Starten</button></form>{% endif %}
+{% elif a.status == "In Arbeit" %}
+  <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="ag" value="{{ a.pk }}"><input type="hidden" name="aktion" value="rueckmelden">
+    {{ rueck.stunden }} h
+    <button class="knopf zweit" name="fertig" value="0">Zwischenstand</button>
+    <button class="knopf" name="fertig" value="1" onclick="return confirm('„{{ a.name|escapejs }}“ fertig melden?')">✓ Fertig</button></form>
+{% endif %}

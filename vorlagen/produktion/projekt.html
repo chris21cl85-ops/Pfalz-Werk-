@@ -1,0 +1,77 @@
+{% extends "basis.html" %}
+{% block titel %}{{ p.projektnr }} – Produktion{% endblock %}
+{% block pfad %} › <a href="{% url 'produktion:uebersicht' %}">Produktion</a> › {{ p.projektnr }}{% endblock %}
+{% block inhalt %}
+{% include "produktion/_stil.html" %}
+<h1>{{ p.projektnr }} · {{ p.name }}</h1>
+<p class="grau" style="margin-top:-12px">Kunde {{ p.kunde.name }} · <a href="{{ p.get_absolute_url }}">Projektkarte</a>{% if leitung %} · <a href="{% url 'kalkulation:projekt' p.pk %}">Stückliste & Kalkulation</a> · <a href="{% url 'moebel:liste' %}?projekt={{ p.pk }}">Möbelrechner</a>{% endif %}</p>
+{% include "produktion/_schritte.html" with phase=d.phase %}
+<div class="zahlen" style="margin-bottom:22px">
+  <div class="zahl"><small>Arbeitsgänge fertig</small><b>{% if d.n %}{{ d.fertig }} / {{ d.n }}{% else %}–{% endif %}</b><small>{{ d.gestartet }} begonnen</small></div>
+  <div class="zahl blau"><small>Stunden Ist / Soll</small><b>{{ d.ist|floatformat:"-1" }} / {{ d.soll|floatformat:"-1" }}</b><small>Plan-Stunden aus den Arbeitsgängen</small></div>
+  <div class="zahl warn"><small>Lohnkosten Ist</small><b>{{ d.lohn|floatformat:"2g" }} €</b><small>Ist-Std. × Stundensatz</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>QM</small><b>{% if d.qm == 1 %}✓ frei{% elif d.qm == 2 %}gesperrt{% else %}offen{% endif %}</b><small>Endkontrolle</small></div>
+</div>
+
+<h2 class="abschnitt">Arbeitsgänge</h2>
+{% if moebel_ohne_ag and leitung %}<div class="meldung info">Möbel in der Stückliste ohne Arbeitsgänge:
+  {% for m in moebel_ohne_ag %}<a href="{{ m.get_absolute_url }}">{{ m.positions_id }} {{ m.bezeichnung }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+  – dort „Arbeitsgänge übernehmen“.</div>{% endif %}
+<div class="tabelle-rahmen"><table>
+  <tr><th>Arbeitsgang</th><th class="breit">Mitarbeiter</th><th class="breit">Plan</th><th style="text-align:right" class="nowrap">Ist / Soll</th><th>Status</th><th>Start</th><th></th></tr>
+  {% for a in ags %}
+  <tr id="ag-{{ a.pk }}" class="ag-zeile {% if a.status == 'Fertig' %}fertig{% endif %}">
+    <td><b>{{ a.name }}</b>{% if a.prioritaet == "Hoch" %} <span class="fehler">● hoch</span>{% endif %}<div class="hilfe">{{ a.agid }}{% if a.bereich %} · {{ a.bereich }}{% endif %}{% if a.problem %} · ⚠ {{ a.problem }}{% endif %}</div></td>
+    <td class="breit">{{ a.mitarbeiter.name|default:"–" }}</td>
+    <td class="breit nowrap">{% if a.plan_start %}{{ a.plan_start|date:"d.m." }}{% if a.plan_ende and a.plan_ende != a.plan_start %} – {{ a.plan_ende|date:"d.m." }}{% endif %}{% else %}<span class="grau">offen</span>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ a.ist_std|floatformat:"-2" }} / {{ a.plan_std|floatformat:"-2" }} h</td>
+    <td class="nowrap">{% if a.status == "Fertig" %}✓ Fertig<div class="hilfe">{{ a.fertig_am|date:"d.m. H:i" }}</div>{% elif a.status == "In Arbeit" %}▶ In Arbeit{% else %}Geplant{% endif %}</td>
+    <td style="min-width:120px">{% if a.status == "Geplant" %}<span class="{% if a.startbereit %}ampel-gruen{% else %}ampel-grau{% endif %}">{{ a.startfreigabe }}</span>{% else %}<span class="grau">–</span>{% endif %}</td>
+    <td style="min-width:330px">{% include "produktion/_ag_aktion.html" %}
+      {% if leitung %}<div class="inline" style="margin-top:4px"><a class="pfeil" href="{% url 'produktion:bearbeiten' a.pk %}" title="Bearbeiten" style="padding:4px 10px">✎</a>
+        {% if a.status == "Geplant" and not a.ist_std %}<form method="post" onsubmit="return confirm('{{ a.agid }} entfernen?')">{% csrf_token %}<input type="hidden" name="ag" value="{{ a.pk }}"><button class="pfeil" name="aktion" value="entfernen" title="Entfernen" style="padding:4px 10px">✕</button></form>{% endif %}</div>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7">Für {{ p.projektnr }} gibt es noch keine Arbeitsgänge.{% if leitung %} Im Möbelrechner „Arbeitsgänge übernehmen“ oder unten eine Route wählen.{% endif %}</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">Ein Arbeitsgang startet erst, wenn der Vorgänger fertig ist und dessen QM-Prüfung (falls vorhanden) freigegeben ist. Wartezeiten (Trocknen, Abbinden) laufen ab „Vorgänger fertig“.</p>
+
+{% if leitung %}
+<div class="raster" style="gap:18px">
+  <form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="planen">
+    <h3 style="margin-top:0">1 · Einplanen</h3>
+    {% for feld in f.planen %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}{% endfor %}
+    <p class="hilfe">Plan-Start je Arbeitsgang nach Plan-Stunden (8 h/Tag, ohne Wochenende), Reihenfolge wie in der Liste. Fertige bleiben unverändert.</p>
+    <button class="knopf" type="submit" {% if not ags %}disabled{% endif %}>Einplanen</button></form>
+  <form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="route">
+    <h3 style="margin-top:0">+ Route übernehmen</h3>
+    {% for feld in f.route %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}{% endfor %}
+    <p class="hilfe">Standardrouten sind Startpunkte – danach ergänzen, entfernen oder ändern.</p>
+    <button class="knopf zweit" type="submit">Route anlegen</button></form>
+  <form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="einzeln">
+    <h3 style="margin-top:0">+ Einzelner Arbeitsgang</h3>
+    {% for feld in f.einzeln %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}{% endfor %}
+    <button class="knopf zweit" type="submit" style="margin-top:12px">Anhängen</button></form>
+</div>
+{% endif %}
+
+<h2 class="abschnitt">QM · Endkontrolle</h2>
+{% if leitung %}
+  {% if d.phase >= 2 %}
+  <form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="qm">
+    <h3 style="margin-top:0">{% if d.qm == 2 %}Nachprüfung nach Nacharbeit{% else %}Endkontrolle{% endif %}</h3>
+    <div class="wahl">{{ f.qm.ergebnis }}</div>{% for x in f.qm.ergebnis.errors %}<div class="fehler">{{ x }}</div>{% endfor %}
+    <label for="{{ f.qm.abweichung.id_for_label }}">{{ f.qm.abweichung.label }}</label>{{ f.qm.abweichung }}{% for x in f.qm.abweichung.errors %}<div class="fehler">{{ x }}</div>{% endfor %}
+    <p class="hilfe">Nicht bestanden legt einen Arbeitsgang „Nacharbeit“ an (Priorität hoch, morgen) – das Projekt geht zurück in die Fertigung.</p>
+    <button class="knopf" type="submit">Speichern</button></form>
+  {% else %}<p class="grau">QM kommt nach der Fertigung – erst alle Arbeitsgänge fertig melden.</p>{% endif %}
+{% endif %}
+{% if pruefungen %}
+<div class="tabelle-rahmen"><table>
+  <tr><th>QM-ID</th><th>Datum</th><th class="breit">Prüfer</th><th>Ergebnis</th><th class="breit">Abweichung / Nacharbeit</th><th>Freigabe</th></tr>
+  {% for q in pruefungen %}<tr><td>{{ q.qmid }}</td><td>{{ q.datum|date:"d.m.Y" }}</td><td class="breit">{{ q.pruefer }}</td><td>{{ q.ergebnis }}</td>
+    <td class="breit">{{ q.abweichung|default:"–" }}{% if q.nacharbeit_ag %}<div class="hilfe">→ {{ q.nacharbeit_ag.agid }}{% if q.nachpruefung %} · Nachprüfung {{ q.nachpruefung }}{% endif %}</div>{% endif %}</td>
+    <td>{% if q.freigabe == "Freigegeben" %}<span class="ampel-gruen">✓ Freigegeben</span>{% else %}<span class="fehler">Gesperrt</span>{% endif %}</td></tr>{% endfor %}
+</table></div>{% endif %}
+
+<h2 class="abschnitt">Montage</h2>
+<p class="grau">{% if d.phase >= 3 %}QM ist freigegeben – die Montage wird eingeplant, sobald der Montageplan da ist (kommt in Paket 3b mit Teams und Kalender).{% else %}Montage kommt nach der QM-Freigabe.{% endif %}</p>
+{% endblock %}
