@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "kalkulation",
     "moebel",
     "produktion",
+    "planung",
 ]
 
 MIDDLEWARE = [

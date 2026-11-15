@@ -1,0 +1,20 @@
+{% extends "basis.html" %}
+{% block titel %}Teams – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:kalender' %}">Montage & Kalender</a> › Teams{% endblock %}
+{% block inhalt %}
+{% include "planung/_reiter.html" with aktiv="teams" %}
+<h1>Teams</h1>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Team</th><th>Art</th><th>Mitglieder</th><th class="breit" style="text-align:right">abwesend diese Woche</th></tr>
+  {% for z in zeilen %}<tr class="klickbar" onclick="location.href='{% url 'planung:team' z.t.pk %}'">
+    <td><a href="{% url 'planung:team' z.t.pk %}">{{ z.t.name }}</a><div class="hilfe">{{ z.t.teamid }}</div></td><td>{{ z.t.art }}</td>
+    <td>{% for m in z.leute %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="fehler">noch niemand</span>{% endfor %}</td>
+    <td class="breit" style="text-align:right">{% if z.weg %}<span class="fehler">{{ z.weg }}</span>{% else %}0{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4">Noch keine Teams.</td></tr>{% endfor %}
+</table></div>
+{% if leitung %}
+<form method="post" class="karte" style="max-width:520px">{% csrf_token %}<h3 style="margin-top:0">+ Neues Team</h3>
+  {% for feld in form %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}{% endfor %}
+  <p><button class="knopf" type="submit">Team anlegen</button></p></form>
+{% endif %}
+{% endblock %}

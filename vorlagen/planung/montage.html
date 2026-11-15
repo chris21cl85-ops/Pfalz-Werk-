@@ -1,0 +1,37 @@
+{% extends "basis.html" %}
+{% block titel %}Montage {{ p.projektnr }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:montageplan' %}">Montageplan</a> › {{ p.projektnr }}{% endblock %}
+{% block inhalt %}
+{% include "produktion/_stil.html" %}
+<h1>Montage · {{ p.projektnr }} {{ p.name }}</h1>
+<p class="grau" style="margin-top:-12px">Kunde {{ p.kunde.name }} · <a href="{% url 'produktion:projekt' p.pk %}">Produktion</a></p>
+{% include "produktion/_schritte.html" with phase=phase %}
+{% if phase < 3 %}
+  <div class="meldung info">Montage kommt nach der QM-Freigabe. Erst in der <a href="{% url 'produktion:projekt' p.pk %}">Produktion</a> alle Arbeitsgänge fertig melden und die Endkontrolle bestehen.</div>
+{% else %}
+  {% if m %}
+  <div class="karte" style="border-left:6px solid {% if m.ergebnis == 'Bestanden' %}var(--gruen){% elif m.ergebnis %}var(--rot){% else %}var(--tuerkis){% endif %}">
+    <h3 style="margin-top:0">{{ m.datum|date:"l, d.m.Y" }} · {{ m.beginn|time:"H:i" }}–{{ m.ende|time:"H:i" }} · {{ m.team.name }}{% if m.fahrzeug %} · {{ m.fahrzeug }}{% endif %}</h3>
+    <div>{{ m.adresse|default:"Adresse offen" }}</div><div class="hilfe">{{ m.aufgaben }}{% if m.material %} · Material: {{ m.material }}{% endif %}{% if m.werkzeug %} · Werkzeug: {{ m.werkzeug }}{% endif %}{% if m.hinweise %} · {{ m.hinweise }}{% endif %}</div>
+    <div class="hilfe">Im Kalender bei: {% for t in termine %}{{ t.mitarbeiter.name }}{% if not forloop.last %}, {% endif %}{% empty %}–{% endfor %}</div>
+    <p><b>Ergebnis:</b> {% if m.ergebnis %}{{ m.ergebnis }} ({{ m.ergebnis_am|date:"d.m.Y H:i" }}){% else %}offen{% endif %}</p>
+    {% if m.ergebnis != "Bestanden" %}
+    <form method="post" class="leiste">{% csrf_token %}
+      <button class="knopf" name="aktion" value="Bestanden" onclick="return confirm('Montage bestanden – Projekt ist damit fertig?')">✓ Montage bestanden</button>
+      <button class="knopf zweit" name="aktion" value="Nacharbeit erforderlich">Nacharbeit erforderlich</button>
+      <a class="knopf zweit" href="?neu=1">Neu planen</a></form>
+    {% else %}<p style="color:var(--gruen);font-weight:600">Projekt fertig – weiter zur <a href="{% url 'rechnungen:neu' %}">Schlussrechnung</a>.</p>{% endif %}
+  </div>
+  {% endif %}
+  {% if neu_planen and m.ergebnis != "Bestanden" %}
+  <form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="planen">
+    <h3 style="margin-top:0">{% if m %}Termin ändern{% else %}Wann, wer, womit?{% endif %}</h3>
+    {% if warnungen %}<div class="meldung warning">{% for w in warnungen %}<div>⚠ {{ w }}</div>{% endfor %}<div style="margin-top:6px"><b>Du entscheidest – speichern geht trotzdem.</b></div></div>{% endif %}
+    <div class="raster">{% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}</div>
+    <p class="hilfe">Jedes Teammitglied bekommt den Termin im Kalender. Abwesenheiten und doppelt vergebene Teams/Fahrzeuge werden vorher gemeldet.</p>
+    {% if warnungen %}<button class="knopf" type="submit" name="trotzdem" value="1">Trotzdem eintragen</button> <button class="knopf zweit" type="submit">Erneut prüfen</button>
+    {% else %}<button class="knopf" type="submit">{% if m %}Termin ändern{% else %}In Montageplan eintragen{% endif %}</button>{% endif %}
+  </form>
+  {% endif %}
+{% endif %}
+{% endblock %}

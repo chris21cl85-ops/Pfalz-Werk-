@@ -1,0 +1,26 @@
+{% extends "basis.html" %}
+{% block titel %}{{ t.name }} – Teams{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:kalender' %}">Montage & Kalender</a> › <a href="{% url 'planung:teams' %}">Teams</a> › {{ t.name }}{% endblock %}
+{% block inhalt %}
+<style>.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.chip{width:100%;text-align:left;padding:12px 14px;border-radius:16px;border:1px solid var(--rand);background:var(--flaeche);cursor:pointer;font:inherit}
+.chip.dabei{background:linear-gradient(135deg,var(--gruen-tief),var(--tuerkis));color:#fff;border-color:transparent}
+.chip small{display:block;opacity:.8;font-size:13px}.chip .weg{color:#b4441f;font-weight:600}.chip.dabei .weg{color:#ffe08a}</style>
+<h1>{{ t.name }}</h1>
+<p class="grau" style="margin-top:-12px">{{ t.teamid }} · {{ t.art }}</p>
+<h2 class="abschnitt">Wer gehört dazu?{% if leitung %} (antippen = dazu / raus){% endif %}</h2>
+<div class="chips">
+  {% for x in leute %}{% if leitung %}<form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="mitglied"><input type="hidden" name="mitarbeiter" value="{{ x.m.pk }}">{% endif %}
+    <button class="chip {% if x.dabei %}dabei{% endif %}" {% if not leitung %}type="button" disabled{% endif %}><b>{% if x.dabei %}✓ {% endif %}{{ x.m.name }}</b>
+      <small>{% if x.weg %}<span class="weg">{{ x.weg }}</span>{% elif x.leitung %}Leitung{% else %}{{ x.m.rolle|default:"–" }}{% endif %}</small></button>
+  {% if leitung %}</form>{% endif %}{% endfor %}
+</div>
+{% if leitung %}
+<form method="post" class="karte" style="max-width:520px;margin-top:18px">{% csrf_token %}<input type="hidden" name="aktion" value="art">
+  <label>Teamart</label><select name="art">{% for a in arten %}<option {% if a == t.art %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+  <p><button class="knopf zweit" type="submit">Teamart speichern</button></p></form>
+{% endif %}
+{% if montagen %}<h2 class="abschnitt">Nächste Montagen</h2>
+{% for m in montagen %}<div><a href="{% url 'planung:montage' m.projekt.pk %}">{{ m.datum|date:"D d.m.Y" }} · {{ m.projekt.projektnr }} {{ m.projekt.name }}</a></div>{% endfor %}{% endif %}
+<p class="hilfe">Mitglieder werden sofort gespeichert. Abwesenheiten trägst du unter „Abwesenheiten“ ein.</p>
+{% endblock %}

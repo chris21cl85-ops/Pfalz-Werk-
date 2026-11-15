@@ -1,0 +1,26 @@
+{% extends "basis.html" %}
+{% block titel %}Abwesenheiten – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:kalender' %}">Montage & Kalender</a> › Abwesenheiten{% endblock %}
+{% block inhalt %}
+{% include "planung/_reiter.html" with aktiv="abwesenheiten" %}
+<h1>Abwesenheiten</h1>
+<p class="grau" style="margin-top:-12px">Urlaub, Krank, Fortbildung … – erscheinen im Kalender und warnen beim Einplanen.{% if not alle %} <a href="?alle=1">Auch ältere zeigen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Mitarbeiter</th><th>Zeitraum</th><th>Art</th><th>Status</th><th class="breit">Hinweis</th>{% if leitung %}<th></th>{% endif %}</tr>
+  {% for a in liste %}<tr><td>{{ a.mitarbeiter.name }}<div class="hilfe">{{ a.zid }}</div></td>
+    <td class="nowrap">{{ a.von|date:"d.m.Y" }}{% if a.bis != a.von %} – {{ a.bis|date:"d.m.Y" }}{% endif %}<div class="hilfe">{{ a.tage }} Tag{{ a.tage|pluralize:"e" }}</div></td>
+    <td>{{ a.art }}</td>
+    <td>{% if a.status == "Freigegeben" %}<span style="color:var(--gruen);font-weight:600">✓ Freigegeben</span>{% elif a.status == "Abgelehnt" %}<span class="grau">Abgelehnt</span>{% else %}<b>Beantragt</b>{% endif %}</td>
+    <td class="breit">{{ a.hinweis|default:"–" }}</td>
+    {% if leitung %}<td><form method="post" class="inline" style="display:flex;gap:6px">{% csrf_token %}<input type="hidden" name="aktion" value="status"><input type="hidden" name="abwesenheit" value="{{ a.pk }}">
+      {% if a.status != "Freigegeben" %}<button class="knopf" style="padding:6px 12px;font-size:14px" name="status" value="Freigegeben">Freigeben</button>{% endif %}
+      {% if a.status != "Abgelehnt" %}<button class="knopf zweit" style="padding:6px 12px;font-size:14px" name="status" value="Abgelehnt">Ablehnen</button>{% endif %}</form></td>{% endif %}</tr>
+  {% empty %}<tr><td colspan="6">Keine Abwesenheiten.</td></tr>{% endfor %}
+</table></div>
+{% if leitung or eigener %}
+<form method="post" class="karte" style="max-width:640px">{% csrf_token %}<h3 style="margin-top:0">{% if leitung %}+ Abwesenheit eintragen{% else %}+ Abwesenheit beantragen{% endif %}</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0 18px">
+  {% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}
+  </div><p><button class="knopf" type="submit">{% if leitung %}Eintragen{% else %}Beantragen{% endif %}</button></p></form>
+{% else %}<div class="meldung info">Deinem Zugang ist noch kein Mitarbeiter zugeordnet – Abwesenheiten trägt der Chef ein.</div>{% endif %}
+{% endblock %}

@@ -31,5 +31,6 @@ urlpatterns = [
     path("kalkulation/", include("kalkulation.urls")),
     path("moebel/", include("moebel.urls")),
     path("produktion/", include("produktion.urls")),
+    path("planung/", include("planung.urls")),
     path("verwaltung/", admin.site.urls),
 ]

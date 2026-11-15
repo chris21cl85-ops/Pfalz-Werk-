@@ -1,0 +1,19 @@
+{% extends "basis.html" %}
+{% block titel %}Montageplan – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:kalender' %}">Montage & Kalender</a> › Montageplan{% endblock %}
+{% block inhalt %}
+{% include "planung/_reiter.html" with aktiv="montageplan" %}
+<h1>Montageplan</h1>
+{% if bereit %}<div class="meldung info"><b>Bereit zur Montage</b> (QM freigegeben, noch kein Termin):
+  {% for p in bereit %}{% if leitung %}<a href="{% url 'planung:montage' p.pk %}">{{ p.projektnr }} {{ p.name }}</a>{% else %}{{ p.projektnr }} {{ p.name }}{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}</div>{% endif %}
+<p class="grau">{% if alle %}Alle Montagen.{% else %}Ab letzter Woche. <a href="?alle=1">Alle zeigen</a>{% endif %}</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Datum</th><th>Projekt</th><th class="breit">Baustelle</th><th>Team</th><th class="breit">Fahrzeug</th><th>Ergebnis</th></tr>
+  {% for m in montagen %}<tr {% if leitung %}class="klickbar" onclick="location.href='{% url 'planung:montage' m.projekt.pk %}'"{% endif %}>
+    <td class="nowrap">{{ m.datum|date:"D d.m.Y" }}<div class="hilfe">{{ m.beginn|time:"H:i" }}–{{ m.ende|time:"H:i" }}</div></td>
+    <td>{{ m.projekt.projektnr }}<div class="hilfe">{{ m.projekt.name|truncatechars:40 }} · {{ m.projekt.kunde.name }}</div></td>
+    <td class="breit">{{ m.adresse|default:"–" }}</td><td>{{ m.team.name|default:"–" }}</td><td class="breit">{{ m.fahrzeug|default:"–" }}</td>
+    <td>{% if m.ergebnis == "Bestanden" %}<span style="color:var(--gruen);font-weight:600">✓ Bestanden</span>{% elif m.ergebnis %}<span class="fehler">{{ m.ergebnis }}</span>{% else %}<span class="grau">offen</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6">Keine Montagen geplant.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

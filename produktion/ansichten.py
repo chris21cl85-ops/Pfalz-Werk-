@@ -37,7 +37,7 @@ def uebersicht(request):
         zeilen.append({"p": p, "d": d, "schritt": dienst.SCHRITTE[d["phase"]]})
     return render(request, "produktion/uebersicht.html", {
         "zeilen": zeilen, "suche": suche, "nur": nur, "leitung": _leitung(request.user),
-        "zaehler": list(zip(dienst.SCHRITTE[:4], zaehler[:4])), "meine": _meine_anzahl(request.user)})
+        "zaehler": list(zip(dienst.SCHRITTE, zaehler)), "meine": _meine_anzahl(request.user)})
 
 
 def _meine_anzahl(benutzer):
@@ -62,6 +62,10 @@ def projekt(request, pk):
                 if f.is_valid():
                     n = dienst.einplanen(p, f.cleaned_data["start"], f.cleaned_data["mitarbeiter"], request.user)
                     messages.success(request, f"{n} Arbeitsgänge ab {f.cleaned_data['start']:%d.%m.%Y} eingeplant.")
+                    from planung.dienst import abwesend
+                    ma, start = f.cleaned_data["mitarbeiter"], dienst.werktag(f.cleaned_data["start"], 0)
+                    if ma and (grund := abwesend(ma, start)):
+                        messages.warning(request, f"⚠ {ma.name} ist am {start:%d.%m.} abwesend ({grund}).")
                     return redirect("produktion:projekt", p.pk)
             elif aktion == "route":
                 f = formulare["route"] = RouteFormular(request.POST, prefix="ro")
@@ -100,7 +104,8 @@ def projekt(request, pk):
     return render(request, "produktion/projekt.html", {
         "p": p, "d": d, "ags": ags, "leitung": leitung, "f": formulare, "rueck": RueckmeldeFormular(),
         "schritte": [(i, s) for i, s in enumerate(dienst.SCHRITTE)], "pruefungen": p.qm_pruefungen.select_related("nacharbeit_ag"),
-        "moebel_ohne_ag": [m for m in p.moebel.all() if m.status == "In Stückliste"]})
+        "moebel_ohne_ag": [m for m in p.moebel.all() if m.status == "In Stückliste"],
+        "montage": getattr(p, "montage", None) if hasattr(p, "montage") else None})
 
 
 def _ag_aktion(request, ag, aktion):

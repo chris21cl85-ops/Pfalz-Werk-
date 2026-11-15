@@ -55,14 +55,24 @@ def stand(projekt) -> dict:
     d = {"n": len(ags), "fertig": sum(a.status == S.FERTIG for a in ags),
          "gestartet": sum(a.status != S.GEPLANT for a in ags), "geplant": sum(a.plan_start is not None for a in ags),
          "soll": sum((a.plan_std for a in ags), Decimal("0")), "ist": sum((a.ist_std for a in ags), Decimal("0")),
-         "lohn": sum((a.lohnkosten_ist or Decimal("0") for a in ags), Decimal("0")), "qm": qm_stand(projekt)}
+         "lohn": sum((a.lohnkosten_ist or Decimal("0") for a in ags), Decimal("0")), "qm": qm_stand(projekt),
+         "montage_bestanden": _montage_bestanden(projekt)}
     d["phase"] = phase(projekt, d)
     return d
 
 
+def _montage_bestanden(projekt) -> bool:
+    try:
+        return projekt.montage.ergebnis == "Bestanden"
+    except Exception:  # noch keine Montage
+        return False
+
+
 def phase(projekt, d=None) -> int:
-    """0 Planen, 1 Fertigung, 2 QM, 3 Montage (wie Phase(); „Fertig“ kommt mit dem Montageplan)."""
+    """0 Planen, 1 Fertigung, 2 QM, 3 Montage, 4 Fertig (wie Phase())."""
     d = d or stand(projekt)
+    if d["montage_bestanden"]:
+        return 4
     if d["n"] == 0 or (d["geplant"] == 0 and d["gestartet"] == 0):
         return 0
     if d["fertig"] < d["n"]:

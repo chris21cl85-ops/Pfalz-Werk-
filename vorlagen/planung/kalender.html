@@ -1,0 +1,61 @@
+{% extends "basis.html" %}
+{% block titel %}Kalender KW {{ k.kw }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › Montage & Kalender{% endblock %}
+{% block inhalt %}
+<style>
+.kal{display:grid;grid-template-columns:170px repeat(5,minmax(0,1fr));gap:6px}
+.kal .kopf{padding:10px 12px;border-radius:14px;background:var(--tanne);color:#fff;font-weight:600;font-size:15px}
+.kal .kopf.heute{background:linear-gradient(135deg,var(--bernstein),#f6c76a);color:#1a140c}
+.kal .name{padding:10px 12px;border-radius:14px;background:var(--flaeche);border:1px solid var(--rand)}
+.kal .name small{display:block;color:#6f8a79;font-size:13px}
+.kal .zelle{padding:8px 10px;border-radius:14px;border:1px solid var(--rand);background:rgba(255,255,255,.7);font-size:14px;min-height:58px}
+.kal .zelle.heute{box-shadow:inset 0 0 0 2px rgba(240,164,66,.6)}
+.kal .zelle.f{background:#e3f2e8}.kal .zelle.m{background:#f6e7cf}.kal .zelle.t{background:#e2edf8}.kal .zelle.a{background:#f9e0db}
+.kal .e{padding:2px 0;line-height:1.3}.kal .e.a{color:#9c3a22;font-weight:600}.kal .e.m{color:#8a5a12;font-weight:600}
+.legende span{display:inline-block;padding:3px 10px;border-radius:999px;margin-right:6px;font-size:14px}
+.reiter{margin-bottom:14px}
+@media (max-width:760px){.kal{grid-template-columns:1fr}.kal .kopf{display:none}.kal .zelle:before{content:attr(data-tag);display:block;font-size:12px;color:#6f8a79}.kal .name{margin-top:12px;background:var(--tanne);color:#fff}.kal .name small{color:#cfe}}
+</style>
+{% include "planung/_reiter.html" with aktiv="kalender" %}
+<h1>Kalender · KW {{ k.kw }} <span class="grau" style="font-size:20px;font-weight:500">{{ k.mo|date:"d.m." }} – {{ k.fr|date:"d.m.Y" }}</span></h1>
+<div class="leiste">
+  <a class="knopf zweit" href="?woche={{ vor }}&ansicht={{ ansicht }}">← Woche</a>
+  <a class="knopf zweit" href="?woche={{ heute }}&ansicht={{ ansicht }}">Heute</a>
+  <a class="knopf zweit" href="?woche={{ nach }}&ansicht={{ ansicht }}">Woche →</a>
+  <span style="flex:1"></span>
+  {% for wert, text in ansichten %}<a class="knopf {% if wert != ansicht %}zweit{% endif %}" href="?woche={{ k.mo|date:'Y-m-d' }}&ansicht={{ wert }}">{{ text }}</a>{% endfor %}
+</div>
+<p class="legende"><span style="background:#e3f2e8">Fertigung</span><span style="background:#f6e7cf">Montage</span><span style="background:#e2edf8">Termin</span><span style="background:#f9e0db">Abwesend</span>
+  <span class="grau">{% if k.anzahl %}{{ k.anzahl }} Einträge in dieser Woche{% else %}In dieser Woche ist nichts eingeplant.{% endif %}</span></p>
+<div class="kal">
+  <div></div>{% for t in k.tage %}<div class="kopf {% if t.heute %}heute{% endif %}">{{ t.name }} {{ t.datum|date:"d.m." }}</div>{% endfor %}
+  {% for r in k.reihen %}
+    <div class="name"><b>{{ r.name }}</b><small>{{ r.sub|default:"–"|truncatechars:60 }}</small></div>
+    {% for z in r.zellen %}<div class="zelle {{ z.typ }} {% if z.datum == heute_tag %}heute{% endif %}" data-tag="{{ z.datum|date:'D d.m.' }}">
+      {% for e in z.eintraege|slice:":4" %}<div class="e {{ e.typ }}">{{ e.text }}</div>{% endfor %}
+      {% if z.eintraege|length > 4 %}<details><summary class="hilfe" style="cursor:pointer">+{{ z.eintraege|length|add:"-4" }} weitere</summary>{% for e in z.eintraege|slice:"4:" %}<div class="e {{ e.typ }}">{{ e.text }}</div>{% endfor %}</details>{% endif %}
+    </div>{% endfor %}
+  {% endfor %}
+</div>
+
+{% if termine %}
+<h2 class="abschnitt">Termine dieser Woche (von Hand)</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Tag</th><th>Zeit</th><th>Aufgabe</th><th class="breit">Mitarbeiter</th><th class="breit">Projekt / Ort</th><th></th></tr>
+  {% for t in termine %}<tr><td class="nowrap">{{ t.datum|date:"D d.m." }}</td><td class="nowrap">{% if t.beginn %}{{ t.beginn|time:"H:i" }}{% if t.ende %}–{{ t.ende|time:"H:i" }}{% endif %}{% else %}–{% endif %}</td>
+    <td>{{ t.aufgabe }}<div class="hilfe">{{ t.art }}</div></td><td class="breit">{{ t.mitarbeiter.name|default:"–" }}</td>
+    <td class="breit">{{ t.projekt.projektnr|default:"" }} {{ t.ort }}</td>
+    <td>{% if leitung %}<form method="post" onsubmit="return confirm('Termin absagen?')">{% csrf_token %}<input type="hidden" name="termin" value="{{ t.pk }}"><button class="pfeil" name="aktion" value="absagen" title="Absagen" style="padding:4px 10px">✕</button></form>{% endif %}</td></tr>{% endfor %}
+</table></div>{% endif %}
+
+{% if leitung %}
+<details class="karte" {% if form.errors %}open{% endif %} style="margin-top:18px"><summary style="cursor:pointer;font-weight:600">+ Termin eintragen</summary>
+  <form method="post" style="margin-top:8px">{% csrf_token %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 18px">
+    {% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}
+    </div>
+    <p class="hilfe">Montagen bitte über den Montageplan planen – dann bekommen alle Teammitglieder den Termin automatisch.</p>
+    <button class="knopf" type="submit">Eintragen</button></form></details>
+{% endif %}
+<p class="hilfe">Der Kalender liest Termine, Montageplan, eingeplante Arbeitsgänge und Abwesenheiten – er ändert selbst nichts.</p>
+{% endblock %}

@@ -12,7 +12,7 @@ Letzte Aktualisierung: 15.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.3 (Etappe 3, Paket 3a).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.4 (Etappe 3, Paket 3b).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -464,7 +464,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. „Teileliste drucken (PDF)“ und „Als Variante kopieren“ ausprobieren.
 5. Absichtlich falsch: Fachböden bei Breite 1200 und 2 Türen → Ampel rot, Übernahme gesperrt.
 
-### Paket 3a: Produktion + QM – GEBAUT 15.11.2026, Abnahme offen
+### Paket 3a: Produktion + QM – weitergegeben am 15.11.2026 (Chris: „Kann weiter gehen“)
 Teil (b) ist zu groß für ein Paket → 3a Produktion + QM (dieses), 3b Teams, Montageplan, Abwesenheiten, Kalender.
 Vorlage: `PW_Produktion.bas` (Produktions-Assistent Planen → Fertigung → QM → Montage → Fertig), `PW_Moebel_Arbeitsgaenge`
 im Möbelrechner, Blätter „Produktion Arbeitsgänge“ (Formeln Spalten V–AJ), „Produktion QM“ (Formel O),
@@ -501,16 +501,47 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 5. Alle fertig → QM „Nicht bestanden“ mit Mangel → Nacharbeit erscheint; fertig melden → QM „Bestanden“ → Schritt „Montage“.
 6. Optional: Mitarbeiter-Zugang mit Mitarbeiter verknüpfen → als dieser anmelden → „Meine Arbeitsgänge“.
 
+### Paket 3b: Teams, Montageplan, Abwesenheiten, Kalender – GEBAUT 15.11.2026, Abnahme offen
+Vorlage: `PW_Produktion.bas` (MontageZeigen/MontageSpeichern, Teams/Mitglied), `PW_Kalender.bas` (Sammeln, Zeilen, Passt),
+Blätter „Teams“, „Zeitdaten“, „Montageplan“, „Zeitplan“. Neue App `planung`.
+- Kachel „Montage & Kalender“ (alle) mit Reitern Woche · Montageplan · Teams · Abwesenheiten.
+- **Teams** (TEAM-0001 …): anlegen, Teamart, Mitglieder antippen = dazu/raus (erstes Mitglied = Leitung),
+  Abwesenheiten der Woche auf den Kacheln.
+- **Abwesenheiten** (ZD-0001 …): Urlaub, Krank, Fortbildung, Berufsschule, Zeitausgleich, Sonstiges; Status
+  Beantragt/Freigegeben/Abgelehnt. Chef/Admin/Meister tragen ein und geben frei; Mitarbeiter beantragen nur für sich.
+  Wirkt wie Abwesend(): alles außer „Abgelehnt“ (beantragt wird so markiert).
+- **Montage** je Projekt (erst nach QM-Freigabe): Datum, Beginn/Ende, Team, Fahrzeug (Transporter/PKW/Anhänger + eigene),
+  Adresse (Vorschlag Kundenadresse), Aufgaben, Material, Werkzeug, Hinweise. Vorher Warnungen wie im Makro:
+  abwesende Teammitglieder, Team oder Fahrzeug am Tag schon vergeben, Wochenende → „Trotzdem eintragen“ möglich.
+  Speichern legt je Teammitglied einen Termin an (alte Montage-Termine des Projekts werden ersetzt).
+  Ergebnis „Montage bestanden“ → Schritt **Fertig** (weiter zur Schlussrechnung); „Nacharbeit erforderlich“ → bleibt offen.
+- **Montageplan**: Liste ab letzter Woche (oder alle), oben „Bereit zur Montage“ (QM frei, noch kein Termin).
+- **Wochenkalender** Mo–Fr, KW, Woche vor/zurück/heute, Ansicht nach Teams, Mitarbeiter oder Projekten; liest Termine,
+  Montageplan, eingeplante Arbeitsgänge (Planstart–Planende) und Abwesenheiten, Farben wie Excel; ändert nichts.
+  Termine von Hand (Mitarbeiter oder ganzes Team, Art, Projekt, Ort) eintragen und absagen (bleiben gespeichert).
+- Produktion: Abwesenheits-Warnung beim Einplanen; Montage-Abschnitt auf der Projektseite.
+- **Import**: Teams (Zeilen 4–100, Mitglieder ab 110; Plätze ohne Namen übersprungen), Zeitdaten, Montageplan
+  (je Projekt eine Montage), Zeitplan. Mitarbeiter über Kürzel oder Name. Vorhandenes wird nie überschrieben.
+- Nicht übernommen: Personal-Gate/Kapazität (Soll/Gebucht/Rest h), Monatsansicht, Handy-Ableger, Kalender-Rechte-Blatt.
+- 414 automatische Tests, alle grün.
+
+### So testest du es (Etappe 3, Paket 3b)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 3.4“ stehen.
+1. Excel-Import erneut → im Bericht: Teams, Abwesenheiten (Zeitdaten), Montageplan, Zeitplan.
+2. „Montage & Kalender“ → Teams → „+ Neues Team“ → Mitarbeiter antippen.
+3. Abwesenheiten → für einen Mitarbeiter Urlaub nächste Woche eintragen.
+4. Ein Projekt mit bestandener QM: Produktion → „🚚 Montage planen“ → Tag des Urlaubs wählen → Warnung erscheint →
+   anderen Tag oder „Trotzdem eintragen“ → im Kalender steht die Montage bei jedem Teammitglied.
+5. Kalender: zwischen Teams / Mitarbeiter / Projekte umschalten, Woche vor und zurück.
+6. Montage → „✓ Montage bestanden“ → in der Produktion steht „Fertig“.
+
 ## Nächstes Paket
-**Etappe 3, Paket 3b: Teams, Montageplan, Abwesenheiten, Kalender** – Vorlage `PW_Produktion.bas` (MontageZeigen/
-MontageSpeichern, Teams), `PW_Kalender.bas` (Woche nach Team/Mitarbeiter/Projekt aus Zeitplan, Montageplan,
-Arbeitsgängen, Abwesenheiten), Blätter „Teams“ (A–L, Mitglieder ab Zeile 110: A Team-ID, B Mitarbeiter, F aktiv),
-„Montageplan“ (B Projekt, C Adresse, D Datum, E/F Zeit, G Team, I Aufgaben, L Fahrzeug, Q Ergebnis), „Zeitplan“
-(B MA, C Datum, D/E Zeit, F Projekt, H Aufgabe, I Ort, J Team, K Terminart), „Zeitdaten“ (B MA, C/D von–bis, E Zeitart,
-H Status). Danach Phase „Fertig“ (Montage bestanden) → Schlussrechnung.
-Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (PW_Kalender.bas 1U5_R_VN_KdWrryMP5L231L_Vr06c7pKv,
-PW_Produktion.bas 1ayWS6I25eCX8G3onNFkuBbg0_Ha-tjC0).
-- Möbelrechner-Ausbau (Stufen 2–6) und Excel-Inventur (Blätter 25–32, 62–68) als eigene Pakete.
+**Etappe 3 ist damit komplett gebaut** (Abnahme 3b offen). Danach **Etappe 4** (laut Plan: Zeiterfassung –
+Stunden auf Projekte, Lohnkosten in die Nachkalkulation – und Auswertungen für den Chef). Vorlage im Drive-Ordner
+1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (u. a. PW_Personal.bas 1Hh-DvBaSMW5el5NTIXIMKJzMAJNA013_), vor Beginn mit Chris
+Reihenfolge klären. Offen als eigene Pakete: Möbelrechner Stufen 2–6, Excel-Inventur (Blätter 25–32, 62–68),
+Kapazitätsplanung (Personal-Gate).
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

@@ -73,5 +73,12 @@
 </table></div>{% endif %}
 
 <h2 class="abschnitt">Montage</h2>
-<p class="grau">{% if d.phase >= 3 %}QM ist freigegeben – die Montage wird eingeplant, sobald der Montageplan da ist (kommt in Paket 3b mit Teams und Kalender).{% else %}Montage kommt nach der QM-Freigabe.{% endif %}</p>
+{% if montage %}
+<div class="karte"><b>{{ montage.datum|date:"l, d.m.Y" }} · {{ montage.beginn|time:"H:i" }}–{{ montage.ende|time:"H:i" }} · {{ montage.team.name }}</b>
+  <div class="hilfe">{{ montage.adresse }} · Ergebnis: {{ montage.ergebnis|default:"offen" }}</div>
+  {% if leitung %}<p><a class="knopf zweit" href="{% url 'planung:montage' p.pk %}">Montage öffnen</a></p>{% endif %}</div>
+{% elif d.phase >= 3 %}
+<p>QM ist freigegeben.{% if leitung %} <a class="knopf" href="{% url 'planung:montage' p.pk %}">🚚 Montage planen</a>{% endif %}</p>
+{% else %}<p class="grau">Montage kommt nach der QM-Freigabe.</p>{% endif %}
+{% if d.phase == 4 %}<div class="meldung success">Montage bestanden – das Projekt ist fertig. Weiter zur Schlussrechnung.</div>{% endif %}
 {% endblock %}

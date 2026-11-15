@@ -20,7 +20,7 @@ def test_navi_nicht_auf_anmeldeseite(client):
 def test_navi_zeigt_bereiche_und_ziele(chef_client):
     inhalt = chef_client.get("/").content.decode()
     for text in ["Büro &amp; Planung", "Werkstatt &amp; Material", "Geld", "Verwaltung",
-                 f'href="{reverse("kunden:liste")}"', "kommt in Etappe 3"]:
+                 f'href="{reverse("kunden:liste")}"', "kommt in Etappe 4"]:
         assert text in inhalt
 
 
@@ -48,4 +48,4 @@ def test_blaettern_zwischen_kunden(chef_client):
 
 
 def test_fassung_im_navi_sichtbar(chef_client):
-    assert "Fassung 3.3" in chef_client.get("/").content.decode()
+    assert "Fassung 3.4" in chef_client.get("/").content.decode()

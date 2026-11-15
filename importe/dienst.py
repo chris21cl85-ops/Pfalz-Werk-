@@ -112,6 +112,7 @@ def _spalten_zeilen(blatt, imp):
         zeile = {k: (v.strip() if isinstance(v, str) else v) for k, v in zeile.items()}
         if all(v in (None, "") for v in zeile.values()):
             continue
+        zeile["_zeile"] = nr  # Zeilennummer für Blätter mit zwei Bereichen (z. B. „Teams“)
         yield nr, zeile
 
 
