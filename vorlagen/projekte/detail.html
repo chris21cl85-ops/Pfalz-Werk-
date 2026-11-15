@@ -25,7 +25,8 @@
   <dt>Angelegt / geändert</dt><dd>{{ projekt.angelegt_am|date:"d.m.Y H:i" }} / {{ projekt.geaendert_am|date:"d.m.Y H:i" }}</dd>
 </dl>
 </div>
-{% if darf_bearbeiten %}<p><a class="knopf" href="{% url 'projekte:bearbeiten' projekt.pk %}">Bearbeiten</a></p>{% endif %}
+<p style="display:flex;gap:10px;flex-wrap:wrap">{% if darf_bearbeiten %}<a class="knopf" href="{% url 'projekte:bearbeiten' projekt.pk %}">Bearbeiten</a>
+  <a class="knopf zweit" href="{% url 'kalkulation:projekt' projekt.pk %}">🧮 Stückliste, Kalkulation & Auftrag</a>{% endif %}</p>
 {% if darf_rechnungen %}
 <h2>Rechnungen zu diesem Projekt</h2>
 {% if rechnungen %}<div class="tabelle-rahmen"><table>

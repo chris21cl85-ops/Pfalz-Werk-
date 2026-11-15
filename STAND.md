@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.0 (Etappe 3, Paket 1).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.1 (Etappe 3, Paket 2a).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -351,7 +351,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 
 ## Etappe 3 – Werkstatt: IN ARBEIT
 
-### Paket 1: Bestellungen, Wareneingang, Lagerbestand – GEBAUT 15.11.2026, Abnahme offen
+### Paket 1: Bestellungen, Wareneingang, Lagerbestand – weitergegeben am 15.11.2026 (Chris: „a und dann b“, kein Fehler gemeldet)
 Vorlage: `PW_Bestellassistent.bas`, `PW_Wareneingang.bas`, `PW_Bestellart.bas` (Drive, 20.10.2026), Blätter
 „Bestellungen“ (49), „Lager“ (52), „Lagerbewegungen“ (69). Neue App `lager`.
 - Kachel „Bestellungen & Lager“ (Chef, Admin, Meister – wie `Berechtigt()`; Freigabe-Anfrage für andere Rollen
@@ -394,13 +394,50 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. „Lagerbestand“ → ein Material öffnen → „Bestand korrigieren“ → gezählten Wert eintragen.
 5. Eingangsrechnung erfassen mit dieser Bestell-Nr. → auf der Rechnung steht „✓ passt zur Bestellung“ bzw. die Abweichung.
 
+### Paket 2a: Stückliste, Kalkulation, Auftrag & Freigaben – GEBAUT 15.11.2026, Abnahme offen
+Chris wünscht „a (Möbelrechner/Kalkulation) und dann b (Produktion)“. a ist zu groß für ein Paket → geteilt:
+2a Stückliste + Kalkulation + Auftrag (dieses Paket), 2b Möbelrechner (Korpus → Teileliste → Stückliste).
+Vorlage: `PW_Auftraege.bas` (Entwurf(), Speichern, Freigaben/Darf()), Blätter „Stueckliste“ (48), „Kalkulation“ (50),
+„Auftraege“ (37). Neue App `kalkulation`.
+- Kachel „Kalkulation & Aufträge“ (Chef, Admin, Buchhaltung, Meister): Übersicht je Projekt mit Kosten, kalk. VK,
+  Angebot, Marge (< 15 % rot wie Makro), Ist-Kosten, Auftrag/Status. Projektkarte: Knopf „Stückliste, Kalkulation & Auftrag“.
+- **Stückliste** je Projekt: Material aus Stamm (EK/Einheit übernommen) oder freie Position; Menge, EK, Gesamt,
+  Lagerbestand (rot, wenn zu wenig). Status Geplant (Idee) / Benötigt (→ Bestellvorschläge) / Entnommen (bucht
+  Lagerentnahme mit Projekt; zurückstellen bucht wieder ein). Entnommenes nicht entfernbar. Protokoll.
+- **Bestellvorschläge erweitert** um Projektbedarf („Aktiver Bedarf“): Bestand + offen − Bedarf < Mindest (bzw. < 0
+  ohne Lagerhaltung) → Vorschlag = Ziel + Bedarf − Bestand − offen; Grund „Projektbedarf“; abgeschlossene Projekte zählen nicht.
+- **Kalkulation** (wie Entwurf()): Kosten = Material (Stückliste ohne „Geplant“, sonst Handwert) + Beschläge +
+  Std × €/Std + Maschine + Montage + Fahrt + Fremd; VK = Kosten × (1 + Zuschlag % + Risiko %) gerundet; Art Vor/Zwischen/Nach.
+  Standard Zuschlag 15 %, Risiko 5 % (änderbar). Ist-Kosten (Nachkalkulation) = Eingangsrechnungen netto + Entnahmen
+  (Löhne folgen mit Zeiterfassung, Etappe 4).
+- **Auftrag** AU-0001 je Projekt: Angebot netto (Vorschlag = kalk. VK), Status Angebot/Beauftragt/In Arbeit/
+  Abgeschlossen, Lieferung/Montage, Leistung. Freigaben Kunde (jeder) / Chef (nur Chef) / Meister (nur Meister),
+  Admin alles; „intern freigegeben“ = Chef + Meister (wie Makro). Rechnungen: Auftragswert-Vorschlag = Angebot netto.
+- **Import**: Stueckliste (A Pos, B Projekt, C Material, D Bezeichnung, E Menge, F Einheit, G EK, I Status; Entnommen
+  wird nicht noch einmal abgebucht), Kalkulation (A, B Material, C, D, E, G–J, L/M Zuschlag/Risiko als 0,15 oder 15,
+  U Art), Auftraege (A, B, D, G, H, I, J, K, L; „Erteilt“ = Freigegeben). Je Projekt nur einmal, nie überschrieben.
+- Nicht übernommen: Blatt „Kalkulationsvergleich“ (61), Fertigungs-Stückliste/Stücklisten-Transfer (76/77) und
+  Freigabe-Workflow „Ideenplanung“ aus Modul2 → bei Bedarf später; Kalkulationsänderungen stehen im Protokoll.
+- 366 automatische Tests, alle grün.
+
+### So testest du es (Etappe 3, Paket 2a)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 3.1“ stehen.
+1. Excel-Import erneut durchlaufen lassen → Stückliste, Kalkulation, Aufträge erscheinen im Bericht.
+2. Kachel „Kalkulation & Aufträge“ → stimmen Kosten/VK deiner Projekte mit der Excel überein?
+3. Ein Projekt öffnen → Position hinzufügen (Status „Benötigt“) → unter „Bestellungen & Lager“ erscheint der Bedarf als Vorschlag.
+4. Kalkulation ausfüllen → „Kalkulation speichern“ → VK erscheint → „Auftrag anlegen“ (Preis = VK vorgeschlagen).
+5. Freigaben: als Chef „Freigegeben“ bei Chef; Meister-Zeile ist für den Chef grau.
+
 ## Nächstes Paket
-Etappe 3, Paket 2 (Vorschlag): **Möbelrechner / Kalkulation + Stückliste** (Blatt „Kalkulation“ (50): Vor-/Auftrags-/
-Nachkalkulation, Materialkosten aus Stückliste, Lohn) – oder **Produktion + QM** (Arbeitsgänge, siehe Vorlage
-Mitarbeiter unten: Blatt „Produktion Arbeitsgänge“), dann Montageplan und Kalender. Chris entscheidet.
-Vorher Makros in Drive suchen (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3; dort u. a. Modul2.bas (Freigaben),
-PW_Material.bas, PW_Handy_Modul.bas, PW_Seitenrad.bas (= Navi-Rad der Excel!)).
-- Excel-Inventur (Blätter 25–32, 62–68) noch nicht übernommen – eigenes Paket „Inventur“ (heute: Korrektur je Material).
+**Etappe 3, Paket 2b: Möbelrechner** – Vorlage `PW_Moebelrechner.bas` (204 KB!, Datei-ID 1uD_qs94Ekvi8l-Y0UiX7G6LITdKdzqaw),
+`PW_MoebelAssistent.bas` (15WIfr7NDiZMlY5BvWcyuCNMp7NPRXNEb), `PW_Moebel_Weg.bas` (1sOcqFEb9eaNyqq2nchIyoYPscBlQ3t3z),
+Blätter 101–106 (Möbel-Regeln 119 Regeln, Möbel-Positionen ~55 Eingaben, Möbel-Teile, Möbelrechner, Formteile, Druck).
+Ziel: Möbel eingeben → Teileliste (Fertig-/Zuschnittmaß, Kanten, Maserung, Bearbeitung) + Beschläge nach Regeln →
+„in die Stückliste übernehmen“ + Druckliste (PDF). Ggf. in 2b-1 (Korpus/Teile) und 2b-2 (Formteile, Prüfungen) teilen.
+Danach **(b) Produktion + QM** (Blatt „Produktion Arbeitsgänge“, Routenvorlagen (70), AG-Bibliothek), Montageplan, Kalender.
+Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (dort auch PW_Seitenrad.bas = Navi-Rad der Excel).
+- Excel-Inventur (Blätter 25–32, 62–68) noch nicht übernommen – eigenes Paket „Inventur“.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

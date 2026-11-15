@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     "mitarbeiter",
     "rechnungen",
     "lager",
+    "kalkulation",
 ]
 
 MIDDLEWARE = [

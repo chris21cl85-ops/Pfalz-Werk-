@@ -1,0 +1,70 @@
+{% extends "basis.html" %}
+{% block titel %}{{ p.projektnr }} – Kalkulation{% endblock %}
+{% block pfad %} › <a href="{% url 'kalkulation:liste' %}">Kalkulation & Aufträge</a> › {{ p.projektnr }}{% endblock %}
+{% block inhalt %}
+<h1>{{ p.projektnr }} · {{ p.name }}</h1>
+<p class="grau" style="margin-top:-12px">Kunde <a href="{{ p.kunde.get_absolute_url }}">{{ p.kunde.name }}</a> · <a href="{{ p.get_absolute_url }}">Projektkarte</a></p>
+<div class="zahlen" style="margin-bottom:22px">
+  <div class="zahl"><small>Kosten (Kalkulation)</small><b>{% if k %}{{ k.kosten|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>{% if k %}{{ k.art }}{% else %}noch nicht kalkuliert{% endif %}</small></div>
+  <div class="zahl blau"><small>Kalkulierter VK</small><b>{% if k %}{{ k.vk|floatformat:"2g" }} €{% else %}–{% endif %}</b>{% if k %}<small>+{{ k.zuschlag|floatformat:"-2" }} % Zuschlag, +{{ k.risiko|floatformat:"-2" }} % Risiko</small>{% endif %}</div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Angebot netto</small><b>{% if a %}{{ a.angebot_netto|floatformat:"2g" }} €{% else %}–{% endif %}</b>{% if marge is not None %}<small style="font-weight:600;{% if marge < 15 %}color:var(--rot){% else %}color:var(--gruen){% endif %}">Marge {{ marge|floatformat:1 }} %</small>{% endif %}</div>
+  <div class="zahl warn"><small>Ist-Kosten bisher</small><b>{% if k %}{{ k.ist_kosten|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>Eingangsrechnungen + Entnahmen</small></div>
+</div>
+
+<h2 class="abschnitt">1 · Stückliste (Materialbedarf)</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Pos.</th><th>Material</th><th style="text-align:right">Menge</th><th style="text-align:right" class="breit">EK</th><th style="text-align:right">Gesamt</th><th class="breit" style="text-align:right">Lager</th><th>Status</th><th></th></tr>
+  {% for x in positionen %}
+  <tr><td>{{ x.pos }}</td><td>{{ x.bezeichnung }}{% if x.material %}<div class="hilfe">{{ x.material.materialnr }}</div>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ x.menge|floatformat:"-3g" }} {{ x.einheit }}</td>
+    <td class="nowrap breit" style="text-align:right">{% if x.ek is not None %}{{ x.ek|floatformat:"2g" }} €{% else %}<span class="fehler">fehlt</span>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ x.gesamt|floatformat:"2g" }} €</td>
+    <td class="nowrap breit" style="text-align:right">{% if x.lager is not None %}<span style="{% if x.status == 'Benötigt' and x.lager < x.menge %}color:var(--rot);font-weight:600{% endif %}">{{ x.lager|floatformat:"-3g" }}</span>{% else %}–{% endif %}</td>
+    <td><form method="post">{% csrf_token %}<input type="hidden" name="aktion" value="status"><input type="hidden" name="position" value="{{ x.pk }}">
+      <select name="status" onchange="if (this.value !== 'Entnommen' || confirm('Material jetzt aus dem Lager abbuchen?')) this.form.submit(); else this.value='{{ x.status }}'" style="font-size:15px;padding:6px;min-width:130px">
+        {% for wert, text in status_werte %}<option value="{{ wert }}" {% if wert == x.status %}selected{% endif %}>{{ wert }}</option>{% endfor %}</select></form></td>
+    <td>{% if x.status != "Entnommen" %}<form method="post" onsubmit="return confirm('Position entfernen?')">{% csrf_token %}<input type="hidden" name="aktion" value="entfernen"><input type="hidden" name="position" value="{{ x.pk }}"><button class="pfeil" type="submit" title="Entfernen" style="padding:4px 10px">✕</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="8">Noch keine Positionen.</td></tr>{% endfor %}
+  {% if positionen %}<tr><th colspan="4" style="text-align:right">Materialkosten (ohne „Geplant“)</th><th class="nowrap" style="text-align:right">{{ material_summe|floatformat:"2g" }} €</th><th colspan="3"></th></tr>{% endif %}
+</table></div>
+<p class="hilfe">„Benötigt“ fließt in die Bestellvorschläge. „Entnommen“ bucht das Material aus dem Lager (zurückstellen bucht es wieder ein).</p>
+<details class="karte" {% if pos_form.errors %}open{% endif %}><summary style="cursor:pointer;font-weight:600;color:var(--holz-dunkel)">+ Position hinzufügen</summary>
+  <form method="post" style="margin-top:8px">{% csrf_token %}<input type="hidden" name="aktion" value="position">
+    {% for feld in pos_form %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}{% endfor %}
+    <p><button class="knopf" type="submit">Hinzufügen</button></p></form></details>
+
+<h2 class="abschnitt">2 · Kalkulation</h2>
+<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="kalkulation">
+  {% if kalk_form.non_field_errors %}<div class="meldung error">{{ kalk_form.non_field_errors|join:" " }}</div>{% endif %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 18px">
+  {% for feld in kalk_form %}{% if feld.name != "art" and feld.name != "notiz" %}
+    <div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}
+      {% if feld.name == "material_manuell" %}<div class="hilfe">{% if positionen %}Wird ignoriert – Stückliste zählt ({{ material_summe|floatformat:"2g" }} €).{% else %}Nur nötig ohne Stückliste.{% endif %}</div>{% endif %}
+      {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}</div>{% endif %}{% endfor %}
+  </div>
+  <label>Kalkulationsart</label><div class="wahl">{{ kalk_form.art }}</div>
+  <label for="{{ kalk_form.notiz.id_for_label }}">Notiz</label>{{ kalk_form.notiz }}
+  <p class="hilfe">Kosten = Material + Beschläge + Stunden × €/Std. + Maschine + Montage + Fahrt + Fremd. VK = Kosten × (1 + Zuschlag % + Risiko %).</p>
+  <p><button class="knopf" type="submit">Kalkulation speichern</button></p>
+</form>
+
+<h2 class="abschnitt">3 · Angebot & Auftrag {% if a %}<span class="marke-inaktiv">{{ a.aunr }}</span>{% endif %}</h2>
+<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="auftrag">
+  {% for feld in auftrag_form %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+    {% if feld.name == "status" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+    {% if feld.name == "angebot_netto" and k %}<div class="hilfe">Kalkulierter VK: {{ k.vk|floatformat:"2g" }} €</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}{% endfor %}
+  <p><button class="knopf" type="submit">{% if a %}Speichern{% else %}Auftrag anlegen{% endif %}</button></p>
+  <p class="hilfe">Der Angebotspreis wird bei Abschlags- und Schlussrechnungen als Auftragswert vorgeschlagen.</p>
+</form>
+{% if a %}
+<div class="karte">
+  <h3 style="margin-top:0">Freigaben {% if a.intern_freigegeben %}<span class="marke-inaktiv" style="background:#e8f5e9;color:var(--gruen)">✔ intern freigegeben</span>{% else %}<span class="hilfe">– intern freigegeben erst mit Chef und Meister</span>{% endif %}</h3>
+  {% for f in freigaben %}
+  <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0">{% csrf_token %}
+    <input type="hidden" name="aktion" value="freigabe"><input type="hidden" name="wer" value="{{ f.wer }}">
+    <b style="min-width:90px">{{ f.titel }}</b>
+    {% for wert, text in freigabe_werte %}<button type="submit" name="wert" value="{{ wert }}" class="knopf {% if wert != f.wert %}zweit{% endif %}" style="padding:7px 14px;font-size:15px" {% if not f.darf %}disabled title="Nicht deine Freigabe"{% endif %}>{{ text }}</button>{% endfor %}
+  </form>{% endfor %}
+</div>{% endif %}
+{% endblock %}

@@ -48,21 +48,44 @@ def zielmenge(material) -> Decimal:
     return max(ziel, mindest)
 
 
+def projektbedarf() -> dict:
+    """Material, das offene Projekte laut Stückliste brauchen und noch nicht entnommen ist (wie „Aktiver Bedarf“)."""
+    from kalkulation.models import Stuecklistenposition
+    from projekte.models import ABGESCHLOSSEN
+    bedarf = {}
+    for p in (Stuecklistenposition.objects.filter(status=Stuecklistenposition.Status.BENOETIGT, material__isnull=False)
+              .select_related("projekt")):
+        if p.projekt.status.strip().lower() in ABGESCHLOSSEN:
+            continue
+        bedarf[p.material_id] = bedarf.get(p.material_id, NULL) + Decimal(p.menge)
+    return bedarf
+
+
 def vorschlaege() -> list[dict]:
-    """Bestellvorschläge: Lagerartikel, bei denen Bestand + offene Bestellungen unter dem Mindestbestand liegen.
-    Vorschlag = Ziel − Bestand − offen (wie Alles() im Makro), auf ganze Einheiten aufgerundet."""
+    """Bestellvorschläge: Bestand + offene Bestellungen − Projektbedarf liegt unter dem Mindestbestand
+    (bzw. unter 0 bei Material ohne Lagerhaltung). Vorschlag = Ziel + Bedarf − Bestand − offen
+    (wie Alles() im Makro), auf ganze Einheiten aufgerundet."""
     ergebnis = []
     bestaende = dict(Lagerbewegung.objects.values_list("material").annotate(s=Sum("menge")).values_list("material", "s"))
-    for m in Material.objects.filter(aktiv=True, lagerartikel=True, mindestbestand__gt=0).select_related("lieferant"):
+    bedarf = projektbedarf()
+    from django.db.models import Q
+    kandidaten = Material.objects.filter(aktiv=True).filter(
+        Q(lagerartikel=True, mindestbestand__gt=0) | Q(pk__in=bedarf.keys())).select_related("lieferant")
+    for m in kandidaten:
         ist = bestaende.get(m.pk) or NULL
         offen = offene_menge(m)
-        if ist + offen >= Decimal(m.mindestbestand):
+        braucht = bedarf.get(m.pk, NULL)
+        lager = m.lagerartikel and (m.mindestbestand or 0) > 0
+        mindest = Decimal(m.mindestbestand) if lager else NULL
+        if ist + offen - braucht >= mindest:
             continue
-        menge = (zielmenge(m) - ist - offen).quantize(Decimal("1"), rounding=ROUND_UP)
+        ziel = zielmenge(m) if lager else NULL
+        menge = (ziel + braucht - ist - offen).quantize(Decimal("1"), rounding=ROUND_UP)
         if menge <= 0:
             continue
-        ergebnis.append({"material": m, "bestand": ist, "offen": offen, "mindest": m.mindestbestand,
-                         "ziel": zielmenge(m), "menge": menge, "lieferant": m.lieferant,
+        ergebnis.append({"material": m, "bestand": ist, "offen": offen, "bedarf": braucht, "mindest": mindest,
+                         "ziel": ziel, "menge": menge, "lieferant": m.lieferant,
+                         "grund": "Projektbedarf" if braucht and not lager else ("unter Mindestbestand" + (" + Projektbedarf" if braucht else "")),
                          "wert": (menge * Decimal(m.ek_netto)).quantize(Decimal("0.01")) if m.ek_netto else None})
     return sorted(ergebnis, key=lambda v: (v["lieferant"].name if v["lieferant"] else "", v["material"].bezeichnung))
 
@@ -95,7 +118,7 @@ def alle_vorschlaege_bestellen(benutzer) -> tuple[list[Bestellung], list[str]]:
     for v in vorschlaege():
         try:
             erledigt.append(bestellen(material=v["material"], menge=v["menge"], benutzer=benutzer,
-                                      art=Bestellung.Art.AUTOMATISCH, grund="unter Mindestbestand"))
+                                      art=Bestellung.Art.AUTOMATISCH, grund=v["grund"]))
         except LagerFehler as fehler:
             uebersprungen.append(str(fehler))
     return erledigt, uebersprungen

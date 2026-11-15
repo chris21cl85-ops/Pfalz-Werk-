@@ -28,5 +28,6 @@ urlpatterns = [
     path("eingang/", include("rechnungen.eingang_urls")),
     path("finanzen/", include("rechnungen.finanzen_urls")),
     path("lager/", include("lager.urls")),
+    path("kalkulation/", include("kalkulation.urls")),
     path("verwaltung/", admin.site.urls),
 ]

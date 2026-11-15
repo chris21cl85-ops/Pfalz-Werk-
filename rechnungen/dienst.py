@@ -46,6 +46,10 @@ def abschlaege(projekt):
 
 
 def letzter_auftragswert(projekt):
+    from kalkulation.models import Auftrag
+    auftrag = Auftrag.objects.filter(projekt=projekt).first()
+    if auftrag:  # wie Auftragswert() im Makro: Angebot netto aus dem Auftrag
+        return auftrag.angebot_netto
     a = projekt.rechnungen.filter(auftragswert__isnull=False).exclude(status=Rechnung.Status.VERWORFEN)
     a = a.order_by("-angelegt_am").first()
     return a.auftragswert if a else None
