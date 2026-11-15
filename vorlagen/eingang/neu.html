@@ -11,9 +11,11 @@
     {% if feld.name == "ust_satz" %}<div class="wahl"><div style="flex-direction:row;flex-wrap:wrap">{% for r in feld %}<label for="{{ r.id_for_label }}" style="min-width:110px">{{ r.tag }} {{ r.choice_label }}</label>{% endfor %}</div></div>{% else %}{{ feld }}{% endif %}
     {% if feld.name == "lieferant" %}<div class="hilfe">Tippen oder auswählen. Unbekannter Name = Lieferant wird neu angelegt.</div>{% endif %}
     {% if feld.name == "netto" %}<div class="hilfe">Mit Komma, z. B. 1.234,50 – <span id="brutto-anzeige"></span></div>{% endif %}
+    {% if feld.name == "bestellung" %}<div class="hilfe">Mit Bestell-Nr. prüft das Programm, ob der Betrag zur Bestellung passt.</div>{% endif %}
     {% if feld.name == "ziel_tage" %}<div class="hilfe" id="vorgabe-hinweis"></div>{% endif %}
     {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
   {% endfor %}
+  <datalist id="liste-bestellung">{% for b in formular.bestellungen %}<option value="{{ b.bnr }}">{{ b.lieferant.name }} · {{ b.material.bezeichnung }}</option>{% endfor %}</datalist>
   <datalist id="liste-lieferant">{% for l in formular.lieferanten %}<option value="{{ l.name }}">{% endfor %}</datalist>
   <p style="margin-top:22px"><button class="knopf" type="submit">Erfassen</button>
      <button class="knopf zweit" type="submit" name="weiter" value="1">Erfassen und nächste</button>

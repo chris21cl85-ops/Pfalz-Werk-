@@ -47,10 +47,20 @@ def liste(request):
     })
 
 
+def _lagerbestand(benutzer, material):
+    """Bestand aus dem Lager-Journal – nur für Chef, Admin, Meister (wie Bereich Bestellungen & Lager)."""
+    from kern.module import WERKSTATT_LEITUNG
+    if not benutzer.hat_rolle(*WERKSTATT_LEITUNG):
+        return None
+    from lager.models import bestand
+    return bestand(material)
+
+
 def detail(request, pk):
     material = get_object_or_404(Material, pk=pk)
     return render(request, "material/detail.html", {
         "m": material, "darf_bearbeiten": darf_bearbeiten(request.user), "preise": darf_preise_sehen(request.user),
+        "lager_bestand": _lagerbestand(request.user, material),
         **nachbarn(Material.objects.order_by("produktgruppe", "bezeichnung", "pk"), material),
     })
 

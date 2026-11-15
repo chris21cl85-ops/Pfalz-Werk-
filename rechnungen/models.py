@@ -625,6 +625,12 @@ class Eingangsrechnung(models.Model):
     def skonto_betrag(self) -> Decimal:
         return runden(Decimal(self.brutto) * Decimal(self.skonto_prozent) / 100)
 
+    @property
+    def abgleich(self) -> str:
+        """Wie Abgleich() im Makro: Netto gegen Bestellwert der Bestellung (Toleranz max. 0,50 € / 2 %)."""
+        from lager.dienst import abgleich
+        return abgleich(self.bestellung, self.netto)
+
     def skonto_moeglich(self, datum) -> bool:
         """Wie Makro: nur mit Skonto-Angabe, innerhalb der Frist und solange noch nichts gezahlt ist."""
         return bool(self.skonto_prozent and self.skonto_bis and datum <= self.skonto_bis

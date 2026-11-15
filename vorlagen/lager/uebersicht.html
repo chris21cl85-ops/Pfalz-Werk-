@@ -1,0 +1,54 @@
+{% extends "basis.html" %}
+{% block titel %}Bestellungen & Lager – PFALZ-WERK{% endblock %}
+{% block pfad %} › Bestellungen & Lager{% endblock %}
+{% block inhalt %}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+  <h1>Bestellungen & Lager</h1>
+  <p style="margin:0 0 22px;display:flex;gap:10px;flex-wrap:wrap">
+    <a class="knopf" href="{% url 'lager:neu' %}">+ Neue Bestellung</a>
+    <a class="knopf zweit" href="{% url 'lager:bestellungen' %}">Alle Bestellungen</a>
+    <a class="knopf zweit" href="{% url 'lager:bestand' %}">Lagerbestand</a></p>
+</div>
+<div class="zahlen" style="margin-bottom:24px">
+  <a class="zahl" href="#vorschlaege"><small>Bestellvorschläge</small><b>{{ vorschlaege|length }}</b><small>{% if vorschlag_wert %}ca. {{ vorschlag_wert|floatformat:"0g" }} € netto{% else %}Material unter Mindestbestand{% endif %}</small></a>
+  <a class="zahl blau" href="#lieferungen"><small>Offene Lieferungen</small><b>{{ offene|length }}</b></a>
+  <a class="zahl warn" href="#lieferungen"><small>Überfällig</small><b>{{ anzahl_ueberfaellig }}</b></a>
+  <a class="zahl" style="--leuchten:rgba(167,139,250,.38)" href="#lieferungen"><small>Warten aufs Einlagern</small><b>{{ anzahl_einlagern }}</b></a>
+</div>
+
+<h2 class="abschnitt" id="vorschlaege">Bestellvorschläge – Lagerartikel unter Mindestbestand</h2>
+{% if vorschlaege %}
+<div class="tabelle-rahmen"><table>
+  <tr><th>Material</th><th class="breit">Lieferant</th><th style="text-align:right">Bestand</th><th style="text-align:right" class="breit">bestellt</th><th style="text-align:right" class="breit">Mindest / Ziel</th><th>Bestellen</th></tr>
+  {% for v in vorschlaege %}
+  <tr><td><a href="{% url 'lager:lagerkarte' v.material.pk %}">{{ v.material.bezeichnung }}</a><div class="hilfe">{{ v.material.materialnr }}</div></td>
+    <td class="breit">{% if v.lieferant %}{{ v.lieferant.name }}{% else %}<span class="fehler">kein Lieferant</span>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ v.bestand|floatformat:"-3g" }} {{ v.material.einheit }}</td>
+    <td class="nowrap breit" style="text-align:right">{{ v.offen|floatformat:"-3g" }}</td>
+    <td class="nowrap breit" style="text-align:right">{{ v.mindest|floatformat:"-3g" }} / {{ v.ziel|floatformat:"-3g" }}</td>
+    <td>{% if v.lieferant %}<form method="post" action="{% url 'lager:vorschlag' %}" style="display:flex;gap:6px;align-items:center">{% csrf_token %}
+        <input type="hidden" name="material" value="{{ v.material.pk }}">
+        <input type="text" name="menge" value="{{ v.menge|floatformat:'-3' }}" inputmode="decimal" style="width:90px;padding:7px 10px">
+        <button class="knopf" type="submit" style="padding:8px 14px;font-size:16px">Bestellen</button></form>
+      {% else %}<a href="{{ v.material.get_absolute_url }}">Lieferant eintragen</a>{% endif %}</td></tr>
+  {% endfor %}
+</table></div>
+<form method="post" action="{% url 'lager:vorschlag' %}" style="margin-top:12px" onsubmit="return confirm('Alle Vorschläge mit Lieferant jetzt bestellen?')">{% csrf_token %}
+  <input type="hidden" name="alle" value="1"><button class="knopf zweit" type="submit">Alle Vorschläge bestellen</button>
+  <span class="hilfe">Vorschlag = Zielbestand − Bestand − schon bestellt. Menge kann vorher geändert werden.</span></form>
+{% else %}<div class="karte"><p class="grau" style="margin:0">Alles im grünen Bereich – kein Lagerartikel unter Mindestbestand. ✔</p></div>{% endif %}
+
+<h2 class="abschnitt" id="lieferungen">Offene Lieferungen</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Bestellung</th><th>Material</th><th class="breit">Lieferant</th><th style="text-align:right">noch offen</th><th class="breit">erwartet</th><th>Status</th><th></th></tr>
+  {% for b in offene %}
+  <tr class="klickbar" onclick="location.href='{{ b.get_absolute_url }}'">
+    <td class="nowrap"><a href="{{ b.get_absolute_url }}">{{ b.bnr }}</a>{% if b.projekt %}<div class="hilfe">{{ b.projekt.projektnr }}</div>{% endif %}</td>
+    <td>{{ b.material.bezeichnung }}</td><td class="breit">{{ b.lieferant.name }}</td>
+    <td class="nowrap" style="text-align:right">{{ b.rest_offen|floatformat:"-3g" }} {{ b.einheit }}</td>
+    <td class="nowrap breit">{{ b.erwartet_am|date:"d.m.Y"|default:"–" }}</td>
+    <td style="{% if b.status_text == 'überfällig' %}color:var(--rot);font-weight:600{% elif b.status_text == 'einlagern' %}color:#6d5bd0;font-weight:600{% endif %}">{{ b.status_text }}</td>
+    <td><a class="knopf zweit" style="padding:6px 12px;font-size:15px" href="{{ b.get_absolute_url }}">Wareneingang</a></td></tr>
+  {% empty %}<tr><td colspan="7">Keine offenen Lieferungen – alles ist eingegangen und eingelagert.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

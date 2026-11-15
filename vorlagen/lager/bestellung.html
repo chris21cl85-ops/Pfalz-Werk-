@@ -1,0 +1,65 @@
+{% extends "basis.html" %}
+{% block titel %}{{ b.bnr }} – Bestellungen{% endblock %}
+{% block pfad %} › <a href="{% url 'lager:uebersicht' %}">Bestellungen & Lager</a> › {{ b.bnr }}{% endblock %}
+{% block inhalt %}
+<h1>{{ b.bnr }} · {{ b.material.bezeichnung }}
+  <span class="marke-inaktiv" style="{% if b.status_text == 'überfällig' %}background:#ffebee;color:var(--rot){% elif b.status_text == 'abgeschlossen' or b.status_text == 'geliefert' %}background:#e8f5e9;color:var(--gruen){% endif %}">{{ b.status_text }}</span></h1>
+<p class="grau" style="margin-top:-12px">Lieferant: <a href="{{ b.lieferant.get_absolute_url }}">{{ b.lieferant.name }}</a> · bestellt am {{ b.bestellt_am|date:"d.m.Y" }}{% if b.freigegeben_von %} von {{ b.freigegeben_von }}{% endif %} · erwartet {{ b.erwartet_am|date:"d.m.Y"|default:"–" }}{% if b.projekt %} · Projekt <a href="{{ b.projekt.get_absolute_url }}">{{ b.projekt.projektnr }}</a>{% endif %}</p>
+
+<div class="zahlen" style="margin-bottom:22px">
+  <div class="zahl"><small>Bestellt</small><b>{{ b.menge|floatformat:"-3g" }} {{ b.einheit }}</b></div>
+  <div class="zahl blau"><small>Geliefert</small><b>{{ b.geliefert|floatformat:"-3g" }}</b></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Eingelagert</small><b>{{ b.eingelagert|floatformat:"-3g" }}</b></div>
+  <div class="zahl warn"><small>Noch offen</small><b>{{ b.rest_offen|floatformat:"-3g" }}</b></div>
+</div>
+
+{% if b.zu_lagern > 0 and not b.abgeschlossen %}
+<form method="post" class="karte" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">{% csrf_token %}
+  <input type="hidden" name="aktion" value="einlagern">
+  <span>⏳ <b>{{ b.zu_lagern|floatformat:"-3g" }} {{ b.einheit }}</b> sind angekommen, aber noch nicht im Lager gebucht.</span>
+  <button class="knopf" type="submit">Jetzt einlagern{% if b.material.lagerplatz %} ({{ b.material.lagerplatz }}){% endif %}</button>
+</form>
+{% endif %}
+
+{% if b.rest_offen > 0 and not b.abgeschlossen %}
+<form method="post" class="karte">{% csrf_token %}
+  <h2 style="margin-top:0">Wareneingang buchen</h2>
+  {% for feld in formular %}
+    <div id="we-{{ feld.name }}">
+    {% if feld.name == "mehr" %}<label style="display:flex;gap:10px;align-items:center;font-weight:400">{{ feld }} {{ feld.label }}</label>
+    {% else %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+      {% if feld.name == "was" or feld.name == "einlagern" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}{% endif %}
+    {% if feld.name == "einlagern" %}<div class="hilfe">Lagerort: {{ b.material.lagerplatz|default:"– (beim Material eintragen)" }} · Bestand jetzt {{ bestand|floatformat:"-3g" }} {{ b.einheit }}</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  <p style="margin-top:18px"><button class="knopf" type="submit">Buchen</button></p>
+</form>
+<script>
+  function weZeigen() {
+    const was = (document.querySelector('input[name=was]:checked') || {}).value;
+    document.getElementById('we-menge').style.display = was === 'teil' ? '' : 'none';
+    document.getElementById('we-mehr').style.display = was === 'teil' ? '' : 'none';
+    document.getElementById('we-termin').style.display = was === 'nichts' ? '' : 'none';
+    ['datum', 'einlagern', 'notiz'].forEach(n => document.getElementById('we-' + n).style.display = was === 'nichts' ? 'none' : '');
+  }
+  document.querySelectorAll('input[name=was]').forEach(e => e.addEventListener('change', weZeigen)); weZeigen();
+</script>
+{% endif %}
+
+<h2>Verlauf</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Datum</th><th>Was</th><th style="text-align:right">Menge</th><th>Notiz</th></tr>
+  <tr><td>{{ b.bestellt_am|date:"d.m.Y" }}</td><td>Bestellt ({{ b.get_art_display }})</td><td style="text-align:right">{{ b.menge|floatformat:"-3g" }}</td><td>{{ b.grund }} {{ b.notiz }}</td></tr>
+  {% for w in eingaenge %}<tr><td>{{ w.datum|date:"d.m.Y" }}</td><td>Wareneingang</td><td style="text-align:right">+{{ w.menge|floatformat:"-3g" }}</td><td>{{ w.notiz }}<div class="hilfe">{% if w.erfasst_von %}{{ w.erfasst_von.get_full_name|default:w.erfasst_von.username }}{% else %}Import{% endif %}</div></td></tr>{% endfor %}
+  {% for l in bewegungen %}<tr><td>{{ l.datum|date:"d.m.Y" }}</td><td>Eingelagert</td><td style="text-align:right">+{{ l.menge|floatformat:"-3g" }}</td><td>{{ l.notiz }}</td></tr>{% endfor %}
+  {% if b.eingelagert_vorher %}<tr><td>–</td><td>Eingelagert (aus Excel)</td><td style="text-align:right">{{ b.eingelagert_vorher|floatformat:"-3g" }}</td><td></td></tr>{% endif %}
+</table></div>
+
+{% if not b.abgeschlossen and b.rest_offen > 0 %}
+<details class="karte" style="margin-top:20px"><summary style="cursor:pointer;font-weight:600;color:var(--holz-dunkel)">Rest kommt nicht mehr? Bestellung abschließen …</summary>
+  <form method="post" style="margin-top:10px">{% csrf_token %}<input type="hidden" name="aktion" value="abschliessen">
+    <label for="grund">Grund</label><input type="text" id="grund" name="grund" required placeholder="z. B. Lieferant kann nicht liefern">
+    <p><button class="knopf zweit" type="submit">Abschließen</button></p></form>
+</details>{% endif %}
+{% endblock %}

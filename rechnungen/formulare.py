@@ -219,6 +219,10 @@ class EingangFormular(forms.Form):
         super().__init__(*args, **kwargs)
         self.initial.setdefault("datum", timezone.localdate())
         self.fields["lieferant"].widget.attrs.update({"list": "liste-lieferant", "autocomplete": "off"})
+        self.fields["bestellung"].widget.attrs.update({"list": "liste-bestellung", "autocomplete": "off"})
+        from lager.models import Bestellung
+        self.bestellungen = [b for b in Bestellung.objects.filter(abgeschlossen=False).select_related("lieferant", "material")
+                             .order_by("-bestellt_am")[:200]]
         self.fields["beleg"].widget.attrs["accept"] = ".pdf,.jpg,.jpeg,.png,image/*,application/pdf"
         self.lieferanten = list(Lieferant.objects.filter(aktiv=True).order_by("name"))
         komma_felder(self, ["netto"], mindestens=2)

@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.6 (Etappe 2 komplett).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.0 (Etappe 3, Paket 1).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -124,7 +124,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   Material AE Meldebestand, AG Bestell-/Gebindegröße, AJ Referenzpreis netto, AM Preisart, AN Verlässlichkeit.
 - 175 automatische Tests, alle grün.
 
-## Etappe 2 – Geld: GEBAUT (Paket 5 Abnahme offen)
+## Etappe 2 – Geld: ABGENOMMEN am 15.11.2026
 
 ### Paket 1a: Rechnungen (Firmendaten, Entwurf, Festschreiben, PDF) – ABGENOMMEN am 13.11.2026 („kann weiter gehen“)
 Fachliche Vorlage: Makro `PW_Rechnung.bas` (Drive, Stand 26.10.2026), vollständig gelesen.
@@ -318,7 +318,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Projekt öffnen, dem die Rechnung zugeordnet ist → unten „Kosten (Eingangsrechnungen)“.
 5. Eine Test-Erfassung über „Falsch erfasst? Erfassung stornieren …“ wieder aufheben.
 
-### Paket 5: Finanz-Übersicht + DATEV-Export – GEBAUT 15.11.2026, Abnahme offen
+### Paket 5: Finanz-Übersicht + DATEV-Export – ABGENOMMEN am 15.11.2026 („los gehts“)
 Vorlage: `PW_FIN_Cockpit`/`CockpitBauen`, `PW_FIN_Export`, `Debitor`, `Kreditor`, `Sachkonto`, `zeile` aus `PW_Eingang.bas`.
 - Kachel „Finanzen“ (Chef/Admin/Buchhaltung wie `Darf()`): Kennzahlen Umsatz Jahr netto, offene Forderungen,
   offene Verbindlichkeiten (je mit Anzahl überfällig), USt-Zahllast Vormonat (USt − Vorsteuer, nach Rechnungsdatum);
@@ -349,15 +349,58 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. ZIP öffnen: CSV-Dateien und Ordner „Belege“ ansehen. Die ZIP einmal an den Steuerberater schicken mit der Bitte
    um einen Probe-Import („Buchungsstapel EXTF, SKR03 – bitte prüfen, ob es sauber einliest“).
 
+## Etappe 3 – Werkstatt: IN ARBEIT
+
+### Paket 1: Bestellungen, Wareneingang, Lagerbestand – GEBAUT 15.11.2026, Abnahme offen
+Vorlage: `PW_Bestellassistent.bas`, `PW_Wareneingang.bas`, `PW_Bestellart.bas` (Drive, 20.10.2026), Blätter
+„Bestellungen“ (49), „Lager“ (52), „Lagerbewegungen“ (69). Neue App `lager`.
+- Kachel „Bestellungen & Lager“ (Chef, Admin, Meister – wie `Berechtigt()`; Freigabe-Anfrage für andere Rollen
+  entfällt, da nur Berechtigte den Bereich sehen).
+- **Lagerbestand** = Summe der Lagerbewegungen (Journal, nur anfügen, nie ändern/löschen): Startbestand,
+  Wareneingang (eingelagert), Korrektur/Inventur, Entnahme (Entnahme-Oberfläche folgt mit Produktion).
+  Lagerbestandsliste (Filter Lagerartikel / unter Mindest / alles), Lagerkarte je Material mit Bewegungen,
+  Bestellungen und „Bestand korrigieren“ (gezählter Wert → Differenz wird gebucht, Grund Pflicht, Protokoll).
+  Materialkarte zeigt Lagerbestand + Link.
+- **Bestellvorschläge** (wie Spalten V–AE): aktive Lagerartikel mit Mindestbestand, bei denen Bestand + offene
+  Bestellmenge < Mindestbestand. Vorschlag = Ziel (Zielbestand, mind. Mindestbestand) − Bestand − offen, auf ganze
+  Einheiten aufgerundet; Menge änderbar; „Bestellen“ je Zeile oder „Alle Vorschläge bestellen“ (Bestellart
+  Automatisch, Entscheider „Automatik“). Ohne Lieferant im Materialstamm keine Bestellung (wie `LiefFehlt`).
+  Nicht übernommen: Projekt-Bedarf (Spalten Y/Z aus Stückliste) → mit Möbelrechner/Stückliste.
+- **Bestellungen**: B-0001 fortlaufend; Material, Lieferant (aus Material), Menge, Einheit, Projekt (optional),
+  Bestellart (Automatisch/Manuell/Projekt), Grund, erwarteter Termin (leer = heute + Lieferzeit). Liste mit Suche,
+  Filter offen/erledigt. „Rest kommt nicht mehr“ → abschließen (Grund, Protokoll).
+- **Wareneingang** (wie Assistent): „Alles da“ / „Teillieferung“ (Menge) / „Noch nichts“ (neuer Liefertermin,
+  Vorschlag heute + 2), dann „Gleich einlagern“ / „Später“; mehr als bestellt nur mit Bestätigung; später
+  „Jetzt einlagern“. Status wie `StatusText()`: unterwegs / teilweise / überfällig / einlagern / geliefert /
+  abgeschlossen. Übersicht mit Kennzahlen (Vorschläge + Wert, offene Lieferungen, überfällig, warten aufs Einlagern).
+- **Abgleich Eingangsrechnung ↔ Bestellung** (wie `Abgleich()` in PW_Eingang): Bestellwert = Menge × EK netto;
+  „✓ passt“ bei Abweichung ≤ max(0,50 €; 2 %), sonst „Abweichung ±x €“. Im Erfassen-Formular Auswahlliste offener
+  Bestellungen.
+- **Excel-Import**: Blatt „Lager“ (A Material-ID, D Istbestand → Startbestand nur wenn noch keine Bewegung;
+  I Lagerort → Lagerplatz nur wenn leer) und „Bestellungen“ (nur Zeilen mit „B-…“: A, B Projekt, C Material,
+  D Lieferant, E bestellt, F Menge, G Einheit, H erwartet, J Wareneingang am, M geliefert kumuliert,
+  AO eingelagert kumuliert, AS Status „abgeschlossen“). Vorhandene Nummern nie überschrieben; zweimal importieren
+  ändert nichts.
+- 351 automatische Tests, alle grün.
+
+### So testest du es (Etappe 3, Paket 1)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 3.0“ stehen.
+1. Excel-Import erneut durchlaufen lassen → im Bericht erscheinen „Lagerbestand“ und „Bestellungen“.
+2. Kachel „Bestellungen & Lager“ → Bestellvorschläge prüfen (stimmen Mindest-/Zielbestände?) → einen Vorschlag
+   „Bestellen“.
+3. Bei der neuen Bestellung „Wareneingang“ → „Teillieferung“ 1 Stück, „Später“ → Hinweis „angekommen, aber noch
+   nicht im Lager“ → „Jetzt einlagern“.
+4. „Lagerbestand“ → ein Material öffnen → „Bestand korrigieren“ → gezählten Wert eintragen.
+5. Eingangsrechnung erfassen mit dieser Bestell-Nr. → auf der Rechnung steht „✓ passt zur Bestellung“ bzw. die Abweichung.
+
 ## Nächstes Paket
-**Etappe 3 – Werkstatt**, Paket 1 (Vorschlag): **Bestellungen + Wareneingang** (dann Abgleich Eingangsrechnung ↔
-Bestellung wie `Abgleich()` in PW_Eingang nachziehen), danach Lager (Excel-Blatt „Lager“: A Material-Nr., D Bestand,
-E Reserviert, I Lagerort), Möbelrechner, Produktion + QM, Montageplan, Kalender.
-Vorher in Chris' Google Drive die zugehörigen Makros suchen (Bestellungen, Wareneingang, Lager, Möbelrechner …)
-und `doku/EXCEL_AUFBAU_aller_Blaetter.txt` für die Blätter lesen.
-Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
-- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – komplett übernommen
-- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – komplett übernommen (außer Bestell-Abgleich)
+Etappe 3, Paket 2 (Vorschlag): **Möbelrechner / Kalkulation + Stückliste** (Blatt „Kalkulation“ (50): Vor-/Auftrags-/
+Nachkalkulation, Materialkosten aus Stückliste, Lohn) – oder **Produktion + QM** (Arbeitsgänge, siehe Vorlage
+Mitarbeiter unten: Blatt „Produktion Arbeitsgänge“), dann Montageplan und Kalender. Chris entscheidet.
+Vorher Makros in Drive suchen (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3; dort u. a. Modul2.bas (Freigaben),
+PW_Material.bas, PW_Handy_Modul.bas, PW_Seitenrad.bas (= Navi-Rad der Excel!)).
+- Excel-Inventur (Blätter 25–32, 62–68) noch nicht übernommen – eigenes Paket „Inventur“ (heute: Korrektur je Material).
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

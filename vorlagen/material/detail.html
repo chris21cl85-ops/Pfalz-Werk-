@@ -25,6 +25,7 @@
   {% endif %}
   <dt>Lagerartikel</dt><dd>{{ m.lagerartikel|yesno:"Ja,Nein" }}</dd>
   <dt>Lagerplatz</dt><dd>{{ m.lagerplatz|default:"–" }}</dd>
+  {% if lager_bestand is not None %}<dt>Lagerbestand</dt><dd><b>{{ lager_bestand|floatformat:"-3g" }} {{ m.einheit }}</b> · <a href="{% url 'lager:lagerkarte' m.pk %}">Lagerkarte, Bestellungen, Korrektur</a></dd>{% endif %}
   <dt>Mindest- / Zielbestand</dt><dd>{{ m.mindestbestand|floatformat:"-3"|default:"–" }} / {{ m.zielbestand|floatformat:"-3"|default:"–" }}</dd>
   <dt>Beschaffung</dt><dd>{{ m.beschaffungsart|default:"–" }}{% if m.lieferzeit_tage is not None %} · Lieferzeit {{ m.lieferzeit_tage }} Tage{% endif %}</dd>
   <dt>Hinweise</dt><dd>{{ m.hinweise|default:"–" }}</dd>

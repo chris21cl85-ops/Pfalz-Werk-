@@ -21,7 +21,7 @@
   <dt>Kategorie</dt><dd>{{ e.kategorie }}</dd>
   <dt>Projekt</dt><dd>{% if e.projekt %}<a href="{{ e.projekt.get_absolute_url }}">{{ e.projekt }}</a>{% else %}Gemeinkosten{% endif %}</dd>
   <dt>Zahlungsziel</dt><dd>{{ e.ziel_tage }} Tage{% if e.skonto_prozent %} · {{ e.skonto_prozent|floatformat:"-2" }} % Skonto bis {{ e.skonto_bis|date:"d.m.Y" }} ({{ e.skonto_betrag|floatformat:"2g" }} €){% endif %}</dd>
-  {% if e.bestellung %}<dt>Bestellung</dt><dd>{{ e.bestellung }}</dd>{% endif %}
+  {% if e.bestellung %}<dt>Bestellung</dt><dd>{{ e.bestellung }}{% with a=e.abgleich %} · <span style="{% if '✓' in a %}color:var(--gruen){% else %}color:#b5651d;font-weight:600{% endif %}">{{ a }}</span>{% endwith %}</dd>{% endif %}
   {% if e.notiz %}<dt>Notiz</dt><dd>{{ e.notiz }}</dd>{% endif %}
   <dt>Beleg</dt><dd>{% if e.beleg_name %}<a href="{% url 'eingang:beleg' e.pk %}" target="_blank">📎 {{ e.beleg_name }} öffnen</a>{% else %}<span class="grau">kein Beleg hinterlegt</span>{% endif %}</dd>
   <dt>Erfasst</dt><dd>{{ e.erfasst_am|date:"d.m.Y H:i" }} von {{ e.erfasst_von.get_full_name|default:e.erfasst_von.username }}</dd>

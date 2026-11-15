@@ -1,0 +1,34 @@
+{% extends "basis.html" %}
+{% block titel %}Bestellungen – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'lager:uebersicht' %}">Bestellungen & Lager</a> › Alle Bestellungen{% endblock %}
+{% block inhalt %}
+<h1>Bestellungen</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Nummer, Material, Lieferant, Projekt …" autofocus>
+    <select name="status" style="max-width:220px" onchange="this.form.submit()">
+      <option value="offen" {% if status == "offen" %}selected{% endif %}>Offen</option>
+      <option value="erledigt" {% if status == "erledigt" %}selected{% endif %}>Erledigt</option>
+      <option value="alle" {% if status == "alle" %}selected{% endif %}>Alle</option>
+    </select>
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+  <a class="knopf" href="{% url 'lager:neu' %}">+ Neue Bestellung</a>
+</div>
+<p class="grau">{{ anzahl }} Bestellung{{ anzahl|pluralize:"en" }}.</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th class="breit">Bestellt</th><th>Material</th><th class="breit">Lieferant</th><th style="text-align:right">Menge</th><th style="text-align:right" class="breit">geliefert</th><th>Status</th></tr>
+  {% for b in seite %}
+  <tr class="klickbar" onclick="location.href='{{ b.get_absolute_url }}'">
+    <td class="nowrap"><a href="{{ b.get_absolute_url }}">{{ b.bnr }}</a></td><td class="breit nowrap">{{ b.bestellt_am|date:"d.m.Y" }}</td>
+    <td>{{ b.material.bezeichnung }}{% if b.projekt %}<div class="hilfe">Projekt {{ b.projekt.projektnr }}</div>{% endif %}</td>
+    <td class="breit">{{ b.lieferant.name }}</td>
+    <td class="nowrap" style="text-align:right">{{ b.menge|floatformat:"-3g" }} {{ b.einheit }}</td>
+    <td class="nowrap breit" style="text-align:right">{{ b.geliefert|floatformat:"-3g" }}</td>
+    <td>{{ b.status_text }}</td></tr>
+  {% empty %}<tr><td colspan="7">Keine Bestellungen in dieser Ansicht.</td></tr>{% endfor %}
+</table></div>
+{% if seite.paginator.num_pages > 1 %}<p>{% if seite.has_previous %}<a href="?seite={{ seite.previous_page_number }}&suche={{ suche|urlencode }}&status={{ status }}">← zurück</a>{% endif %}
+  Seite {{ seite.number }} von {{ seite.paginator.num_pages }}
+  {% if seite.has_next %}<a href="?seite={{ seite.next_page_number }}&suche={{ suche|urlencode }}&status={{ status }}">weiter →</a>{% endif %}</p>{% endif %}
+{% endblock %}

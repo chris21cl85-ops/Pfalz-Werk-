@@ -1,0 +1,18 @@
+{% extends "basis.html" %}
+{% block titel %}Neue Bestellung{% endblock %}
+{% block pfad %} › <a href="{% url 'lager:uebersicht' %}">Bestellungen & Lager</a> › Neue Bestellung{% endblock %}
+{% block inhalt %}
+<h1>Neue Bestellung</h1>
+<form method="post" class="karte">{% csrf_token %}
+  {% if formular.non_field_errors %}<div class="meldung error">{{ formular.non_field_errors|join:" " }}</div>{% endif %}
+  {% for feld in formular %}
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>{{ feld }}
+    {% if feld.name == "material" %}<div class="hilfe">Lieferant und Einheit kommen aus dem Materialstamm.</div>{% endif %}
+    {% if feld.name == "erwartet_am" %}<div class="hilfe">Leer = heute + Lieferzeit aus dem Materialstamm.</div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+  {% endfor %}
+  <p style="margin-top:22px"><button class="knopf" type="submit">Bestellen</button>
+     <a class="knopf zweit" href="{% url 'lager:uebersicht' %}">Abbrechen</a></p>
+  <p class="hilfe">Die Bestellung selbst schickst du wie gewohnt an den Lieferanten (Telefon, E-Mail, Portal). Hier wird sie festgehalten, damit Wareneingang und Lager stimmen.</p>
+</form>
+{% endblock %}

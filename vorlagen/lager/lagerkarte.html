@@ -1,0 +1,35 @@
+{% extends "basis.html" %}
+{% block titel %}{{ m.bezeichnung }} – Lager{% endblock %}
+{% block pfad %} › <a href="{% url 'lager:bestand' %}">Lagerbestand</a> › {{ m.materialnr }}{% endblock %}
+{% block inhalt %}
+<h1>{{ m.bezeichnung }}</h1>
+<p class="grau" style="margin-top:-12px">{{ m.materialnr }} · Lagerplatz {{ m.lagerplatz|default:"–" }} · Lieferant {{ m.lieferant.name|default:"–" }} · <a href="{{ m.get_absolute_url }}">Materialkarte</a></p>
+<div class="zahlen" style="margin-bottom:22px">
+  <div class="zahl"><small>Bestand</small><b>{{ bestand|floatformat:"-3g" }} {{ m.einheit }}</b></div>
+  <div class="zahl blau"><small>Bestellt, noch nicht geliefert</small><b>{{ offen|floatformat:"-3g" }}</b></div>
+  <div class="zahl warn"><small>Mindest / Ziel</small><b>{{ m.mindestbestand|floatformat:"-3g"|default:"–" }} / {{ m.zielbestand|floatformat:"-3g"|default:"–" }}</b></div>
+</div>
+<p><a class="knopf" href="{% url 'lager:neu' %}?material={{ m.pk }}">+ Bestellen</a></p>
+<details class="karte"><summary style="cursor:pointer;font-weight:600;color:var(--holz-dunkel)">Bestand korrigieren (gezählt, Bruch, Verschnitt) …</summary>
+  <form method="post" style="margin-top:10px">{% csrf_token %}
+    {% for feld in formular %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}{% endfor %}
+    <p class="hilfe">Der Bestand wird nicht überschrieben: Es wird die Differenz als Korrektur gebucht und protokolliert.</p>
+    <p><button class="knopf" type="submit">Korrektur buchen</button></p></form>
+</details>
+<h2>Lagerbewegungen</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Datum</th><th>Art</th><th style="text-align:right">Menge</th><th>Beleg / Notiz</th></tr>
+  {% for l in bewegungen %}<tr><td class="nowrap">{{ l.datum|date:"d.m.Y" }}</td><td>{{ l.get_art_display }}</td>
+    <td class="nowrap" style="text-align:right;{% if l.menge < 0 %}color:var(--rot){% endif %}">{% if l.menge > 0 %}+{% endif %}{{ l.menge|floatformat:"-3g" }}</td>
+    <td>{% if l.bestellung %}<a href="{{ l.bestellung.get_absolute_url }}">{{ l.bestellung.bnr }}</a> {% endif %}{{ l.notiz }}
+      <div class="hilfe">{% if l.erfasst_von %}{{ l.erfasst_von.get_full_name|default:l.erfasst_von.username }}{% else %}Import{% endif %}, {{ l.erfasst_am|date:"d.m.Y H:i" }}</div></td></tr>
+  {% empty %}<tr><td colspan="4">Noch keine Bewegungen.</td></tr>{% endfor %}
+</table></div>
+<h2>Bestellungen</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Nr.</th><th>Bestellt</th><th style="text-align:right">Menge</th><th>Status</th></tr>
+  {% for b in bestellungen %}<tr class="klickbar" onclick="location.href='{{ b.get_absolute_url }}'"><td><a href="{{ b.get_absolute_url }}">{{ b.bnr }}</a></td>
+    <td>{{ b.bestellt_am|date:"d.m.Y" }}</td><td style="text-align:right">{{ b.menge|floatformat:"-3g" }}</td><td>{{ b.status_text }}</td></tr>
+  {% empty %}<tr><td colspan="4">Noch nie bestellt.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "basis.html" %}
+{% block titel %}Lagerbestand – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'lager:uebersicht' %}">Bestellungen & Lager</a> › Lagerbestand{% endblock %}
+{% block inhalt %}
+<h1>Lagerbestand</h1>
+<div class="leiste">
+  <form method="get">
+    <input type="search" name="suche" value="{{ suche }}" placeholder="Suchen: Material, Nummer, Lagerplatz …" autofocus>
+    <select name="nur" style="max-width:240px" onchange="this.form.submit()">
+      <option value="lager" {% if nur == "lager" %}selected{% endif %}>Lagerartikel</option>
+      <option value="knapp" {% if nur == "knapp" %}selected{% endif %}>Nur unter Mindestbestand</option>
+      <option value="alle" {% if nur == "alle" %}selected{% endif %}>Alles Material</option>
+    </select>
+    <button class="knopf" type="submit">Suchen</button>
+  </form>
+</div>
+<p class="grau">{{ zeilen|length }} Material{{ zeilen|length|pluralize:"ien" }}{% if knapp %} · <span style="color:var(--rot)">{{ knapp }} unter Mindestbestand</span>{% endif %}.</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Material</th><th class="breit">Lagerplatz</th><th style="text-align:right">Bestand</th><th style="text-align:right" class="breit">Mindest</th><th>Status</th></tr>
+  {% for z in zeilen %}
+  <tr class="klickbar" onclick="location.href='{% url 'lager:lagerkarte' z.m.pk %}'">
+    <td><a href="{% url 'lager:lagerkarte' z.m.pk %}">{{ z.m.bezeichnung }}</a><div class="hilfe">{{ z.m.materialnr }}</div></td>
+    <td class="breit">{{ z.m.lagerplatz }}</td>
+    <td class="nowrap" style="text-align:right;font-weight:600">{{ z.bestand|floatformat:"-3g" }} {{ z.m.einheit }}</td>
+    <td class="nowrap breit" style="text-align:right">{{ z.m.mindestbestand|floatformat:"-3g"|default:"–" }}</td>
+    <td>{% if z.unter %}<span style="color:var(--rot);font-weight:600">unter Mindest</span>{% else %}ok{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5">Kein Material in dieser Ansicht.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

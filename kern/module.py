@@ -19,7 +19,7 @@ MODULE = [
     ("Zeiterfassung", "Stunden auf Projekte buchen", 4, ALLE, None, "Büro & Planung", "⏱"),
     ("Material", "Platten, Beschläge, Kanten", 1, ALLE, "material:liste", "Werkstatt & Material", "🪵"),
     ("Lieferanten", "Bezugsquellen und Konditionen", 1, BUERO + (Rolle.MEISTER,), "lieferanten:liste", "Werkstatt & Material", "🚚"),
-    ("Bestellungen & Lager", "Bestellung, Wareneingang, Bestand", 3, WERKSTATT_LEITUNG, None, "Werkstatt & Material", "📦"),
+    ("Bestellungen & Lager", "Vorschläge, Bestellung, Wareneingang, Bestand", 3, WERKSTATT_LEITUNG, "lager:uebersicht", "Werkstatt & Material", "📦"),
     ("Produktion", "Fertigung, Qualität, Montageplan", 3, ALLE, None, "Werkstatt & Material", "🔨"),
     ("Rechnungen", "Rechnungen schreiben, PDF, festschreiben", 2, BUERO, "rechnungen:liste", "Geld", "🧾"),
     ("Eingangsrechnungen", "Lieferanten-Rechnungen erfassen und bezahlen", 2, BUERO, "eingang:liste", "Geld", "📨"),
