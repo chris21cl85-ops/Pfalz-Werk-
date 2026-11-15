@@ -53,6 +53,11 @@ class Firmendaten(models.Model):
     fusstext = models.TextField("Fußtext Rechnung", blank=True, default="Vielen Dank für Ihren Auftrag.")
     mahngebuehr = models.DecimalField("Mahngebühr 2. Mahnung €", max_digits=8, decimal_places=2,
                                       default=Decimal("5"))
+    # DATEV (Excel-Zeilen 24–27, „vom Steuerberater“)
+    datev_berater = models.CharField("DATEV Beraternummer", max_length=7, blank=True)
+    datev_mandant = models.CharField("DATEV Mandantennummer", max_length=5, blank=True)
+    wj_beginn = models.CharField("Wirtschaftsjahr-Beginn (TT.MM.)", max_length=6, default="01.01.", blank=True)
+    sachkontenlaenge = models.PositiveSmallIntegerField("Sachkontenlänge", default=4)
     geaendert_am = models.DateTimeField("Geändert am", auto_now=True)
 
     # Pflichtangaben für eine Rechnung (§ 14 UStG) – wie FirmaFehlt() im Makro
@@ -86,7 +91,9 @@ class Firmendaten(models.Model):
 
     def als_kopie(self) -> dict:
         """Stand der Firmendaten zum Zeitpunkt des Festschreibens (für PDF und Prüfung)."""
-        felder = [f.name for f in self._meta.fields if f.name not in ("id", "geaendert_am", "letzte_rechnungsnummer")]
+        felder = [f.name for f in self._meta.fields if f.name not in ("id", "geaendert_am", "letzte_rechnungsnummer",
+                                                                      "datev_berater", "datev_mandant", "wj_beginn",
+                                                                      "sachkontenlaenge")]
         return {f: str(getattr(self, f)) if not isinstance(getattr(self, f), bool) else getattr(self, f)
                 for f in felder}
 

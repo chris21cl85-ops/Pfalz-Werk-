@@ -24,7 +24,7 @@ MODULE = [
     ("Rechnungen", "Rechnungen schreiben, PDF, festschreiben", 2, BUERO, "rechnungen:liste", "Geld", "🧾"),
     ("Eingangsrechnungen", "Lieferanten-Rechnungen erfassen und bezahlen", 2, BUERO, "eingang:liste", "Geld", "📨"),
     ("Firmendaten", "Briefkopf, Bank und Steuer für Rechnungen", 2, BUERO, "rechnungen:firmendaten", "Geld", "🏢"),
-    ("Finanzen", "Zahlungen, Übersicht, DATEV-Export", 2, (Rolle.CHEF, Rolle.BUCHHALTUNG), None, "Geld", "💶"),
+    ("Finanzen", "Übersicht, Liquidität, DATEV-Export", 2, BUERO, "finanzen:uebersicht", "Geld", "💶"),
     ("Auswertungen", "Zahlen für den Chef", 4, (Rolle.CHEF,), None, "Geld", "📊"),
     ("Mitarbeiter", "Personal und Stundensätze", 1, VERWALTUNG, "mitarbeiter:liste", "Verwaltung", "🧑‍🔧"),
     ("Excel-Import", "Daten aus der Excel-Fassung übernehmen", 0, VERWALTUNG, "importe:uebersicht", "Verwaltung", "📥"),

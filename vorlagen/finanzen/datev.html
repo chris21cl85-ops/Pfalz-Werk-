@@ -1,0 +1,37 @@
+{% extends "basis.html" %}
+{% block titel %}DATEV-Export – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'finanzen:uebersicht' %}">Finanzen</a> › DATEV-Export{% endblock %}
+{% block inhalt %}
+<h1>DATEV-Export für den Steuerberater</h1>
+{% if fehlt %}
+<div class="meldung error">Für den Export fehlen noch die <b>DATEV Beraternummer</b> und <b>Mandantennummer</b>.
+  Beide stehen auf Post oder Rechnungen deines Steuerberaters – oder einfach dort anrufen.
+  <a href="{% url 'rechnungen:firmendaten' %}">In den Firmendaten eintragen</a></div>
+{% endif %}
+<div class="karte">
+  <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    <div><label for="monat" style="margin-top:0">Monat</label>
+      <select id="monat" name="monat" onchange="this.form.submit()" style="min-width:240px">
+        {% for wert, text in auswahl %}<option value="{{ wert }}" {% if wert == monat_wert %}selected{% endif %}>{{ text }}</option>{% endfor %}
+      </select></div>
+    {% if not fehlt %}<a class="knopf" href="?monat={{ monat_wert }}&laden=1">⬇ Export {{ monat_text }} herunterladen (ZIP)</a>{% endif %}
+  </form>
+  <p class="hilfe">Die ZIP-Datei enthält den Buchungsstapel (EXTF, SKR03), die offenen Posten, die Personenkonten und alle
+    Belege des Monats (Rechnungs-PDFs, XRechnungen, Belege der Eingangsrechnungen). Einfach per E-Mail an den Steuerberater schicken.
+    {% if fd.datev_berater %}Berater {{ fd.datev_berater }} · Mandant {{ fd.datev_mandant }} · Sachkontenlänge {{ fd.sachkontenlaenge }}{% endif %}</p>
+</div>
+{% for w in warnungen %}<div class="meldung error">{{ w }}</div>{% endfor %}
+
+<h2>Vorschau: {{ buchungen|length }} Buchung{{ buchungen|length|pluralize:"en" }} im {{ monat_text }}</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Datum</th><th>Art</th><th>Beleg</th><th style="text-align:right">Betrag</th><th>S/H</th><th>Konto</th><th>Gegenkonto</th><th class="breit">BU</th><th class="breit">Text</th></tr>
+  {% for b in buchungen %}<tr><td class="nowrap">{{ b.datum|date:"d.m." }}</td><td>{{ b.art }}</td><td class="nowrap">{{ b.beleg }}</td>
+    <td class="nowrap" style="text-align:right">{{ b.datei_betrag|floatformat:"2g" }} €</td><td>{{ b.datei_sh }}</td><td>{{ b.konto }}</td><td>{{ b.gegen }}</td>
+    <td class="breit">{{ b.bu }}</td><td class="breit">{{ b.text|truncatechars:50 }}</td></tr>
+  {% empty %}<tr><td colspan="9">In diesem Monat gibt es keine Buchungen.</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">Kontenrahmen SKR03: Erlöse 8400/8300 (8195 Kleinunternehmer), Wareneingang 3400/3300/3200, Fremdleistungen 3100,
+  Kfz 4530, Werkzeug 4985, Büro 4930, Sonstiges 4900 (mit BU 9 = 19 % bzw. 8 = 7 % Vorsteuer), Bank 1200, Kasse 1000,
+  Skonti 8736/8731/8730 und 3736/3731/3730, Kunden 10000 + Kunden-Nr., Lieferanten 70000 + Nr.
+  Beim ersten Mal den Steuerberater kurz drüberschauen lassen.</p>
+{% endblock %}

@@ -1,7 +1,7 @@
 from .module import navi_fuer
 
 # Wird bei jeder Auslieferung erhöht – so sieht man im Navi, welche Fassung läuft
-FASSUNG = "Fassung 2.5 (Etappe 2, Paket 4)"
+FASSUNG = "Fassung 2.6 (Etappe 2 komplett)"
 
 
 def navigation(request):

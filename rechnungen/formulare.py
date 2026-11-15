@@ -105,6 +105,9 @@ class FirmendatenFormular(forms.ModelForm):
         super().__init__(*args, **kwargs)
         komma_felder(self, ["ust_satz"])
         komma_felder(self, ["mahngebuehr"], mindestens=2)
+        self.fields["sachkontenlaenge"].required = False
+        self.fields["sachkontenlaenge"].help_text = "Meist 4 – nur ändern, wenn der Steuerberater es sagt."
+        self.fields["datev_berater"].help_text = "Vom Steuerberater – wird für den DATEV-Export gebraucht."
         self.fields["letzte_rechnungsnummer"].help_text = (
             "Laufende Nummer der zuletzt geschriebenen Rechnung. Darf nur erhöht werden.")
 
@@ -115,6 +118,28 @@ class FirmendatenFormular(forms.ModelForm):
             raise forms.ValidationError(
                 f"Die Nummer darf nicht kleiner werden (bisher {alt}) – sonst gäbe es doppelte Rechnungsnummern.")
         return neu
+
+    def clean_sachkontenlaenge(self):
+        return self.cleaned_data.get("sachkontenlaenge") or 4
+
+    def clean_datev_berater(self):
+        wert = self.cleaned_data["datev_berater"].strip()
+        if wert and not wert.isdigit():
+            raise forms.ValidationError("Nur Ziffern (bis 7 Stellen) – steht auf Post vom Steuerberater.")
+        return wert
+
+    def clean_datev_mandant(self):
+        wert = self.cleaned_data["datev_mandant"].strip()
+        if wert and not wert.isdigit():
+            raise forms.ValidationError("Nur Ziffern (bis 5 Stellen).")
+        return wert
+
+    def clean_wj_beginn(self):
+        import re
+        wert = self.cleaned_data["wj_beginn"].strip() or "01.01."
+        if not re.fullmatch(r"\d{2}\.\d{2}\.", wert):
+            raise forms.ValidationError("Bitte als TT.MM. eingeben, z. B. 01.01.")
+        return wert
 
     def clean_iban(self):
         iban = self.cleaned_data["iban"].replace(" ", "").upper()

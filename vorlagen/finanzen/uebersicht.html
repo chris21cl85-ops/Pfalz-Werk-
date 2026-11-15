@@ -1,0 +1,71 @@
+{% extends "basis.html" %}
+{% block titel %}Finanzen – PFALZ-WERK{% endblock %}
+{% block pfad %} › Finanzen{% endblock %}
+{% block inhalt %}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+  <h1>Finanz-Übersicht</h1>
+  <p style="margin:0 0 22px;display:flex;gap:10px;flex-wrap:wrap">
+    <a class="knopf" href="{% url 'finanzen:datev' %}">▶ DATEV-Export</a>
+    <a class="knopf zweit" href="{% url 'eingang:liste' %}">Eingangsrechnungen</a>
+    <a class="knopf zweit" href="{% url 'rechnungen:liste' %}">Rechnungen</a></p>
+</div>
+<p class="grau" style="margin-top:-12px">Stand {% now "d.m.Y H:i" %} · alle Beträge aus Rechnungen, Eingangsrechnungen und Zahlungen</p>
+
+<div class="zahlen" style="margin-bottom:24px">
+  <div class="zahl"><small>Umsatz {{ jahr }} (netto)</small><b>{{ umsatz_jahr|floatformat:"0g" }} €</b><small>gestellte Rechnungen</small></div>
+  <a class="zahl blau" href="{% url 'rechnungen:liste' %}?status=unbezahlt"><small>Offene Forderungen</small><b>{{ forderungen_summe|floatformat:"0g" }} €</b><small>{{ forderungen_ueberfaellig }} davon überfällig</small></a>
+  <a class="zahl warn" href="{% url 'eingang:liste' %}"><small>Offene Verbindlichkeiten</small><b>{{ verbindlichkeiten_summe|floatformat:"0g" }} €</b><small>{{ verbindlichkeiten_ueberfaellig }} davon überfällig</small></a>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>USt-Zahllast {{ vormonat|date:"F Y" }}</small><b>{{ zahllast|floatformat:"0g" }} €</b>
+    <small>USt {{ ust|floatformat:"0g" }} € − Vorsteuer {{ vorsteuer|floatformat:"0g" }} € · Voranmeldung bis zum 10.</small></div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:20px;align-items:start">
+<div>
+  <h2 class="abschnitt">Liquidität – nächste 6 Wochen</h2>
+  <div class="tabelle-rahmen"><table>
+    <tr><th>Woche ab</th><th style="text-align:right">Eingänge</th><th style="text-align:right">Ausgänge</th><th style="text-align:right">Saldo</th><th style="text-align:right">kumuliert</th></tr>
+    {% for w in wochen %}<tr><td class="nowrap">{{ w.start|date:"d.m.Y" }}</td>
+      <td class="nowrap" style="text-align:right">{{ w.ein|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right">{{ w.aus|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right{% if w.saldo < 0 %};color:var(--rot){% endif %}">{{ w.saldo|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right;font-weight:600{% if w.kumuliert < 0 %};color:var(--rot){% endif %}">{{ w.kumuliert|floatformat:"0g" }} €</td></tr>{% endfor %}
+  </table></div>
+  <p class="hilfe">Woche 1 enthält auch alles Überfällige. Löhne sind noch nicht enthalten (kommen mit den Arbeitsverträgen).</p>
+</div>
+<div>
+  <h2 class="abschnitt">Deckungsbeitrag je Projekt</h2>
+  <div class="tabelle-rahmen"><table>
+    <tr><th>Projekt</th><th style="text-align:right">Erlös</th><th style="text-align:right">Kosten</th><th style="text-align:right">DB</th></tr>
+    {% for p in projekte %}<tr class="klickbar" onclick="location.href='{{ p.projekt.get_absolute_url }}'">
+      <td>{{ p.projekt.projektnr }}<div class="hilfe">{{ p.projekt.name|truncatechars:34 }}</div></td>
+      <td class="nowrap" style="text-align:right">{{ p.erloes|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right">{{ p.kosten|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right;font-weight:600{% if p.db < 0 %};color:var(--rot){% endif %}">{{ p.db|floatformat:"0g" }} €</td></tr>
+    {% empty %}<tr><td colspan="4">Noch keine Rechnungen oder Kosten zu Projekten.</td></tr>{% endfor %}
+  </table></div>
+  <p class="hilfe">Erlös = Rechnungen netto (Storno abgezogen), Kosten = Eingangsrechnungen netto. Löhne folgen mit der Zeiterfassung.</p>
+</div>
+<div>
+  <h2 class="abschnitt">Offene Forderungen</h2>
+  <div class="tabelle-rahmen"><table>
+    <tr><th>Rechnung</th><th>Kunde</th><th>Fällig</th><th style="text-align:right">Offen</th></tr>
+    {% for r in forderungen %}<tr class="klickbar" onclick="location.href='{{ r.get_absolute_url }}'">
+      <td class="nowrap"><a href="{{ r.get_absolute_url }}">{{ r.nummer }}</a></td><td>{{ r.kunde.name }}</td>
+      <td class="nowrap"{% if r.ist_ueberfaellig %} style="color:var(--rot);font-weight:600"{% endif %}>{{ r.faellig|date:"d.m.Y" }}</td>
+      <td class="nowrap" style="text-align:right">{{ r.offen|floatformat:"2g" }} €</td></tr>
+    {% empty %}<tr><td colspan="4">Keine – alles bezahlt.</td></tr>{% endfor %}
+  </table></div>
+</div>
+<div>
+  <h2 class="abschnitt">Offene Verbindlichkeiten</h2>
+  <div class="tabelle-rahmen"><table>
+    <tr><th>Beleg</th><th>Lieferant</th><th>Fällig</th><th style="text-align:right">Offen</th></tr>
+    {% for e in verbindlichkeiten %}<tr class="klickbar" onclick="location.href='{{ e.get_absolute_url }}'">
+      <td class="nowrap"><a href="{{ e.get_absolute_url }}">{{ e.ernr }}</a></td><td>{{ e.lieferant.name }}</td>
+      <td class="nowrap"{% if e.ist_ueberfaellig %} style="color:var(--rot);font-weight:600"{% endif %}>{{ e.faellig|date:"d.m.Y" }}</td>
+      <td class="nowrap" style="text-align:right">{{ e.offen|floatformat:"2g" }} €</td></tr>
+    {% empty %}<tr><td colspan="4">Keine – alles bezahlt.</td></tr>{% endfor %}
+  </table></div>
+</div>
+</div>
+{% endblock %}

@@ -25,8 +25,10 @@ FELDER = {_schluessel(k): v for k, v in {
     "USt-Satz %": "ust_satz", "Rechnungs-Präfix": "rechnungs_praefix",
     "Letzte Rechnungsnummer": "letzte_rechnungsnummer", "Fußtext Rechnung": "fusstext",
     "Mahngebühr 2. Mahnung €": "mahngebuehr",
+    "DATEV Beraternummer": "datev_berater", "DATEV Mandantennummer": "datev_mandant",
+    "Wirtschaftsjahr-Beginn (TT.MM.)": "wj_beginn", "Sachkontenlänge": "sachkontenlaenge",
 }.items()}
-ZAHLEN = {"zahlungsziel_tage", "ust_satz", "letzte_rechnungsnummer", "mahngebuehr"}
+ZAHLEN = {"zahlungsziel_tage", "ust_satz", "letzte_rechnungsnummer", "mahngebuehr", "sachkontenlaenge"}
 
 
 @registrieren
@@ -61,7 +63,7 @@ class FirmendatenImporter(Importer):
             return "unveraendert"
         if feld in ZAHLEN:
             wert = als_zahl(zeile["wert"])
-            if feld in ("zahlungsziel_tage", "letzte_rechnungsnummer"):
+            if feld in ("zahlungsziel_tage", "letzte_rechnungsnummer", "sachkontenlaenge"):
                 wert = int(wert)
         elif feld == "kleinunternehmer":
             wert = als_ja(zeile["wert"])

@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.5 (Etappe 2, Paket 4).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.6 (Etappe 2 komplett).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -124,7 +124,7 @@ Vorher einmalig `ANLEITUNG.md` Teil A bis C durchgehen.
   Material AE Meldebestand, AG Bestell-/Gebindegröße, AJ Referenzpreis netto, AM Preisart, AN Verlässlichkeit.
 - 175 automatische Tests, alle grün.
 
-## Etappe 2 – Geld: IN ARBEIT
+## Etappe 2 – Geld: GEBAUT (Paket 5 Abnahme offen)
 
 ### Paket 1a: Rechnungen (Firmendaten, Entwurf, Festschreiben, PDF) – ABGENOMMEN am 13.11.2026 („kann weiter gehen“)
 Fachliche Vorlage: Makro `PW_Rechnung.bas` (Drive, Stand 26.10.2026), vollständig gelesen.
@@ -286,7 +286,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 3. Rechnungen, Kunden, eine Rechnung öffnen: alles im neuen Aussehen, alles funktioniert wie vorher.
 4. Am Handy (gleiches WLAN, falls eingerichtet) oder Browserfenster schmal ziehen → Navi als Kachelliste.
 
-### Paket 4: Eingangsrechnungen – GEBAUT 15.11.2026, Abnahme offen
+### Paket 4: Eingangsrechnungen – ABGENOMMEN am 15.11.2026 („passt“)
 Vorlage: `PW_Eingang.bas` (Erfassen, Bezahlen, DoppelteNr, Statusformeln P/Q/R, KATEGORIEN) – vollständig gelesen.
 - Neue Kachel „Eingangsrechnungen“ (Geld; Chef/Admin/Buchhaltung wie `Darf()`).
 - Erfassen: Beleg-Nr. ER-0001 fortlaufend; Lieferant (Auswahl oder neuer Name → Lieferant wird angelegt),
@@ -318,16 +318,46 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Projekt öffnen, dem die Rechnung zugeordnet ist → unten „Kosten (Eingangsrechnungen)“.
 5. Eine Test-Erfassung über „Falsch erfasst? Erfassung stornieren …“ wieder aufheben.
 
+### Paket 5: Finanz-Übersicht + DATEV-Export – GEBAUT 15.11.2026, Abnahme offen
+Vorlage: `PW_FIN_Cockpit`/`CockpitBauen`, `PW_FIN_Export`, `Debitor`, `Kreditor`, `Sachkonto`, `zeile` aus `PW_Eingang.bas`.
+- Kachel „Finanzen“ (Chef/Admin/Buchhaltung wie `Darf()`): Kennzahlen Umsatz Jahr netto, offene Forderungen,
+  offene Verbindlichkeiten (je mit Anzahl überfällig), USt-Zahllast Vormonat (USt − Vorsteuer, nach Rechnungsdatum);
+  Liquidität 6 Wochen ab Montag (Woche 1 inkl. Überfälligem); Deckungsbeitrag je Projekt (Rechnungen netto −
+  Eingangsrechnungen netto, berechnet statt Blatt „Finanzen (Vorbereitung)“); Listen offene Forderungen/Verbindlichkeiten.
+  Noch ohne Löhne (Makro nahm Brutto aus „Arbeitsverträge“ zum Monatsende) → kommt mit Etappe 4.
+- Firmendaten: neue Felder DATEV Beraternummer, Mandantennummer, Wirtschaftsjahr-Beginn, Sachkontenlänge
+  (= Excel-Zeilen 24–27, werden jetzt auch importiert; nicht Teil der Rechnungs-Kopie).
+- DATEV-Export (Seite mit Monatsauswahl, Standard Vormonat, Vorschau aller Buchungen): ZIP mit
+  `EXTF_Buchungsstapel_JJJJ-MM.csv` (Kopf wie Makro: EXTF 700/21/Version 13, Windows-Zeichensatz, CRLF),
+  `Offene_Posten_….csv`, `Personenkonten.csv`, `Belege/` (Rechnungs-PDFs, XRechnungen, Eingangsbelege). Protokolliert.
+  Buchungen wie Makro: Rechnung brutto S Debitor an 8400/8300/8195; Eingangsrechnung brutto H Kreditor an Sachkonto;
+  Zahlung Ein S 1200 an Debitor (+ Skonto); Zahlung Aus H 1200 an Kreditor (+ Skonto); negative Beträge drehen S/H.
+  Verbesserungen gegenüber Makro (bitte vom Steuerberater bestätigen lassen):
+  BU-Schlüssel 9/8 bei Aufwandskonten ohne Vorsteuer-Automatik (3100, 4530, 4985, 4930, 4900); Material 0 % → 3200;
+  Skonto-Konten nach Steuersatz (8736/8731/8730, 3736/3731/3730); Bar → Kasse 1000; Kreditor = 70000 + Programm-Nr.
+  des Lieferanten (bleibt stabil); Belegfeld 1 bei Eingangsrechnung und deren Zahlung = Rechnungs-Nr. des Lieferanten
+  (für den OP-Ausgleich); stornierte Eingangsrechnung im Storno-Monat gegengebucht; Warnung bei doppelten Debitoren.
+  Spaltenkopf nur die ersten 14 DATEV-Spalten (wie Makro) – Probe-Import beim Steuerberater nötig (FEHLER Nr. 10).
+- 326 automatische Tests, alle grün.
+
+### So testest du es (Paket 5)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.6“ stehen.
+1. Kachel „Finanzen“ → Kennzahlen, Liquidität, Deckungsbeitrag ansehen – passen die Zahlen zu deinen Testbuchungen?
+2. Firmendaten → DATEV Beraternummer und Mandantennummer eintragen (vom Steuerberater) → Speichern.
+3. Finanzen → „▶ DATEV-Export“ → Monat wählen → Vorschau prüfen → „Export … herunterladen (ZIP)“.
+4. ZIP öffnen: CSV-Dateien und Ordner „Belege“ ansehen. Die ZIP einmal an den Steuerberater schicken mit der Bitte
+   um einen Probe-Import („Buchungsstapel EXTF, SKR03 – bitte prüfen, ob es sauber einliest“).
+
 ## Nächstes Paket
-**Etappe 2, Paket 5 (letztes der Etappe): Finanz-Übersicht + DATEV-Export.** Vorlage in `PW_Eingang.bas`:
-`PW_FIN_Cockpit`/`CockpitBauen` (Zeilen ~573–600, ~851–920: KPIs), `PW_FIN_Export` (~649–745: EXTF-Buchungsstapel,
-SKR03), `Debitor()`, `Kreditor()`, `Sachkonto()` (Kategorie → Konto, Vorsteuer), `zeile()`, `Betrag()`, `CsvT()`.
-Firmendaten bekommen dafür die Excel-Zeilen 24–27: DATEV Beraternummer, Mandantennummer,
-Wirtschaftsjahr-Beginn (TT.MM.), Sachkontenlänge (Standard 4) – „vom Steuerberater“.
-Danach Etappe 3 (Werkstatt).
+**Etappe 3 – Werkstatt**, Paket 1 (Vorschlag): **Bestellungen + Wareneingang** (dann Abgleich Eingangsrechnung ↔
+Bestellung wie `Abgleich()` in PW_Eingang nachziehen), danach Lager (Excel-Blatt „Lager“: A Material-Nr., D Bestand,
+E Reserviert, I Lagerort), Möbelrechner, Produktion + QM, Montageplan, Kalender.
+Vorher in Chris' Google Drive die zugehörigen Makros suchen (Bestellungen, Wareneingang, Lager, Möbelrechner …)
+und `doku/EXCEL_AUFBAU_aller_Blaetter.txt` für die Blätter lesen.
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
-- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen (komplett übernommen)
-- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingang (übernommen), Cockpit + DATEV (offen)
+- **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – komplett übernommen
+- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – komplett übernommen (außer Bestell-Abgleich)
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
