@@ -12,10 +12,12 @@
 </div>
 
 <h2 class="abschnitt">1 · Stückliste (Materialbedarf)</h2>
+{% if darf_moebel %}<div class="leiste"><a class="knopf zweit" href="{% url 'moebel:liste' %}?projekt={{ p.pk }}">📐 Möbelrechner ({{ moebel|length }} Möbel)</a>
+  <a class="knopf zweit" href="{% url 'moebel:neu' %}?projekt={{ p.pk }}">+ Möbel rechnen</a></div>{% endif %}
 <div class="tabelle-rahmen"><table>
   <tr><th>Pos.</th><th>Material</th><th style="text-align:right">Menge</th><th style="text-align:right" class="breit">EK</th><th style="text-align:right">Gesamt</th><th class="breit" style="text-align:right">Lager</th><th>Status</th><th></th></tr>
   {% for x in positionen %}
-  <tr><td>{{ x.pos }}</td><td>{{ x.bezeichnung }}{% if x.material %}<div class="hilfe">{{ x.material.materialnr }}</div>{% endif %}</td>
+  <tr><td>{{ x.pos }}</td><td>{{ x.bezeichnung }}{% if x.material %}<div class="hilfe">{{ x.material.materialnr }}{% if x.moebel_id %} · 📐 aus Möbelrechner{% endif %}</div>{% endif %}</td>
     <td class="nowrap" style="text-align:right">{{ x.menge|floatformat:"-3g" }} {{ x.einheit }}</td>
     <td class="nowrap breit" style="text-align:right">{% if x.ek is not None %}{{ x.ek|floatformat:"2g" }} €{% else %}<span class="fehler">fehlt</span>{% endif %}</td>
     <td class="nowrap" style="text-align:right">{{ x.gesamt|floatformat:"2g" }} €</td>

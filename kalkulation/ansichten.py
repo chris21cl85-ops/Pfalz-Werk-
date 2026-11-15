@@ -97,4 +97,5 @@ def projekt(request, pk):
         "freigabe_werte": Auftrag.Freigabe.choices, "status_werte": Stuecklistenposition.Status.choices,
         "material_summe": sum((x.gesamt for x in positionen if x.status != "Geplant"), Decimal("0")),
         "marge": marge(a.angebot_netto, k.kosten) if a and k.pk else None,
+        "darf_moebel": request.user.hat_rolle(Rolle.CHEF, Rolle.ADMIN, Rolle.MEISTER), "moebel": p.moebel.all(),
     })

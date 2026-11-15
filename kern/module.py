@@ -16,7 +16,7 @@ MODULE = [
     ("Kunden", "Kundenstamm und Ansprechpartner", 1, ALLE, "kunden:liste", "Büro & Planung", "👥"),
     ("Projekte", "Aufträge und Baustellen", 1, ALLE, "projekte:liste", "Büro & Planung", "📁"),
     ("Kalkulation & Aufträge", "Stückliste, Kalkulation, Angebot, Freigaben", 3, BUERO + (Rolle.MEISTER,), "kalkulation:liste", "Büro & Planung", "🧮"),
-    ("Möbelrechner", "Korpus eingeben, Teileliste entsteht", 3, WERKSTATT_LEITUNG, None, "Büro & Planung", "📐"),
+    ("Möbelrechner", "Korpus eingeben, Teileliste entsteht", 3, WERKSTATT_LEITUNG, "moebel:liste", "Büro & Planung", "📐"),
     ("Zeiterfassung", "Stunden auf Projekte buchen", 4, ALLE, None, "Büro & Planung", "⏱"),
     ("Material", "Platten, Beschläge, Kanten", 1, ALLE, "material:liste", "Werkstatt & Material", "🪵"),
     ("Lieferanten", "Bezugsquellen und Konditionen", 1, BUERO + (Rolle.MEISTER,), "lieferanten:liste", "Werkstatt & Material", "🚚"),

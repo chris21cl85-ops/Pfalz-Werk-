@@ -1,0 +1,25 @@
+{% extends "basis.html" %}
+{% block titel %}Werkstatt-Regeln – Möbelrechner{% endblock %}
+{% block pfad %} › <a href="{% url 'moebel:liste' %}">Möbelrechner</a> › Werkstatt-Regeln{% endblock %}
+{% block inhalt %}
+<h1>Werkstatt-Regeln</h1>
+<p class="grau" style="margin-top:-12px">Wie Blatt „Möbel-Regeln“ in der Excel. Gilt für alle neuen Berechnungen; gespeicherte Möbel rechnen beim nächsten Speichern neu.
+{% if r.im_programm_geaendert %}<br><b>Hier im Programm geändert</b> – der Excel-Import überschreibt die Regeln deshalb nicht mehr.{% endif %}</p>
+<form method="post" class="karte">{% csrf_token %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0 18px">
+  {% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}<div class="hilfe">{{ feld.help_text }}</div>{% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}</div>{% endfor %}
+  </div>
+  <p><button class="knopf" type="submit">Regeln speichern</button></p>
+</form>
+<h2 class="abschnitt">Tabellen (aus der Excel)</h2>
+<div class="raster2" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px">
+  <div class="karte"><h3 style="margin-top:0">Bänder je Türhöhe</h3>{% for x in r.baender %}<div>bis {{ x.0 }} mm → {{ x.1 }} Bänder</div>{% endfor %}</div>
+  <div class="karte"><h3 style="margin-top:0">Fachboden-Spannweite</h3>{% for x in r.fachboden %}<div>Stärke bis {{ x.0 }} mm → max. {{ x.1 }} mm</div>{% endfor %}</div>
+  <div class="karte"><h3 style="margin-top:0">Verbinder</h3>{% for name, v in r.verbinder.items %}<div>{{ name }}: {{ v.0 }} · Abstand {{ v.1 }} mm</div>{% endfor %}</div>
+  <div class="karte"><h3 style="margin-top:0">Standardmaterial</h3>{% for name, nr in r.standardmaterial.items %}<div>{{ name }}: {{ nr }}</div>{% endfor %}</div>
+</div>
+<div class="karte"><h3 style="margin-top:0">Beschlagsysteme</h3>
+  <div class="tabelle-rahmen"><table><tr><th>System</th><th>Topfband</th><th class="breit">Montageplatte</th><th class="breit">Bodenträger</th><th class="breit">Sockelfuß</th><th class="breit">Griff</th></tr>
+  {% for name, v in r.systeme.items %}<tr><td>{{ name }}</td><td>{{ v.0|default:"–" }}</td><td class="breit">{{ v.1|default:"–" }}</td><td class="breit">{{ v.2|default:"–" }}</td><td class="breit">{{ v.3|default:"–" }}</td><td class="breit">{{ v.7|default:"–" }}</td></tr>{% endfor %}</table></div>
+  <p class="hilfe">Tabellen ändern: in der Excel (Blatt „Möbel-Regeln“) und neu importieren.</p></div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "basis.html" %}
+{% block titel %}Möbelrechner – PFALZ-WERK{% endblock %}
+{% block pfad %} › {% if projekt %}<a href="{% url 'moebel:liste' %}">Möbelrechner</a> › {{ projekt.projektnr }}{% else %}Möbelrechner{% endif %}{% endblock %}
+{% block inhalt %}
+<h1>Möbelrechner{% if projekt %} · {{ projekt.projektnr }}{% endif %}</h1>
+<p class="grau" style="margin-top:-12px">Korpus eingeben – Teileliste, Beschläge, Prüfungen und Materialbedarf entstehen von selbst.</p>
+<div class="leiste">
+  <a class="knopf" href="{% url 'moebel:neu' %}{% if projekt %}?projekt={{ projekt.pk }}{% endif %}">+ Neues Möbel</a>
+  <a class="knopf zweit" href="{% url 'moebel:regeln' %}">Werkstatt-Regeln</a>
+  {% if projekt %}<a class="knopf zweit" href="{% url 'kalkulation:projekt' projekt.pk %}">Stückliste & Kalkulation</a>{% endif %}
+</div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Position</th><th>Bezeichnung</th><th class="breit">Maße B × H × T</th><th class="breit">Kunde</th><th style="text-align:right">Material</th><th>Ampel</th><th class="breit">Status</th></tr>
+  {% for x in positionen %}
+  <tr class="klickbar" onclick="location.href='{{ x.get_absolute_url }}'">
+    <td class="nowrap"><a href="{{ x.get_absolute_url }}">{{ x.positions_id }}</a></td>
+    <td>{{ x.bezeichnung }}<div class="hilfe">{{ x.eingaben.typ }}{% if x.eingaben.anzahl and x.eingaben.anzahl != 1 %} · {{ x.eingaben.anzahl }} Stück{% endif %} · V{{ x.version }}</div></td>
+    <td class="breit nowrap">{{ x.masse }}</td>
+    <td class="breit">{{ x.projekt.kunde.name }}</td>
+    <td class="nowrap" style="text-align:right">{{ x.ergebnis.kosten|floatformat:"2g" }} €</td>
+    <td>{% if x.ergebnis.ampel == 2 %}🔴{% elif x.ergebnis.ampel == 1 %}🟡{% else %}🟢{% endif %}</td>
+    <td class="breit">{{ x.status }}</td></tr>
+  {% empty %}<tr><td colspan="7">Noch keine Möbel gerechnet. Mit „+ Neues Möbel“ anfangen.</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">🟢 in Ordnung · 🟡 Hinweise prüfen · 🔴 Fehler – so nicht bauen (keine Übernahme in die Stückliste).</p>
+{% endblock %}

@@ -29,5 +29,6 @@ urlpatterns = [
     path("finanzen/", include("rechnungen.finanzen_urls")),
     path("lager/", include("lager.urls")),
     path("kalkulation/", include("kalkulation.urls")),
+    path("moebel/", include("moebel.urls")),
     path("verwaltung/", admin.site.urls),
 ]

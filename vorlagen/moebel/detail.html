@@ -1,0 +1,36 @@
+{% extends "basis.html" %}
+{% block titel %}{{ p.positions_id }} – Möbelrechner{% endblock %}
+{% block pfad %} › <a href="{% url 'moebel:liste' %}">Möbelrechner</a> › <a href="{% url 'moebel:liste' %}?projekt={{ p.projekt.pk }}">{{ p.projekt.projektnr }}</a> › {{ p.pos }}{% endblock %}
+{% block inhalt %}
+<h1>{{ p.positions_id }} · {{ p.bezeichnung }}</h1>
+<p class="grau" style="margin-top:-12px">Projekt <a href="{% url 'kalkulation:projekt' p.projekt.pk %}">{{ p.projekt.projektnr }} · {{ p.projekt.name }}</a> · Kunde {{ p.projekt.kunde.name }} · Version {{ p.version }} · {{ p.status }} · gespeichert {{ p.gespeichert_am|date:"d.m.Y H:i" }}{% if p.gespeichert_von %} von {{ p.gespeichert_von.get_full_name|default:p.gespeichert_von.username }}{% endif %}</p>
+<div class="leiste">
+  <a class="knopf" href="{% url 'moebel:bearbeiten' p.pk %}">Bearbeiten</a>
+  <a class="knopf zweit" href="{% url 'moebel:pdf' p.pk %}" target="_blank">Teileliste drucken (PDF)</a>
+  <form method="post" style="display:contents">{% csrf_token %}<button class="knopf zweit" type="submit" name="aktion" value="kopieren">Als Variante kopieren</button></form>
+  <form method="post" style="display:contents" onsubmit="return confirm('Materialbedarf als „Geplant“ in die Stückliste von {{ p.projekt.projektnr }} übernehmen?{% if in_liste %} Die bisherigen geplanten Zeilen dieses Möbels werden ersetzt.{% endif %}')">{% csrf_token %}
+    <button class="knopf zweit" type="submit" name="aktion" value="stueckliste" {% if erg.ampel == 2 %}disabled title="Ampel rot – erst die Fehler beheben"{% endif %}>In Stückliste übernehmen</button></form>
+</div>
+<div class="karte">
+  <h3 style="margin-top:0">Eingaben</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 18px">
+    <div><small class="grau">Typ · Anzahl</small><div>{{ e.typ }} · {{ e.anzahl|default:1 }} Stück</div></div>
+    <div><small class="grau">Maße B × H × T</small><div>{{ p.masse }}</div></div>
+    <div><small class="grau">Bauweise · Abschluss</small><div>{{ e.bauweise }} · {{ e.abschluss }}</div></div>
+    <div><small class="grau">Sockel</small><div>{{ e.sockel }}{% if e.sockel_h %} · {{ e.sockel_h }} mm{% endif %}</div></div>
+    <div><small class="grau">Korpus / Kante</small><div>{{ e.mat_korpus|default:"–" }} / {{ e.kante_korpus|default:"–" }}</div></div>
+    <div><small class="grau">Front / Kante</small><div>{{ e.mat_front|default:"–" }} / {{ e.kante_front|default:"–" }}</div></div>
+    <div><small class="grau">Rückwand</small><div>{{ e.rueckwand_art }}{% if e.mat_rueckwand %} · {{ e.mat_rueckwand }}{% endif %}</div></div>
+    <div><small class="grau">Türen · Fachböden</small><div>{{ e.tueren }} ({{ e.tuerart }}) · {{ e.fachboeden }}</div></div>
+    <div><small class="grau">Verbindung · Beschläge</small><div>{{ e.verbindung }} · {{ e.beschlagsystem }}</div></div>
+    {% if e.raumhoehe %}<div><small class="grau">Raumhöhe</small><div>{{ e.raumhoehe }} mm</div></div>{% endif %}
+    {% for text, wert in abweichungen %}<div><small class="grau">Abweichung</small><div>{{ text }}: {{ wert }}</div></div>{% endfor %}
+  </div>
+</div>
+{% if in_liste %}
+<div class="karte"><h3 style="margin-top:0">In der Stückliste ({{ in_liste|length }} Zeilen)</h3>
+  {% for x in in_liste %}<div>{{ x.bezeichnung }} – {{ x.menge|floatformat:"-3g" }} {{ x.einheit }} · <b>{{ x.status }}</b></div>{% endfor %}
+  <p class="hilfe">Erneutes Übernehmen ersetzt diese Zeilen, solange sie „Geplant“ sind. Auf „Benötigt“ stellen geht in der <a href="{% url 'kalkulation:projekt' p.projekt.pk %}">Stückliste</a>.</p></div>
+{% endif %}
+{% include "moebel/_ergebnis.html" %}
+{% endblock %}

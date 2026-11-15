@@ -26,6 +26,8 @@ class Stuecklistenposition(models.Model):
     ek = models.DecimalField("EK / Einheit netto", max_digits=12, decimal_places=4, null=True, blank=True)
     status = models.CharField("Status", max_length=20, choices=Status.choices, default=Status.BENOETIGT)
     notiz = models.CharField("Notiz", max_length=300, blank=True)
+    moebel = models.ForeignKey("moebel.MoebelPosition", on_delete=models.PROTECT, null=True, blank=True,
+                               related_name="stuecklistenpositionen", verbose_name="aus Möbelrechner")
     geaendert_am = models.DateTimeField(auto_now=True)
 
     class Meta:

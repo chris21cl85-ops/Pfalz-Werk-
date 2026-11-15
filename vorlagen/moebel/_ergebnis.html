@@ -1,0 +1,58 @@
+{# Ergebnis des Möbelrechners: Ampel, Kennzahlen, Teileliste, Beschläge, Prüfungen, Materialbedarf #}
+<div class="karte" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-left:6px solid {% if erg.ampel == 2 %}var(--rot){% elif erg.ampel == 1 %}#d99a1e{% else %}var(--gruen){% endif %}">
+  <span style="width:26px;height:26px;border-radius:50%;flex:none;box-shadow:0 0 14px currentColor;background:currentColor;color:{% if erg.ampel == 2 %}var(--rot){% elif erg.ampel == 1 %}#d99a1e{% else %}var(--gruen){% endif %}"></span>
+  <div><b style="font-size:19px">Ampel {{ erg.ampel_farbe }}</b> – {{ erg.ampel_text }}<div class="hilfe">{{ erg.platten|length }} Plattenteile · {{ erg.beschlaege|length }} Beschlag-/Verbinderzeilen</div></div>
+  <div style="margin-left:auto;text-align:right"><small class="grau">Material netto (EK)</small><div style="font-size:22px;font-weight:700">{{ erg.kosten|floatformat:"2g" }} €</div></div>
+</div>
+
+<h3>Prüfungen</h3>
+<div class="tabelle-rahmen"><table>
+  <tr><th style="width:34px"></th><th>Prüfung</th><th>Ergebnis</th></tr>
+  {% for x in erg.pruefungen %}<tr><td>{% if x.status == 2 %}🔴{% elif x.status == 1 %}🟡{% else %}🟢{% endif %}</td><td class="nowrap">{{ x.pruefung }}</td><td>{{ x.hinweis }}</td></tr>{% endfor %}
+</table></div>
+
+{% if erg.platten %}
+<h3>Teileliste (Plattenteile)</h3>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Teil</th><th style="text-align:right">Stk</th><th class="nowrap">Fertig L × B</th><th class="nowrap">Zuschnitt L × B</th><th class="breit" style="text-align:right">St.</th><th>Material</th><th class="breit">Kanten</th><th class="breit">Maserung</th><th class="breit">Bearbeitung / Einbauort</th></tr>
+  {% for t in erg.platten %}<tr><td>{{ t.teil }}{% if t.diagonale %}<div class="hilfe">Diagonale {{ t.diagonale|floatformat:"-1" }} mm</div>{% endif %}</td>
+    <td style="text-align:right">{{ t.menge|floatformat:"-2" }}</td>
+    <td class="nowrap"><b>{{ t.l|floatformat:"-1" }} × {{ t.b|floatformat:"-1" }}</b></td>
+    <td class="nowrap">{{ t.zl|floatformat:"-1" }} × {{ t.zb|floatformat:"-1" }}</td>
+    <td class="breit" style="text-align:right">{{ t.dicke|floatformat:"-1" }}</td>
+    <td class="nowrap">{{ t.material }}</td>
+    <td class="breit hilfe" style="margin:0">{% if t.kl1 %}L1 {{ t.kl1 }} {% endif %}{% if t.kl2 %}L2 {{ t.kl2 }} {% endif %}{% if t.kb1 %}B1 {{ t.kb1 }} {% endif %}{% if t.kb2 %}B2 {{ t.kb2 }}{% endif %}{% if not t.kl1 and not t.kl2 and not t.kb1 and not t.kb2 %}–{% endif %}</td>
+    <td class="breit">{{ t.maser|default:"–" }}</td>
+    <td class="breit">{{ t.bearbeitung }}{% if t.bearbeitung and t.ort %} · {% endif %}{{ t.ort }}{% if t.hinweis %}<div class="hilfe">{{ t.hinweis }}</div>{% endif %}</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">Zuschnitt = Fertigmaß minus Kantendicke (plus Fräszugabe je bekanteter Seite). L = Länge, B = Breite.</p>
+{% endif %}
+
+{% if erg.beschlaege %}
+<h3>Beschläge & Verbinder</h3>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Teil</th><th style="text-align:right">Menge</th><th>Material-Nr.</th><th class="breit">Einbauort / Hinweis</th></tr>
+  {% for t in erg.beschlaege %}<tr><td>{{ t.teil }}</td><td class="nowrap" style="text-align:right">{{ t.menge|floatformat:"-2" }} {{ t.einheit }}</td><td class="nowrap">{{ t.material|default:"–" }}</td><td class="breit">{{ t.ort }}{% if t.hinweis %}<div class="hilfe">{{ t.hinweis }}</div>{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+
+{% if erg.bedarf %}
+<h3>Materialbedarf (für Stückliste und Bestellung)</h3>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Material</th><th style="text-align:right">Menge</th><th class="breit">Grund</th><th style="text-align:right" class="breit">EK</th><th style="text-align:right">Kosten</th></tr>
+  {% for b in erg.bedarf %}<tr><td>{{ b.bezeichnung }}<div class="hilfe">{{ b.material }}</div></td>
+    <td class="nowrap" style="text-align:right">{{ b.menge|floatformat:"-3g" }} {{ b.einheit }}</td>
+    <td class="breit hilfe">{{ b.grund }}</td>
+    <td class="nowrap breit" style="text-align:right">{% if b.ek %}{{ b.ek|floatformat:"2g" }} €{% else %}<span class="fehler">fehlt</span>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{% if b.kosten is not None %}{{ b.kosten|floatformat:"2g" }} €{% else %}–{% endif %}</td></tr>{% endfor %}
+  <tr><th colspan="4" style="text-align:right">Summe Material netto</th><th class="nowrap" style="text-align:right">{{ erg.kosten|floatformat:"2g" }} €</th></tr>
+</table></div>
+{% endif %}
+
+{% if erg.kennzahlen %}
+<h3>Kennzahlen</h3>
+<div class="tabelle-rahmen"><table>
+  {% for name, wert in erg.kennzahlen_text %}<tr><td>{{ name }}</td><td style="text-align:right">{{ wert|default:"–" }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+<p class="hilfe">Fachliche Vorplanung – ersetzt kein Aufmaß und keine konstruktive Detailprüfung.</p>

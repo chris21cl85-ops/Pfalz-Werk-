@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     "rechnungen",
     "lager",
     "kalkulation",
+    "moebel",
 ]
 
 MIDDLEWARE = [

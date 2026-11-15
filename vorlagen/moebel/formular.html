@@ -1,0 +1,57 @@
+{% extends "basis.html" %}
+{% block titel %}{% if neu %}Neues Möbel{% else %}{{ position.positions_id }} bearbeiten{% endif %} – Möbelrechner{% endblock %}
+{% block pfad %} › <a href="{% url 'moebel:liste' %}">Möbelrechner</a> › {% if neu %}Neues Möbel{% else %}<a href="{{ position.get_absolute_url }}">{{ position.positions_id }}</a> › Bearbeiten{% endif %}{% endblock %}
+{% block inhalt %}
+<h1>{% if neu %}Neues Möbel{% else %}{{ position.positions_id }} bearbeiten{% endif %}</h1>
+{% if not neu %}<p class="grau" style="margin-top:-12px">Projekt {{ position.projekt.projektnr }} · {{ position.projekt.name }} · jetzt Version {{ position.version }}{% if position.status == "In Stückliste" %} · <b>schon in der Stückliste</b> – nach Änderung bitte neu übernehmen{% endif %}</p>{% endif %}
+<form method="post" id="moebelform">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="meldung error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  {% if form.errors %}<div class="meldung error">Bitte die rot markierten Felder prüfen.</div>{% endif %}
+  <div class="karte"><h3 style="margin-top:0">1 · Möbel</h3><div class="raster">
+    {% if neu %}{% include "moebel/_feld.html" with feld=form.projekt %}{% endif %}
+    {% include "moebel/_feld.html" with feld=form.bezeichnung %}{% include "moebel/_feld.html" with feld=form.typ %}
+    {% include "moebel/_feld.html" with feld=form.anzahl %}{% include "moebel/_feld.html" with feld=form.breite %}
+    {% include "moebel/_feld.html" with feld=form.hoehe %}{% include "moebel/_feld.html" with feld=form.tiefe %}
+  </div><p class="hilfe">Ein anderer Möbeltyp setzt die üblichen Maße, Sockel, Abschluss und Türen – danach frei änderbar.</p></div>
+  <div class="karte"><h3 style="margin-top:0">2 · Aufbau</h3><div class="raster">
+    {% include "moebel/_feld.html" with feld=form.bauweise %}{% include "moebel/_feld.html" with feld=form.abschluss %}
+    {% include "moebel/_feld.html" with feld=form.sockel %}{% include "moebel/_feld.html" with feld=form.sockel_h %}
+    {% include "moebel/_feld.html" with feld=form.rueckwand_art %}{% include "moebel/_feld.html" with feld=form.verbindung %}
+    {% include "moebel/_feld.html" with feld=form.raumhoehe %}
+  </div><p class="hilfe">Bauweise A: Seiten laufen durch (Boden und Deckel dazwischen). B: Boden und Deckel laufen durch. C: nur der Boden läuft durch.</p></div>
+  <div class="karte"><h3 style="margin-top:0">3 · Material</h3><div class="raster">
+    {% include "moebel/_feld.html" with feld=form.mat_korpus %}{% include "moebel/_feld.html" with feld=form.kante_korpus %}
+    {% include "moebel/_feld.html" with feld=form.mat_front %}{% include "moebel/_feld.html" with feld=form.kante_front %}
+    {% include "moebel/_feld.html" with feld=form.mat_rueckwand %}
+  </div><p class="hilfe">Die Auswahl kommt aus dem Materialstamm (Platten mit Stärke in m², Kanten). Fehlt etwas: erst unter „Material“ anlegen.</p></div>
+  <div class="karte"><h3 style="margin-top:0">4 · Türen & Innenleben</h3><div class="raster">
+    {% include "moebel/_feld.html" with feld=form.tueren %}{% include "moebel/_feld.html" with feld=form.tuerart %}
+    {% include "moebel/_feld.html" with feld=form.fachboeden %}{% include "moebel/_feld.html" with feld=form.beschlagsystem %}
+  </div></div>
+  <details class="karte" {% for f in abweichungen %}{% if f.value %}open{% endif %}{% endfor %}><summary style="cursor:pointer;font-weight:600">Abweichende Regeln nur für dieses Möbel (selten nötig)</summary>
+    <div class="raster" style="margin-top:8px">{% for f in abweichungen %}{% include "moebel/_feld.html" with feld=f %}{% endfor %}</div>
+    <p class="hilfe">Leer lassen = Werkstatt-Regel gilt.</p></details>
+  <div class="leiste knopfleiste">
+    <button class="knopf zweit" type="submit" name="aktion" value="berechnen">Berechnen (Vorschau)</button>
+    <button class="knopf" type="submit" name="aktion" value="speichern">Speichern</button>
+    <a class="knopf zweit" href="{% if neu %}{% url 'moebel:liste' %}{% else %}{{ position.get_absolute_url }}{% endif %}">Abbrechen</a>
+  </div>
+</form>
+{% if vorschau %}<h2 class="abschnitt" id="vorschau">Vorschau – noch nicht gespeichert</h2>{% include "moebel/_ergebnis.html" with erg=vorschau %}{% endif %}
+{{ vorgaben|json_script:"typ-vorgaben" }}
+<style>@media (min-width:760px){.knopfleiste{position:sticky;bottom:10px;padding:12px 14px;z-index:5;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-radius:16px;box-shadow:0 6px 24px rgba(19,54,42,.12);margin-right:90px}}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 18px}</style>
+<script>
+(function () {
+  const vorgaben = JSON.parse(document.getElementById("typ-vorgaben").textContent);
+  const f = document.getElementById("moebelform");
+  const typ = f.elements["typ"];
+  typ.addEventListener("change", function () {
+    const v = vorgaben[typ.value]; if (!v) return;
+    f.elements["breite"].value = v[0]; f.elements["hoehe"].value = v[1]; f.elements["tiefe"].value = v[2];
+    f.elements["abschluss"].value = v[3]; f.elements["sockel"].value = v[4]; f.elements["tueren"].value = v[5];
+  });
+  {% if vorschau %}document.getElementById("vorschau").scrollIntoView({behavior: "smooth"});{% endif %}
+})();
+</script>
+{% endblock %}

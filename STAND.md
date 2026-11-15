@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 13.11.2026
+Letzte Aktualisierung: 15.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.1 (Etappe 3, Paket 2a).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.2 (Etappe 3, Paket 2b).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -394,7 +394,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. „Lagerbestand“ → ein Material öffnen → „Bestand korrigieren“ → gezählten Wert eintragen.
 5. Eingangsrechnung erfassen mit dieser Bestell-Nr. → auf der Rechnung steht „✓ passt zur Bestellung“ bzw. die Abweichung.
 
-### Paket 2a: Stückliste, Kalkulation, Auftrag & Freigaben – GEBAUT 15.11.2026, Abnahme offen
+### Paket 2a: Stückliste, Kalkulation, Auftrag & Freigaben – weitergegeben am 15.11.2026 (Chris: „weiter gehts“)
 Chris wünscht „a (Möbelrechner/Kalkulation) und dann b (Produktion)“. a ist zu groß für ein Paket → geteilt:
 2a Stückliste + Kalkulation + Auftrag (dieses Paket), 2b Möbelrechner (Korpus → Teileliste → Stückliste).
 Vorlage: `PW_Auftraege.bas` (Entwurf(), Speichern, Freigaben/Darf()), Blätter „Stueckliste“ (48), „Kalkulation“ (50),
@@ -429,15 +429,45 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Kalkulation ausfüllen → „Kalkulation speichern“ → VK erscheint → „Auftrag anlegen“ (Preis = VK vorgeschlagen).
 5. Freigaben: als Chef „Freigegeben“ bei Chef; Meister-Zeile ist für den Chef grau.
 
+### Paket 2b: Möbelrechner – GEBAUT 15.11.2026, Abnahme offen
+Vorlage: `PW_Moebelrechner.bas` (Stufe 1: TypVorgabe, TeilNeu, BedarfFinal, PlattenZaehlen, Prüfungen, RegelnAnlegen),
+Blätter „Möbel-Regeln“, „Möbel-Positionen“, „Möbelrechner“, „Möbel-Druck“. Neue App `moebel`.
+- Kachel „Möbelrechner“ (Chef, Admin, Meister). Aus „Kalkulation & Aufträge“ je Projekt: „📐 Möbelrechner“ / „+ Möbel rechnen“.
+- **Eingabe** in 4 Karten: Möbel (Projekt, Bezeichnung, Typ Unterschrank/Oberschrank/Hochschrank/Kommode/Regal, Anzahl,
+  B×H×T), Aufbau (Bauweise A/B/C, Abschluss Traversen/Deckel, Sockel, Sockelhöhe, Rückwandart, Verbindung, Raumhöhe),
+  Material (Auswahl aus Materialstamm: Platten in m² mit Stärke, Kanten), Türen & Innenleben (Türen, Aufschlag/Einlage,
+  Fachböden, Beschlagsystem). Typwahl setzt die Standardmaße. „Abweichende Regeln“ (Fugen, Nut, Traverse, Verschnitt) je Möbel.
+- **Berechnen (Vorschau)** ohne Speichern; **Speichern** legt Position M01, M02 … je Projekt an (ID wie Excel
+  P-…-M01), jede Änderung = neue Version, Protokoll.
+- **Ergebnis**: Ampel grün/gelb/rot, Prüfungen (Fachboden-Durchbiegung, Türgröße/Bänder, Querschnitte, Höhen-/Längsschnitt,
+  Kippmaß, 32er-Raster, Plattenformat, fehlendes Material/Preis), Teileliste (Fertig- und Zuschnittmaß minus Kante,
+  Kanten L1/L2/B1/B2, Maserung, Bearbeitung, Einbauort), Beschläge & Verbinder nach Beschlagsystem, Materialbedarf
+  (Platten als ganze Platten mit Ausnutzung, Kanten inkl. Zugabe, Stück aufgerundet), Materialkosten, Kennzahlen.
+  Nachgerechnet: Unterschrank 600×820×560 → Seite 720×560, Rückwand 696×576, Tür 717×597 (Zuschnitt 713×593), 18 Dübel.
+- **In Stückliste übernehmen** (wie PW_Moebel_In_Stueckliste): Bedarf als „Geplant“; erneutes Übernehmen ersetzt die
+  geplanten Zeilen dieses Möbels. Gesperrt bei roter Ampel oder wenn Zeilen schon „Benötigt/Entnommen“ sind.
+  Nach Änderung steht das Möbel wieder auf „Gespeichert“ (neu übernehmen).
+- **Als Variante kopieren**, **Teileliste drucken (PDF)** A4 quer mit Abhak-Spalte wie „Möbel-Druck“.
+- **Werkstatt-Regeln**: Zahlen-Regeln im Programm änderbar (Protokoll); Tabellen (Bänder, Fachboden, Verbinder,
+  Beschlagsysteme, Standardmaterial) aus Excel-Import „Möbel-Regeln“. Im Programm geänderte Zahlen überschreibt der Import nicht.
+- Noch NICHT übernommen (Excel Stufen 2–6): Zonen/Schubkästen, Modulbau, Rahmen+Füllung, Massivholz, Oberflächen,
+  Arbeitsgänge, Formteile, CNC-Export, Etiketten, Import alter „Möbel-Positionen“ → bei Bedarf eigene Pakete.
+- 387 automatische Tests, alle grün.
+
+### So testest du es (Etappe 3, Paket 2b)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 3.2“ stehen.
+1. Excel-Import erneut durchlaufen lassen → im Bericht steht „Möbel-Regeln“ mit Anzahl Regeln/Beschlagsysteme.
+2. Kachel „Möbelrechner“ → „+ Neues Möbel“ → Projekt wählen, Unterschrank 600 × 820 × 560, dein Korpusmaterial →
+   „Berechnen (Vorschau)“ → stimmen Teileliste und Zuschnittmaße mit deinem Excel-Möbelrechner überein?
+3. „Speichern“ → „In Stückliste übernehmen“ → in „Kalkulation & Aufträge“ stehen die Zeilen als „Geplant“ (📐).
+4. „Teileliste drucken (PDF)“ und „Als Variante kopieren“ ausprobieren.
+5. Absichtlich falsch: Fachböden bei Breite 1200 und 2 Türen → Ampel rot, Übernahme gesperrt.
+
 ## Nächstes Paket
-**Etappe 3, Paket 2b: Möbelrechner** – Vorlage `PW_Moebelrechner.bas` (204 KB!, Datei-ID 1uD_qs94Ekvi8l-Y0UiX7G6LITdKdzqaw),
-`PW_MoebelAssistent.bas` (15WIfr7NDiZMlY5BvWcyuCNMp7NPRXNEb), `PW_Moebel_Weg.bas` (1sOcqFEb9eaNyqq2nchIyoYPscBlQ3t3z),
-Blätter 101–106 (Möbel-Regeln 119 Regeln, Möbel-Positionen ~55 Eingaben, Möbel-Teile, Möbelrechner, Formteile, Druck).
-Ziel: Möbel eingeben → Teileliste (Fertig-/Zuschnittmaß, Kanten, Maserung, Bearbeitung) + Beschläge nach Regeln →
-„in die Stückliste übernehmen“ + Druckliste (PDF). Ggf. in 2b-1 (Korpus/Teile) und 2b-2 (Formteile, Prüfungen) teilen.
-Danach **(b) Produktion + QM** (Blatt „Produktion Arbeitsgänge“, Routenvorlagen (70), AG-Bibliothek), Montageplan, Kalender.
-Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (dort auch PW_Seitenrad.bas = Navi-Rad der Excel).
-- Excel-Inventur (Blätter 25–32, 62–68) noch nicht übernommen – eigenes Paket „Inventur“.
+**Etappe 3 (b): Produktion + QM** – Blatt „Produktion Arbeitsgänge“, Routenvorlagen (70), AG-Bibliothek; danach
+Montageplan und Kalender. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (dort auch PW_Seitenrad.bas = Navi-Rad der Excel).
+- Möbelrechner-Ausbau (Stufen 2–6, s. o.) und Excel-Inventur (Blätter 25–32, 62–68) als eigene Pakete.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
