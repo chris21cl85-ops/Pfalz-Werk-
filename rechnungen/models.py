@@ -402,7 +402,9 @@ class Zahlung(models.Model):
         BAR = "Bar", "Bar"
 
     znr = models.CharField("Zahlungs-Nr.", max_length=20, unique=True)
-    rechnung = models.ForeignKey(Rechnung, on_delete=models.PROTECT, related_name="zahlungen")
+    rechnung = models.ForeignKey(Rechnung, on_delete=models.PROTECT, related_name="zahlungen", null=True, blank=True)
+    eingangsrechnung = models.ForeignKey("Eingangsrechnung", on_delete=models.PROTECT, related_name="zahlungen",
+                                         null=True, blank=True)
     datum = models.DateField("Zahlungsdatum")
     richtung = models.CharField("Richtung", max_length=10, default="Ein")
     betrag = models.DecimalField("Betrag", max_digits=12, decimal_places=2)
@@ -432,6 +434,15 @@ class Zahlung(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ZahlungGesperrt("Zahlungen werden nie gelöscht. Korrektur per Gegenbuchung.")
+
+    @property
+    def beleg(self):
+        """Die Rechnung, zu der die Zahlung gehört – Ausgangs- („Ein“) oder Eingangsrechnung („Aus“)."""
+        return self.rechnung or self.eingangsrechnung
+
+    @property
+    def beleg_nr(self) -> str:
+        return self.rechnung.nummer if self.rechnung_id else self.eingangsrechnung.ernr
 
     @property
     def ist_gegengebucht(self) -> bool:
@@ -498,3 +509,116 @@ class Mahnung(models.Model):
 
     def delete(self, *args, **kwargs):
         raise RechnungGesperrt("Mahnungen werden nie gelöscht.")
+
+
+# ------------------------------------------------------------------ Eingangsrechnungen (Blatt „Eingangsrechnungen“)
+# Kategorien wie KATEGORIEN() im Makro PW_Eingang
+KATEGORIEN = ["Material / Wareneingang", "Fremdleistung", "Fahrzeug", "Maschinen / Werkzeug",
+              "Büro / Verwaltung", "Sonstiges"]
+UST_SAETZE = [Decimal("19"), Decimal("7"), Decimal("0")]
+
+
+class Eingangsrechnung(models.Model):
+    """Rechnung eines Lieferanten. Nach dem Erfassen unveränderbar (Beleg); Fehler: Erfassung stornieren
+    und neu erfassen. Bezahlt/Offen/Status werden aus den Zahlungen („Aus“) berechnet."""
+
+    ernr = models.CharField("Beleg-Nr.", max_length=20, unique=True)
+    lieferant = models.ForeignKey("lieferanten.Lieferant", on_delete=models.PROTECT, related_name="eingangsrechnungen")
+    lieferanten_nr = models.CharField("Rechnungs-Nr. des Lieferanten", max_length=60)
+    datum = models.DateField("Rechnungsdatum")
+    kategorie = models.CharField("Kategorie", max_length=40, default=KATEGORIEN[0])
+    projekt = models.ForeignKey(Projekt, on_delete=models.PROTECT, null=True, blank=True,
+                                related_name="eingangsrechnungen", help_text="Leer = Gemeinkosten")
+    bestellung = models.CharField("Bestell-Nr.", max_length=40, blank=True)
+    netto = models.DecimalField("Netto", max_digits=12, decimal_places=2)
+    ust_satz = models.DecimalField("Vorsteuer %", max_digits=5, decimal_places=2, default=Decimal("19"))
+    ust = models.DecimalField("Vorsteuer", max_digits=12, decimal_places=2)
+    brutto = models.DecimalField("Brutto", max_digits=12, decimal_places=2)
+    ziel_tage = models.PositiveIntegerField("Zahlungsziel Tage", default=14)
+    faellig = models.DateField("Fällig am")
+    skonto_prozent = models.DecimalField("Skonto %", max_digits=5, decimal_places=2, default=Decimal("0"))
+    skonto_bis = models.DateField("Skonto bis", null=True, blank=True)
+    notiz = models.CharField("Notiz", max_length=300, blank=True)
+    beleg = models.BinaryField("Beleg", null=True, blank=True, editable=False)
+    beleg_name = models.CharField("Beleg-Datei", max_length=200, blank=True)
+    beleg_typ = models.CharField("Beleg-Typ", max_length=60, blank=True)
+    erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                    related_name="+")
+    erfasst_am = models.DateTimeField("Erfasst am", auto_now_add=True)
+    # Einzige spätere Änderung: Erfassung stornieren (mit Grund)
+    storniert_am = models.DateTimeField("Storniert am", null=True, blank=True)
+    storniert_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
+                                      related_name="+")
+    storno_grund = models.CharField("Storno-Grund", max_length=200, blank=True)
+
+    STORNO_FELDER = {"storniert_am", "storniert_von", "storno_grund"}
+
+    class Meta:
+        verbose_name = "Eingangsrechnung"
+        verbose_name_plural = "Eingangsrechnungen"
+        ordering = ["-datum", "-id"]
+
+    def __str__(self):
+        return f"{self.ernr} – {self.lieferant.name} {self.lieferanten_nr}"
+
+    def get_absolute_url(self):
+        return reverse("eingang:detail", args=[self.pk])
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            felder = set(kwargs.get("update_fields") or [])
+            alt = Eingangsrechnung.objects.filter(pk=self.pk).values_list("storniert_am", flat=True).first()
+            if not felder or not felder <= self.STORNO_FELDER or alt is not None:
+                raise RechnungGesperrt(f"Eingangsrechnung {self.ernr} ist erfasst und kann nicht geändert werden. "
+                                       "Bei einem Fehler: Erfassung stornieren und neu erfassen.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise RechnungGesperrt("Eingangsrechnungen werden nie gelöscht.")
+
+    @property
+    def ist_storniert(self) -> bool:
+        return self.storniert_am is not None
+
+    @property
+    def bezahlt(self) -> Decimal:
+        return sum((z.betrag for z in self.zahlungen.all()), Decimal("0.00"))
+
+    @property
+    def skonto_gesamt(self) -> Decimal:
+        return sum((z.skonto for z in self.zahlungen.all()), Decimal("0.00"))
+
+    @property
+    def offen(self) -> Decimal:
+        """Wie Formel Q: Brutto minus (Zahlungen + Skonto); storniert = 0."""
+        if self.ist_storniert:
+            return Decimal("0.00")
+        return Decimal(self.brutto) - self.bezahlt - self.skonto_gesamt
+
+    @property
+    def ist_ueberfaellig(self) -> bool:
+        from django.utils import timezone
+        return self.offen > Decimal("0.005") and self.faellig < timezone.localdate()
+
+    @property
+    def status_text(self) -> str:
+        """Wie Formel R: Bezahlt / Überfällig / Teilbezahlt / Offen (+ Storniert)."""
+        if self.ist_storniert:
+            return "Storniert"
+        offen = self.offen
+        if offen < Decimal("-0.005"):
+            return "Überzahlt"
+        if offen <= Decimal("0.005"):
+            return "Bezahlt"
+        if self.ist_ueberfaellig:
+            return "Überfällig"
+        return "Teilbezahlt" if self.bezahlt or self.skonto_gesamt else "Offen"
+
+    @property
+    def skonto_betrag(self) -> Decimal:
+        return runden(Decimal(self.brutto) * Decimal(self.skonto_prozent) / 100)
+
+    def skonto_moeglich(self, datum) -> bool:
+        """Wie Makro: nur mit Skonto-Angabe, innerhalb der Frist und solange noch nichts gezahlt ist."""
+        return bool(self.skonto_prozent and self.skonto_bis and datum <= self.skonto_bis
+                    and not self.bezahlt and not self.skonto_gesamt)

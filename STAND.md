@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.4 (neues Design).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.5 (Etappe 2, Paket 4).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -262,7 +262,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Zurück zum Original (Link „Storno zu“) → „Storniert durch …“, Offen 0, kein Mahn-/Zahlungsbereich mehr.
 5. Rechnungsliste → Auswahl „Storniert / Storno“.
 
-### Zwischenpaket Design – GEBAUT 15.11.2026, Abnahme offen (Entwurf als Bild von Chris freigegeben: „los“)
+### Zwischenpaket Design – ABGENOMMEN am 15.11.2026 („Der Hammer!“)
 Wunsch: an Excel angelehnt, „futuristischer, moderner, fließende Übergänge und Farben“.
 - Nur Aussehen (`vorlagen/basis.html`, Startseite, Anmeldung, `kern/module.py` Farben, `kern/views.py` Kennzahlen);
   keine Fachlogik geändert, alle Tests grün.
@@ -286,14 +286,48 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 3. Rechnungen, Kunden, eine Rechnung öffnen: alles im neuen Aussehen, alles funktioniert wie vorher.
 4. Am Handy (gleiches WLAN, falls eingerichtet) oder Browserfenster schmal ziehen → Navi als Kachelliste.
 
+### Paket 4: Eingangsrechnungen – GEBAUT 15.11.2026, Abnahme offen
+Vorlage: `PW_Eingang.bas` (Erfassen, Bezahlen, DoppelteNr, Statusformeln P/Q/R, KATEGORIEN) – vollständig gelesen.
+- Neue Kachel „Eingangsrechnungen“ (Geld; Chef/Admin/Buchhaltung wie `Darf()`).
+- Erfassen: Beleg-Nr. ER-0001 fortlaufend; Lieferant (Auswahl oder neuer Name → Lieferant wird angelegt),
+  Rechnungs-Nr. des Lieferanten, Datum, Kategorie (6 wie Makro), Projekt oder „Gemeinkosten“, Netto,
+  Vorsteuer 19/7/0 %, Zahlungsziel, Skonto % + Frist, Bestell-Nr. (nur Text), Beleg (PDF/JPG/PNG, max. 15 MB,
+  in der Datenbank → in jeder Sicherung), Notiz. Vorsteuer/Brutto/Fälligkeit/Skonto-bis automatisch;
+  Zahlungsziel/Skonto werden aus der Lieferantenkarte vorgeschlagen. Doppelte (Lieferant + Nr.) abgelehnt.
+  „Erfassen und nächste“ für mehrere Belege hintereinander.
+- Nach dem Erfassen gesperrt. Fehler → „Erfassung stornieren“ mit Grund (bleibt sichtbar, zählt nicht, Offen 0;
+  nur solange nichts bezahlt ist), dann neu erfassen.
+- Bezahlen (Zahlung „Aus“ im gemeinsamen Nummernkreis Z-…): mit Skonto (nur innerhalb der Frist und vor der
+  ersten Zahlung, wie Makro), voll, Teilbetrag; Gegenbuchung wie bei Ausgangsrechnungen.
+- Status wie Formel R: Offen / Teilbezahlt / Überfällig / Bezahlt (+ Storniert).
+- Liste: Standard „Offen (zu bezahlen)“ wie im Makro, Kennzahlen „Zu bezahlen“, „davon überfällig“,
+  „Skonto noch möglich bei …“; Hinweis „Skonto bis …“ je Zeile; Suche und Filter.
+- Lieferantenkarte zeigt dessen Eingangsrechnungen; Projektkarte zeigt „Kosten (Eingangsrechnungen)“ mit Summe netto.
+- Noch NICHT: Abgleich mit Bestellungen (Makro `Abgleich()`: Abweichung > max(0,50 €; 2 %)) → kommt mit
+  Bestellungen in Etappe 3. Belege-Ordner im Dateisystem (Makro kopierte nach Belege\Jahr) nicht nötig.
+- 302 automatische Tests, alle grün.
+
+### So testest du es (Paket 4)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.5“ stehen.
+1. Kachel „Eingangsrechnungen“ → „+ Neue Eingangsrechnung“ → Lieferant auswählen oder neu eintippen,
+   Nummer, Netto (z. B. 1.000,00) → unter Netto erscheint sofort der Bruttobetrag → Beleg (PDF/Foto) wählen →
+   „Erfassen“.
+2. Dieselbe Rechnung nochmal erfassen → Meldung „schon erfasst“.
+3. Beleg öffnen (📎), dann „Bezahlen“ → mit Skonto / voll / Teilbetrag → Status ändert sich.
+4. Projekt öffnen, dem die Rechnung zugeordnet ist → unten „Kosten (Eingangsrechnungen)“.
+5. Eine Test-Erfassung über „Falsch erfasst? Erfassung stornieren …“ wieder aufheben.
+
 ## Nächstes Paket
-**Etappe 2, Paket 4: Eingangsrechnungen** (PW_Eingang.bas) – vorher Paket 3 (Mahnungen/Storno, Fassung 2.3)
-von Chris testen lassen (lief bei ihm noch nicht, er hatte Fassung 2.2). Danach Paket 5 Finanz-Übersicht + DATEV-Export.
+**Etappe 2, Paket 5 (letztes der Etappe): Finanz-Übersicht + DATEV-Export.** Vorlage in `PW_Eingang.bas`:
+`PW_FIN_Cockpit`/`CockpitBauen` (Zeilen ~573–600, ~851–920: KPIs), `PW_FIN_Export` (~649–745: EXTF-Buchungsstapel,
+SKR03), `Debitor()`, `Kreditor()`, `Sachkonto()` (Kategorie → Konto, Vorsteuer), `zeile()`, `Betrag()`, `CsvT()`.
+Firmendaten bekommen dafür die Excel-Zeilen 24–27: DATEV Beraternummer, Mandantennummer,
+Wirtschaftsjahr-Beginn (TT.MM.), Sachkontenlänge (Standard 4) – „vom Steuerberater“.
+Danach Etappe 3 (Werkstatt).
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
 - **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen (komplett übernommen)
-- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF
-Excel-Blatt Eingangsrechnungen: ER-ID, Lieferant, Lief.-Rechnungsnr., Datum, Kategorie, Projekt, Bestellung, Netto,
-USt %, USt, Brutto, Ziel Tage, Fällig, Skonto %, Skonto bis, Bezahlt, Offen, Status, Beleg, Abgleich.
+- **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingang (übernommen), Cockpit + DATEV (offen)
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

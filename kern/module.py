@@ -22,6 +22,7 @@ MODULE = [
     ("Bestellungen & Lager", "Bestellung, Wareneingang, Bestand", 3, WERKSTATT_LEITUNG, None, "Werkstatt & Material", "📦"),
     ("Produktion", "Fertigung, Qualität, Montageplan", 3, ALLE, None, "Werkstatt & Material", "🔨"),
     ("Rechnungen", "Rechnungen schreiben, PDF, festschreiben", 2, BUERO, "rechnungen:liste", "Geld", "🧾"),
+    ("Eingangsrechnungen", "Lieferanten-Rechnungen erfassen und bezahlen", 2, BUERO, "eingang:liste", "Geld", "📨"),
     ("Firmendaten", "Briefkopf, Bank und Steuer für Rechnungen", 2, BUERO, "rechnungen:firmendaten", "Geld", "🏢"),
     ("Finanzen", "Zahlungen, Übersicht, DATEV-Export", 2, (Rolle.CHEF, Rolle.BUCHHALTUNG), None, "Geld", "💶"),
     ("Auswertungen", "Zahlen für den Chef", 4, (Rolle.CHEF,), None, "Geld", "📊"),

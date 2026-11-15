@@ -55,6 +55,8 @@ def detail(request, pk):
     return render(request, "projekte/detail.html", {
         "projekt": projekt, "darf_bearbeiten": darf_bearbeiten(request.user),
         "darf_rechnungen": darf_rechnungen,
+        "kosten": projekt.eingangsrechnungen.filter(storniert_am__isnull=True).select_related("lieferant") if darf_rechnungen else [],
+        "kosten_summe": sum(e.netto for e in projekt.eingangsrechnungen.filter(storniert_am__isnull=True)) if darf_rechnungen else 0,
         "rechnungen": projekt.rechnungen.exclude(status="Verworfen").prefetch_related("zahlungen") if darf_rechnungen else [],
         **nachbarn(Projekt.objects.order_by("-projektnr"), projekt),
     })

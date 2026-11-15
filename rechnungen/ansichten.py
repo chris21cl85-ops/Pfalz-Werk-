@@ -146,7 +146,7 @@ def gegenbuchung(request, pk):
                 messages.error(request, str(fehler))
         else:
             messages.error(request, "Bitte kurz den Grund für die Gegenbuchung angeben.")
-    return redirect(zahlung.rechnung)
+    return redirect(zahlung.beleg)
 
 
 @rolle_erforderlich(*BUERO)

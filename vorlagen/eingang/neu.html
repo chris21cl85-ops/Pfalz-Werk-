@@ -1,0 +1,47 @@
+{% extends "basis.html" %}
+{% block titel %}Neue Eingangsrechnung{% endblock %}
+{% block pfad %} › <a href="{% url 'eingang:liste' %}">Eingangsrechnungen</a> › Neu{% endblock %}
+{% block inhalt %}
+<h1>Neue Eingangsrechnung</h1>
+<p class="grau">Beleg-Nr., Vorsteuer und Fälligkeit kommen automatisch. Nach dem Erfassen ist der Beleg fest.</p>
+<form method="post" enctype="multipart/form-data" class="karte">{% csrf_token %}
+  {% if formular.non_field_errors %}<div class="meldung error">{{ formular.non_field_errors|join:" " }}</div>{% endif %}
+  {% for feld in formular %}
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}{% if feld.field.required %} *{% endif %}</label>
+    {% if feld.name == "ust_satz" %}<div class="wahl"><div style="flex-direction:row;flex-wrap:wrap">{% for r in feld %}<label for="{{ r.id_for_label }}" style="min-width:110px">{{ r.tag }} {{ r.choice_label }}</label>{% endfor %}</div></div>{% else %}{{ feld }}{% endif %}
+    {% if feld.name == "lieferant" %}<div class="hilfe">Tippen oder auswählen. Unbekannter Name = Lieferant wird neu angelegt.</div>{% endif %}
+    {% if feld.name == "netto" %}<div class="hilfe">Mit Komma, z. B. 1.234,50 – <span id="brutto-anzeige"></span></div>{% endif %}
+    {% if feld.name == "ziel_tage" %}<div class="hilfe" id="vorgabe-hinweis"></div>{% endif %}
+    {% for f in feld.errors %}<div class="fehler">{{ f }}</div>{% endfor %}
+  {% endfor %}
+  <datalist id="liste-lieferant">{% for l in formular.lieferanten %}<option value="{{ l.name }}">{% endfor %}</datalist>
+  <p style="margin-top:22px"><button class="knopf" type="submit">Erfassen</button>
+     <button class="knopf zweit" type="submit" name="weiter" value="1">Erfassen und nächste</button>
+     <a class="knopf zweit" href="{% url 'eingang:liste' %}">Abbrechen</a></p>
+  <p class="hilfe">* Pflichtfeld</p>
+</form>
+<script>
+  // Zahlungsziel/Skonto aus der Lieferantenkarte vorschlagen, Brutto live anzeigen
+  const vorgaben = {{ vorgaben|safe }};
+  const feld = n => document.getElementById('id_' + n);
+  feld('lieferant').addEventListener('change', () => {
+    const v = vorgaben[feld('lieferant').value];
+    const hinweis = document.getElementById('vorgabe-hinweis');
+    if (!v) { hinweis.textContent = ''; return; }
+    if (v.ziel_tage) feld('ziel_tage').value = v.ziel_tage;
+    if (v.skonto_prozent) { feld('skonto_prozent').value = v.skonto_prozent.replace('.', ','); feld('skonto_tage').value = v.skonto_tage; }
+    hinweis.textContent = 'Vorschlag aus der Lieferantenkarte übernommen.';
+  });
+  function zahl(t) { t = (t || '').replace(/[€\s]/g, ''); if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.'); return parseFloat(t); }
+  function brutto() {
+    const n = zahl(feld('netto').value), s = parseFloat((document.querySelector('input[name=ust_satz]:checked') || {}).value || 0);
+    const a = document.getElementById('brutto-anzeige');
+    if (isNaN(n)) { a.textContent = ''; return; }
+    const u = Math.round(n * s) / 100;
+    a.textContent = 'Brutto: ' + (n + u).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+  feld('netto').addEventListener('input', brutto);
+  document.querySelectorAll('input[name=ust_satz]').forEach(e => e.addEventListener('change', brutto));
+  brutto();
+</script>
+{% endblock %}

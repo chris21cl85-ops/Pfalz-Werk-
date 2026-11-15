@@ -1,0 +1,82 @@
+{% extends "basis.html" %}
+{% block titel %}{{ e.ernr }} – Eingangsrechnungen{% endblock %}
+{% block pfad %} › <a href="{% url 'eingang:liste' %}">Eingangsrechnungen</a> › {{ e.ernr }}{% endblock %}
+{% block inhalt %}
+<div class="leiste"><a class="pfeil" href="{% url 'eingang:liste' %}">↑ Alle Eingangsrechnungen</a></div>
+<h1>{{ e.ernr }} · {{ e.lieferant.name }}
+  <span class="marke-inaktiv" style="{% if e.status_text == 'Bezahlt' %}background:#e8f5e9;color:var(--gruen){% elif e.ist_ueberfaellig %}background:#ffebee;color:var(--rot){% endif %}">{{ e.status_text }}</span></h1>
+{% if e.ist_storniert %}<div class="meldung error">Diese Erfassung wurde am {{ e.storniert_am|date:"d.m.Y" }} storniert. Grund: {{ e.storno_grund }}</div>{% endif %}
+
+<div class="zahlen" style="margin-bottom:20px">
+  <div class="zahl"><small>Netto</small><b>{{ e.netto|floatformat:"2g" }} €</b></div>
+  <div class="zahl blau"><small>Vorsteuer {{ e.ust_satz|floatformat:"-2" }} %</small><b>{{ e.ust|floatformat:"2g" }} €</b></div>
+  <div class="zahl"><small>Brutto</small><b>{{ e.brutto|floatformat:"2g" }} €</b></div>
+  <div class="zahl warn"><small>Offen · fällig {{ e.faellig|date:"d.m.Y" }}</small><b>{{ e.offen|floatformat:"2g" }} €</b></div>
+</div>
+
+<div class="karte">
+<dl class="daten">
+  <dt>Lieferant</dt><dd><a href="{{ e.lieferant.get_absolute_url }}">{{ e.lieferant.name }}</a></dd>
+  <dt>Rechnungs-Nr.</dt><dd>{{ e.lieferanten_nr }} vom {{ e.datum|date:"d.m.Y" }}</dd>
+  <dt>Kategorie</dt><dd>{{ e.kategorie }}</dd>
+  <dt>Projekt</dt><dd>{% if e.projekt %}<a href="{{ e.projekt.get_absolute_url }}">{{ e.projekt }}</a>{% else %}Gemeinkosten{% endif %}</dd>
+  <dt>Zahlungsziel</dt><dd>{{ e.ziel_tage }} Tage{% if e.skonto_prozent %} · {{ e.skonto_prozent|floatformat:"-2" }} % Skonto bis {{ e.skonto_bis|date:"d.m.Y" }} ({{ e.skonto_betrag|floatformat:"2g" }} €){% endif %}</dd>
+  {% if e.bestellung %}<dt>Bestellung</dt><dd>{{ e.bestellung }}</dd>{% endif %}
+  {% if e.notiz %}<dt>Notiz</dt><dd>{{ e.notiz }}</dd>{% endif %}
+  <dt>Beleg</dt><dd>{% if e.beleg_name %}<a href="{% url 'eingang:beleg' e.pk %}" target="_blank">📎 {{ e.beleg_name }} öffnen</a>{% else %}<span class="grau">kein Beleg hinterlegt</span>{% endif %}</dd>
+  <dt>Erfasst</dt><dd>{{ e.erfasst_am|date:"d.m.Y H:i" }} von {{ e.erfasst_von.get_full_name|default:e.erfasst_von.username }}</dd>
+</dl>
+</div>
+
+<h2>Zahlungen</h2>
+<div class="karte">
+  {% if zahlungen %}<div class="tabelle-rahmen"><table>
+    <tr><th>Nr.</th><th>Datum</th><th style="text-align:right">Betrag</th><th style="text-align:right" class="breit">Skonto</th><th class="breit">Konto</th><th>Notiz</th><th></th></tr>
+    {% for z in zahlungen %}
+    <tr{% if z.ist_gegengebucht or z.gegenbuchung_zu %} style="color:var(--grau)"{% endif %}>
+      <td class="nowrap">{{ z.znr }}</td><td class="nowrap">{{ z.datum|date:"d.m.Y" }}</td>
+      <td class="nowrap" style="text-align:right">{{ z.betrag|floatformat:"2g" }} €</td>
+      <td class="nowrap breit" style="text-align:right">{% if z.skonto %}{{ z.skonto|floatformat:"2g" }} €{% endif %}</td>
+      <td class="breit">{{ z.konto }}</td>
+      <td>{{ z.notiz }}{% if z.ist_gegengebucht %} <i>(aufgehoben durch {{ z.gegenbuchung.znr }})</i>{% endif %}
+        <div class="hilfe">{{ z.erfasst_von.get_full_name|default:z.erfasst_von.username }}, {{ z.erfasst_am|date:"d.m.Y H:i" }}</div></td>
+      <td>{% if not z.ist_gegengebucht and not z.gegenbuchung_zu %}
+        <details><summary class="grau" style="cursor:pointer;font-size:15px">vertippt?</summary>
+          <form method="post" action="{% url 'rechnungen:gegenbuchung' z.pk %}" style="margin-top:6px">{% csrf_token %}
+            <input type="text" name="grund" placeholder="Grund" required style="font-size:15px;padding:6px">
+            <button class="knopf zweit" type="submit" style="padding:6px 12px;font-size:15px;margin-top:6px">Gegenbuchung</button>
+          </form></details>{% endif %}</td>
+    </tr>{% endfor %}
+  </table></div>{% else %}<p class="grau">Noch nichts bezahlt.</p>{% endif %}
+</div>
+
+{% if zahlung_formular %}
+<form method="post" action="{% url 'eingang:zahlung' e.pk %}" class="karte">{% csrf_token %}
+  <h2 style="margin-top:0">Bezahlen</h2>
+  {% for feld in zahlung_formular %}
+    <div id="z-{{ feld.name }}">
+    <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>
+    {% if feld.name == "art" or feld.name == "konto" %}<div class="wahl">{{ feld }}</div>{% else %}{{ feld }}{% endif %}
+    </div>
+  {% endfor %}
+  <p><button class="knopf" type="submit">💶 Zahlung buchen</button></p>
+</form>
+<script>
+  function zahlArt() { const a = (document.querySelector('input[name=art]:checked') || {}).value;
+    document.getElementById('z-betrag').style.display = a === 'teil' ? '' : 'none'; }
+  document.querySelectorAll('input[name=art]').forEach(e => e.addEventListener('change', zahlArt)); zahlArt();
+</script>
+{% endif %}
+
+{% if not e.ist_storniert %}
+<details class="karte"><summary style="cursor:pointer;color:var(--holz-dunkel);font-weight:600">Falsch erfasst? Erfassung stornieren …</summary>
+  {% if e.bezahlt or e.skonto_gesamt %}<p class="meldung error" style="margin-top:10px">Auf diese Rechnung wurde schon gezahlt. Erst die Zahlungen per Gegenbuchung aufheben.</p>
+  {% else %}
+  <form method="post" action="{% url 'eingang:stornieren' e.pk %}" style="margin-top:10px">{% csrf_token %}
+    <p>Der Beleg bleibt sichtbar, zählt aber nicht mehr. Danach richtig neu erfassen.</p>
+    <label for="grund">Grund</label><input type="text" id="grund" name="grund" required placeholder="z. B. Betrag vertippt">
+    <p><button class="knopf zweit" type="submit" style="border-color:var(--rot);color:var(--rot)">Erfassung stornieren</button></p>
+  </form>{% endif %}
+</details>
+{% endif %}
+{% endblock %}

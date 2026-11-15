@@ -272,10 +272,11 @@ def zahlung_gegenbuchen(zahlung, *, benutzer, grund):
         if zahlung.ist_gegengebucht:
             raise RechnungFehler(f"{zahlung.znr} wurde schon gegengebucht.")
         gegen = Zahlung.objects.create(
-            znr=naechste_znr(), rechnung=zahlung.rechnung, datum=timezone.localdate(), betrag=-zahlung.betrag,
+            znr=naechste_znr(), rechnung=zahlung.rechnung, eingangsrechnung=zahlung.eingangsrechnung,
+            richtung=zahlung.richtung, datum=timezone.localdate(), betrag=-zahlung.betrag,
             skonto=-zahlung.skonto, konto=zahlung.konto, notiz=f"Gegenbuchung zu {zahlung.znr}: {grund.strip()}",
             gegenbuchung_zu=zahlung, erfasst_von=benutzer)
-        protokolliere("zahlung_gegengebucht", zahlung.rechnung.nummer, benutzer=benutzer,
+        protokolliere("zahlung_gegengebucht", zahlung.beleg_nr, benutzer=benutzer,
                       details=f"{gegen.znr} hebt {zahlung.znr} auf ({euro(zahlung.betrag)}). Grund: {grund.strip()}")
     return gegen
 

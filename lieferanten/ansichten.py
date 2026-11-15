@@ -35,6 +35,8 @@ def detail(request, pk):
     lieferant = get_object_or_404(Lieferant, pk=pk)
     return render(request, "lieferanten/detail.html", {
         "l": lieferant, "material": lieferant.material.order_by("bezeichnung"),
+        "belege": (lieferant.eingangsrechnungen.prefetch_related("zahlungen")
+                   if request.user.hat_rolle("chef", "admin", "buchhaltung") else None),
         **nachbarn(Lieferant.objects.order_by("name", "pk"), lieferant),
     })
 

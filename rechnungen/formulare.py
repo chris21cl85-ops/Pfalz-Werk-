@@ -167,3 +167,72 @@ class ZahlungFormular(forms.Form):
 
 class GegenbuchungFormular(forms.Form):
     grund = forms.CharField(label="Grund", max_length=200)
+
+
+# ------------------------------------------------------------------ Eingangsrechnungen
+class EingangFormular(forms.Form):
+    from .models import KATEGORIEN as _KAT
+    lieferant = forms.CharField(label="Lieferant", max_length=200)
+    lieferanten_nr = forms.CharField(label="Rechnungs-Nr. des Lieferanten", max_length=60)
+    datum = forms.DateField(label="Rechnungsdatum", widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+    kategorie = forms.ChoiceField(label="Kategorie", choices=[(k, k) for k in _KAT])
+    projekt = forms.ModelChoiceField(Projekt.objects.order_by("-projektnr"), label="Projekt", required=False,
+                                     empty_label="– Gemeinkosten (kein Projekt) –")
+    netto = forms.DecimalField(label="Netto (€)", decimal_places=2)
+    ust_satz = forms.ChoiceField(label="Vorsteuer", choices=[("19", "19 %"), ("7", "7 %"), ("0", "0 %")],
+                                 widget=forms.RadioSelect, initial="19")
+    ziel_tage = forms.IntegerField(label="Zahlungsziel (Tage)", min_value=0, max_value=365, initial=14)
+    skonto_prozent = forms.DecimalField(label="Skonto % (falls angeboten)", required=False, min_value=0,
+                                        max_value=20, decimal_places=2)
+    skonto_tage = forms.IntegerField(label="Skonto-Frist (Tage)", required=False, min_value=0, max_value=90)
+    bestellung = forms.CharField(label="Bestell-Nr. (optional)", required=False, max_length=40)
+    beleg = forms.FileField(label="Beleg (PDF oder Foto)", required=False)
+    notiz = forms.CharField(label="Notiz (optional)", required=False, max_length=300)
+
+    def __init__(self, *args, **kwargs):
+        from lieferanten.models import Lieferant
+        super().__init__(*args, **kwargs)
+        self.initial.setdefault("datum", timezone.localdate())
+        self.fields["lieferant"].widget.attrs.update({"list": "liste-lieferant", "autocomplete": "off"})
+        self.fields["beleg"].widget.attrs["accept"] = ".pdf,.jpg,.jpeg,.png,image/*,application/pdf"
+        self.lieferanten = list(Lieferant.objects.filter(aktiv=True).order_by("name"))
+        komma_felder(self, ["netto"], mindestens=2)
+        komma_felder(self, ["skonto_prozent"])
+
+    def clean(self):
+        daten = super().clean()
+        if daten.get("skonto_prozent") and daten.get("skonto_tage") in (None, ""):
+            self.add_error("skonto_tage", "Bitte die Skonto-Frist in Tagen eintragen.")
+        if daten.get("netto") == 0:
+            self.add_error("netto", "Nettobetrag eintragen.")
+        return daten
+
+
+class EingangZahlungFormular(forms.Form):
+    art = forms.ChoiceField(label="Was wurde bezahlt?", widget=forms.RadioSelect)
+    betrag = forms.DecimalField(label="Bezahlter Betrag (€)", required=False, decimal_places=2,
+                                min_value=Decimal("0.01"))
+    datum = forms.DateField(label="Bezahlt am", widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+    konto = forms.ChoiceField(label="Wie bezahlt?", choices=[("Bank", "Überweisung (Bank)"), ("Bar", "Bar")],
+                              widget=forms.RadioSelect, initial="Bank")
+    notiz = forms.CharField(label="Notiz (optional)", required=False, max_length=300)
+
+    def __init__(self, er, *args, **kwargs):
+        from .dienst import euro
+        super().__init__(*args, **kwargs)
+        heute = timezone.localdate()
+        self.initial.setdefault("datum", heute)
+        wahl = []
+        if er.skonto_moeglich(heute):
+            wahl.append(("skonto", f"Mit {er.skonto_prozent.normalize():f} % Skonto: {euro(er.offen - er.skonto_betrag)}"
+                                   f" (Frist bis {er.skonto_bis:%d.%m.%Y})"))
+        wahl += [("voll", f"Voll bezahlt: {euro(er.offen)}"), ("teil", "Teilbetrag – Betrag selbst eintragen")]
+        self.fields["art"].choices = wahl
+        self.initial.setdefault("art", wahl[0][0])
+        komma_felder(self, ["betrag"], mindestens=2)
+
+    def clean(self):
+        daten = super().clean()
+        if daten.get("art") == "teil" and not daten.get("betrag"):
+            self.add_error("betrag", "Bitte den bezahlten Betrag eintragen.")
+        return daten

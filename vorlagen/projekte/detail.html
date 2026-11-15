@@ -38,5 +38,13 @@
     <td>{% if r.ist_festgeschrieben %}🔒 {% endif %}{{ r.status_text }}</td></tr>{% endfor %}
 </table></div>{% else %}<p class="grau">Noch keine Rechnung.</p>{% endif %}
 <p><a class="knopf zweit" href="{% url 'rechnungen:neu' %}?projekt={{ projekt.pk }}">+ Rechnung für dieses Projekt</a></p>
+<h2>Kosten (Eingangsrechnungen)</h2>
+{% if kosten %}<div class="tabelle-rahmen"><table>
+  <tr><th>Beleg</th><th>Lieferant</th><th class="breit">Kategorie</th><th style="text-align:right">Netto</th></tr>
+  {% for e in kosten %}<tr class="klickbar" onclick="location.href='{{ e.get_absolute_url }}'">
+    <td><a href="{{ e.get_absolute_url }}">{{ e.ernr }}</a></td><td>{{ e.lieferant.name }}</td><td class="breit">{{ e.kategorie }}</td>
+    <td class="nowrap" style="text-align:right">{{ e.netto|floatformat:"2g" }} €</td></tr>{% endfor %}
+  <tr><th colspan="3" style="text-align:right">Summe netto</th><th class="nowrap" style="text-align:right">{{ kosten_summe|floatformat:"2g" }} €</th></tr>
+</table></div>{% else %}<p class="grau">Noch keine Kosten erfasst.</p>{% endif %}
 {% endif %}
 {% endblock %}

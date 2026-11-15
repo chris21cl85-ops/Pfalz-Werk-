@@ -30,4 +30,14 @@
     <td style="text-align:right" class="nowrap">{% if m.ek_netto is not None %}{{ m.ek_netto|floatformat:2 }} €{% endif %}</td></tr>
   {% empty %}<tr><td colspan="4">Noch kein Material zugeordnet.</td></tr>{% endfor %}
 </table></div>
+{% if belege is not None %}
+<h2>Eingangsrechnungen</h2>
+{% if belege %}<div class="tabelle-rahmen"><table>
+  <tr><th>Beleg</th><th>Rechn.-Nr.</th><th class="breit">Datum</th><th style="text-align:right">Brutto</th><th style="text-align:right">Offen</th><th>Status</th></tr>
+  {% for e in belege %}<tr class="klickbar" onclick="location.href='{{ e.get_absolute_url }}'">
+    <td><a href="{{ e.get_absolute_url }}">{{ e.ernr }}</a></td><td>{{ e.lieferanten_nr }}</td><td class="breit">{{ e.datum|date:"d.m.Y" }}</td>
+    <td class="nowrap" style="text-align:right">{{ e.brutto|floatformat:"2g" }} €</td>
+    <td class="nowrap" style="text-align:right">{{ e.offen|floatformat:"2g" }} €</td><td>{{ e.status_text }}</td></tr>{% endfor %}
+</table></div>{% else %}<p class="grau">Noch keine Eingangsrechnung.</p>{% endif %}
+{% endif %}
 {% endblock %}
