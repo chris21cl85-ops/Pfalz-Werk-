@@ -1,19 +1,37 @@
 {% extends "basis.html" %}
 {% block inhalt %}
-<h1>Guten Tag, {{ user.first_name|default:user.username }}</h1>
-{% if fertig %}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+  <h1>Guten Tag, <span class="farbig">{{ user.first_name|default:user.username }}</span></h1>
+  <p class="grau" style="margin:0 0 24px">{% now "l, j. F Y" %}</p>
+</div>
+
+<div class="zahlen">
+  {% if zahlen.geld %}
+  <a class="zahl" href="{% url 'rechnungen:liste' %}?status=unbezahlt"><small>Offene Rechnungen</small><b>{{ zahlen.offen|floatformat:"2g" }} €</b></a>
+  <a class="zahl warn" href="{% url 'rechnungen:liste' %}?status=ueberfaellig"><small>davon überfällig</small><b>{{ zahlen.ueberfaellig|floatformat:"2g" }} €</b></a>
+  {% endif %}
+  <a class="zahl blau" href="{% url 'projekte:liste' %}"><small>Offene Projekte</small><b>{{ zahlen.offene_projekte }}</b></a>
+</div>
+
+{% for bereich, module in gruppen %}
+<h2 class="abschnitt">{{ bereich }}</h2>
 <div class="kacheln">
-  {% for m in fertig %}
-  <a class="kachel" href="{% url m.url %}"><b>{{ m.titel }}</b><span>{{ m.text }}</span></a>
+  {% for m in module %}
+  <a class="kachel f-{{ m.farbe }}" href="{% url m.url %}">
+    {% if m.hinweis %}<span class="hinweis">{{ m.hinweis }}</span>{% endif %}
+    <div class="symbol">{{ m.zeichen }}</div>
+    <div><b>{{ m.titel }}</b><span>{{ m.text }}</span></div>
+  </a>
   {% endfor %}
 </div>
-{% endif %}
+{% endfor %}
+
 {% if geplant %}
-<h2>Kommt in den nächsten Etappen</h2>
+<h2 class="abschnitt">Kommt in den nächsten Etappen</h2>
 <div class="kacheln">
   {% for m in geplant %}
-  <div class="kachel geplant"><b>{{ m.titel }}</b><span>{{ m.text }}</span><br>
-    <span class="etappe">Etappe {{ m.etappe }}</span></div>
+  <div class="kachel geplant f-{{ m.farbe }}"><div class="symbol">{{ m.zeichen }}</div>
+    <div><b>{{ m.titel }}</b><span>{{ m.text }}</span><br><span class="etappe">Etappe {{ m.etappe }}</span></div></div>
   {% endfor %}
 </div>
 {% endif %}

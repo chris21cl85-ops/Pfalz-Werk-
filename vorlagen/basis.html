@@ -3,115 +3,254 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#13362a">
 <title>{% block titel %}PFALZ-WERK{% endblock %}</title>
 <style>
-  :root { --holz:#8a5a2b; --holz-dunkel:#5e3c1c; --hell:#faf7f2; --text:#222; --grau:#6b6b6b;
-          --rand:#ddd3c4; --gruen:#2e7d32; --rot:#c62828; }
+  /* ============================================================ Farbwelt
+     Grundfarbe ist das Grün der Excel-Formulare (RGB 53,107,74), dazu Verläufe in Türkis.
+     Jeder Bereich hat eine eigene Farbe: Büro (Blau-Türkis), Werkstatt (Holz/Orange), Geld (Grün), Verwaltung (Violett).
+     Die alten Namen (--holz, --holz-dunkel …) bleiben, damit alle Seiten weiter funktionieren. */
+  :root {
+    --tanne:#13362a; --gruen-tief:#356b4a; --minze:#5fd3a0; --tuerkis:#2bb3c0; --bernstein:#f0a442;
+    --holz:#2f8a5e; --holz-dunkel:#13362a;
+    --hell:#f2f7f4; --text:#14231c; --grau:#5d6d66; --rand:rgba(19,54,42,.12);
+    --gruen:#1f8a4c; --rot:#c62828;
+    --flaeche:rgba(255,255,255,.78);
+    --schatten:0 10px 30px rgba(19,54,42,.10), 0 2px 6px rgba(19,54,42,.06);
+    --schatten-hoch:0 18px 40px rgba(19,54,42,.16), 0 3px 10px rgba(19,54,42,.08);
+    --weich:cubic-bezier(.2,.8,.2,1);
+  }
   * { box-sizing:border-box; }
-  body { margin:0; font-family: system-ui, "Segoe UI", Arial, sans-serif; font-size:18px;
-         background:var(--hell); color:var(--text); }
-  header { background:var(--holz-dunkel); color:#fff; padding:12px 20px; display:flex;
-           align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:"Segoe UI Variable Text", "Segoe UI", system-ui, Arial, sans-serif; font-size:18px;
+         color:var(--text); min-height:100vh; background-color:var(--hell);
+         background-image:
+           radial-gradient(1200px 600px at 8% -10%, rgba(95,211,160,.26), transparent 60%),
+           radial-gradient(900px 500px at 100% 0%, rgba(43,179,192,.20), transparent 60%),
+           radial-gradient(900px 700px at 85% 115%, rgba(240,164,66,.16), transparent 60%);
+         background-attachment:fixed; }
+  a { color:#1d6f6a; }
+  a:hover { color:var(--tanne); }
+
+  /* ============================================================ Kopfzeile */
+  header { position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between;
+           gap:12px; padding:12px 24px; color:#fff;
+           background:linear-gradient(110deg, var(--tanne) 0%, var(--gruen-tief) 55%, #2f8a74 100%);
+           box-shadow:0 6px 24px rgba(19,54,42,.25); }
   header a { color:#fff; text-decoration:none; }
-  header .marke { font-weight:700; font-size:22px; letter-spacing:1px; }
-  header .wer { font-size:16px; }
-  header form { display:inline; }
-  main { max-width:1100px; margin:0 auto; padding:20px 16px 60px; }
-  h1 { font-size:28px; margin:8px 0 20px; }
-  h2 { font-size:22px; margin-top:32px; }
-  .knopf { display:inline-block; background:var(--holz); color:#fff; border:0; border-radius:8px;
-           padding:12px 22px; font-size:18px; cursor:pointer; text-decoration:none; }
-  .knopf:hover { background:var(--holz-dunkel); }
-  .knopf.leise { background:transparent; color:#fff; border:1px solid #fff; padding:6px 14px; font-size:16px; }
-  .kacheln { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:14px; }
-  .kachel { display:block; background:#fff; border:1px solid var(--rand); border-radius:10px;
-            padding:18px; color:var(--text); text-decoration:none; min-height:110px; }
-  a.kachel:hover { border-color:var(--holz); box-shadow:0 2px 8px rgba(0,0,0,.08); }
-  .kachel b { display:block; font-size:20px; margin-bottom:6px; color:var(--holz-dunkel); }
-  .kachel span { color:var(--grau); font-size:16px; }
-  .kachel.geplant { opacity:.6; }
-  .kachel .etappe { display:inline-block; margin-top:8px; font-size:14px; background:#eee5d8;
-                    border-radius:4px; padding:2px 8px; color:var(--holz-dunkel); }
-  .meldung { padding:12px 16px; border-radius:8px; margin-bottom:16px; }
-  .meldung.success { background:#e8f5e9; border:1px solid var(--gruen); }
-  .meldung.error { background:#ffebee; border:1px solid var(--rot); }
-  table { width:100%; border-collapse:collapse; background:#fff; font-size:16px; }
-  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--rand); vertical-align:top; }
-  th { background:#f1ebe2; }
-  .karte { background:#fff; border:1px solid var(--rand); border-radius:10px; padding:20px; margin-bottom:20px; }
-  input[type=text], input[type=password], input[type=file], input[type=email], input[type=search], input[type=date], input[type=number],
-  select, textarea { font-size:18px; padding:10px; width:100%; max-width:520px; border:1px solid #bbb;
-         border-radius:6px; font-family:inherit; background:#fff; }
-  .knopf.zweit { background:#fff; color:var(--holz-dunkel); border:1px solid var(--holz); }
-  .knopf.zweit:hover { background:#f1ebe2; }
+  header .marke { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:2px; font-size:21px; }
+  .logo { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; font-size:20px; letter-spacing:0;
+          background:conic-gradient(from 200deg, var(--minze), var(--tuerkis), var(--bernstein), var(--minze));
+          box-shadow:0 0 18px rgba(95,211,160,.55); transition:transform .6s var(--weich); }
+  .marke:hover .logo { transform:rotate(-12deg) scale(1.06); }
+  header .wer { display:flex; align-items:center; gap:10px; font-size:16px; }
+  header form { display:inline; margin:0; }
+  .knopf.leise { padding:8px 16px; border-radius:999px; font-size:16px; color:#fff; box-shadow:none;
+                 background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28); backdrop-filter:blur(6px); }
+  .knopf.leise:hover { background:rgba(255,255,255,.28); transform:none; box-shadow:none; }
+
+  /* ============================================================ Navigationsleiste */
+  .navleiste { position:sticky; top:62px; z-index:20; background:rgba(242,247,244,.72); backdrop-filter:blur(12px);
+               border-bottom:1px solid var(--rand); }
+  .navleiste .innen { max-width:1180px; margin:0 auto; padding:8px 24px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pfeil { display:inline-flex; align-items:center; gap:6px; background:var(--flaeche); border:1px solid var(--rand);
+           border-radius:999px; padding:8px 16px; font-size:16px; color:var(--tanne); text-decoration:none; cursor:pointer;
+           font-family:inherit; transition:background .25s, border-color .25s, transform .25s var(--weich); }
+  .pfeil:hover { border-color:var(--tuerkis); background:#fff; transform:translateY(-1px); }
+  .pfad { color:var(--grau); font-size:16px; margin-left:6px; }
+  .pfad a { color:var(--tanne); }
+
+  /* ============================================================ Inhalt */
+  main { max-width:1180px; margin:0 auto; padding:28px 24px 140px; animation:auftauchen .45s var(--weich); }
+  @keyframes auftauchen { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  h1 { font-size:32px; margin:6px 0 22px; letter-spacing:-.5px; }
+  h1 .farbig { background:linear-gradient(90deg, var(--gruen-tief), var(--tuerkis)); -webkit-background-clip:text;
+               background-clip:text; color:transparent; }
+  h2 { font-size:21px; margin-top:34px; }
+  h2.abschnitt { font-size:14px; text-transform:uppercase; letter-spacing:2px; color:var(--grau); margin:30px 0 12px; }
+
+  .karte { background:var(--flaeche); border:1px solid var(--rand); border-radius:22px; padding:22px; margin-bottom:20px;
+           box-shadow:var(--schatten); backdrop-filter:blur(10px); }
+
+  /* Knöpfe */
+  .knopf { display:inline-block; border:0; border-radius:14px; padding:12px 22px; font-size:18px; font-family:inherit;
+           cursor:pointer; text-decoration:none; color:#fff; font-weight:600;
+           background:linear-gradient(135deg, #2f8a5e, var(--tuerkis)); background-size:150% 150%;
+           box-shadow:0 8px 20px -8px rgba(43,179,192,.8);
+           transition:transform .25s var(--weich), box-shadow .25s, background-position .4s; }
+  .knopf:hover { color:#fff; transform:translateY(-2px); background-position:100% 0;
+                 box-shadow:0 12px 26px -8px rgba(43,179,192,.9); }
+  .knopf:active { transform:translateY(0); }
+  .knopf.zweit { background:var(--flaeche); color:var(--tanne); border:1px solid rgba(19,54,42,.22); box-shadow:none; font-weight:500; }
+  .knopf.zweit:hover { background:#fff; border-color:var(--tuerkis); color:var(--tanne); box-shadow:var(--schatten); }
+
+  /* Meldungen */
+  .meldung { padding:14px 18px; border-radius:16px; margin-bottom:16px; border:1px solid var(--rand);
+             background:var(--flaeche); box-shadow:var(--schatten); border-left-width:6px; }
+  .meldung.success { border-left-color:var(--minze); background:linear-gradient(90deg, rgba(95,211,160,.18), var(--flaeche) 60%); }
+  .meldung.error { border-left-color:#e5703a; background:linear-gradient(90deg, rgba(240,112,58,.16), var(--flaeche) 60%); }
+
+  /* Tabellen */
+  .tabelle-rahmen { overflow-x:auto; border-radius:18px; box-shadow:var(--schatten); border:1px solid var(--rand); background:var(--flaeche); }
+  .karte .tabelle-rahmen { box-shadow:none; }
+  table { width:100%; border-collapse:collapse; font-size:16px; background:transparent; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--rand); vertical-align:top; }
+  th { background:linear-gradient(180deg, rgba(53,107,74,.10), rgba(53,107,74,.05)); color:var(--tanne); font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  tr.klickbar td { transition:background .2s; }
+  tr.klickbar:hover td { background:rgba(43,179,192,.08); cursor:pointer; }
+
+  /* Formulare */
+  input[type=text], input[type=password], input[type=file], input[type=email], input[type=search], input[type=date],
+  input[type=number], select, textarea {
+    font-size:18px; padding:11px 14px; width:100%; max-width:540px; border:1px solid rgba(19,54,42,.22);
+    border-radius:12px; font-family:inherit; background:rgba(255,255,255,.9); color:var(--text);
+    transition:border-color .2s, box-shadow .2s; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--tuerkis); box-shadow:0 0 0 4px rgba(43,179,192,.18); }
+  input[type=checkbox], input[type=radio] { width:22px; height:22px; accent-color:#2f8a5e; }
+  label { display:block; margin:14px 0 5px; font-weight:600; }
+  .hilfe { color:var(--grau); font-size:15px; margin-top:4px; }
+  .fehler { color:var(--rot); }
+  .grau { color:var(--grau); }
+  .nowrap { white-space:nowrap; }
+  .marke-inaktiv { display:inline-block; vertical-align:middle; background:rgba(19,54,42,.08); color:var(--grau);
+                   border-radius:999px; padding:3px 12px; font-size:14px; font-weight:600; letter-spacing:0; }
+
   .leiste { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   .leiste form { display:flex; gap:10px; flex-wrap:wrap; align-items:center; flex:1; }
   .leiste input[type=search] { flex:1; min-width:200px; }
-  dl.daten { display:grid; grid-template-columns:200px 1fr; gap:8px 16px; margin:0; }
+  dl.daten { display:grid; grid-template-columns:200px 1fr; gap:10px 16px; margin:0; }
   dl.daten dt { color:var(--grau); }
   dl.daten dd { margin:0; white-space:pre-line; }
-  @media (max-width:600px) { dl.daten { grid-template-columns:1fr; } dl.daten dd { margin-bottom:8px; } }
-  .marke-inaktiv { background:#eee; color:#666; border-radius:4px; padding:2px 8px; font-size:14px; }
-  .hilfe { color:var(--grau); font-size:15px; margin-top:4px; }
-  .nowrap { white-space:nowrap; }
-  details.kopfblick { background:#fff; border:1px solid var(--rand); border-radius:8px; margin:6px 0; padding:8px 12px; }
-  details.kopfblick summary { cursor:pointer; font-weight:600; color:var(--holz-dunkel); }
+
+  /* Auswahlfelder als Karten */
+  .wahl > div { display:flex; flex-direction:column; gap:8px; }
+  .wahl label { font-weight:400; display:flex; gap:12px; align-items:center; margin:0; background:rgba(255,255,255,.85);
+                border:1px solid var(--rand); border-radius:14px; padding:11px 15px; max-width:540px; cursor:pointer;
+                transition:border-color .2s, box-shadow .2s, background .2s; }
+  .wahl label:hover { border-color:var(--tuerkis); }
+  .wahl label:has(input:checked) { border-color:#2f8a5e; background:linear-gradient(90deg, rgba(95,211,160,.18), #fff);
+                                   box-shadow:0 0 0 3px rgba(95,211,160,.25); }
+
+  details.kopfblick { background:var(--flaeche); border:1px solid var(--rand); border-radius:14px; margin:6px 0; padding:8px 12px; }
+  details.kopfblick summary { cursor:pointer; font-weight:600; color:var(--tanne); }
   table.kopf-tabelle { font-size:13px; margin-top:8px; }
   table.kopf-tabelle td, table.kopf-tabelle th { white-space:nowrap; padding:4px 8px; border:1px solid var(--rand); }
-  input[type=checkbox] { width:24px; height:24px; }
-  @media (max-width:600px) { .breit { display:none; } }
-  tr.klickbar:hover td { background:#faf5ee; cursor:pointer; }
-  label { display:block; margin:12px 0 4px; font-weight:600; }
-  .fehler { color:var(--rot); }
-  .grau { color:var(--grau); }
-  .tabelle-rahmen { overflow-x:auto; }
-  /* Navigation */
-  .navleiste { background:#efe6d8; border-bottom:1px solid var(--rand); }
-  .navleiste .innen { max-width:1100px; margin:0 auto; padding:8px 16px; display:flex; gap:8px;
-                      align-items:center; flex-wrap:wrap; }
-  .pfeil { display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--rand);
-           border-radius:8px; padding:8px 14px; font-size:17px; color:var(--holz-dunkel); text-decoration:none;
-           cursor:pointer; font-family:inherit; }
-  .pfeil:hover { border-color:var(--holz); background:#faf5ee; }
-  .pfad { color:var(--grau); font-size:16px; margin-left:6px; }
-  .pfad a { color:var(--holz-dunkel); }
-  .navi-knopf { position:fixed; right:20px; bottom:20px; width:76px; height:76px; border-radius:50%;
-                background:var(--holz); color:#fff; border:4px solid #fff; box-shadow:0 3px 12px rgba(0,0,0,.3);
-                font-size:15px; font-weight:700; cursor:pointer; z-index:50; display:flex; flex-direction:column;
-                align-items:center; justify-content:center; line-height:1.1; font-family:inherit; }
-  .navi-knopf span { font-size:26px; }
-  .navi-knopf:hover { background:var(--holz-dunkel); }
-  dialog.navi { border:0; border-radius:14px; padding:0; width:min(900px, calc(100vw - 32px));
-                max-height:calc(100vh - 40px); box-shadow:0 10px 40px rgba(0,0,0,.35); }
-  dialog.navi::backdrop { background:rgba(40,25,10,.45); }
-  .navi-kopf { display:flex; justify-content:space-between; align-items:center; background:var(--holz-dunkel);
-               color:#fff; padding:14px 20px; position:sticky; top:0; z-index:5; }
-  .navi-kopf b { font-size:22px; }
-  .navi-inhalt { padding:16px 20px 24px; }
-  .navi-gruppe h3 { margin:16px 0 8px; font-size:15px; text-transform:uppercase; letter-spacing:1px; color:var(--grau); }
-  .navi-ziele { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:10px; }
-  @media (max-width:600px) { .navi-kopf b { font-size:18px; } .navi-inhalt { padding:10px 12px 20px; } .navi-ziel { min-height:84px; padding:10px 4px; } }
-  .navi-ziel { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-               text-align:center; padding:14px 8px; border:1px solid var(--rand); border-radius:12px;
-               background:#fff; color:var(--holz-dunkel); text-decoration:none; font-weight:600; min-height:96px; }
-  .navi-ziel .z { font-size:30px; }
-  a.navi-ziel:hover { border-color:var(--holz); background:#faf5ee; }
-  .navi-ziel.spaeter { opacity:.45; font-weight:400; }
-  .navi-ziel small { font-size:12px; color:var(--grau); }
-  main { padding-bottom:120px; }
-  .wahl > div { display:flex; flex-direction:column; gap:8px; }
-  .wahl label { font-weight:400; display:flex; gap:10px; align-items:center; margin:0; background:#fff;
-                border:1px solid var(--rand); border-radius:8px; padding:10px 14px; max-width:520px; cursor:pointer; }
-  .wahl input[type=radio] { width:22px; height:22px; }
+
+  /* ============================================================ Kacheln (Startseite) */
+  .kacheln { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px; }
+  .kachel { position:relative; display:flex; gap:16px; align-items:flex-start; padding:20px; border-radius:22px;
+            background:var(--flaeche); border:1px solid var(--rand); box-shadow:var(--schatten); backdrop-filter:blur(10px);
+            color:var(--text); text-decoration:none;
+            transition:transform .35s var(--weich), box-shadow .35s, border-color .35s; }
+  a.kachel:hover { color:var(--text); transform:translateY(-4px); border-color:transparent;
+                   box-shadow:var(--schatten-hoch), 0 0 0 2px var(--a1); }
+  .kachel .symbol { flex:none; width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-size:27px;
+                    background:linear-gradient(135deg, var(--a1), var(--a2)); box-shadow:0 8px 18px -6px var(--a1); }
+  .kachel b { font-size:20px; display:block; margin:2px 0 4px; color:var(--text); }
+  .kachel span { color:var(--grau); font-size:16px; line-height:1.35; }
+  .kachel .hinweis { position:absolute; top:-10px; right:14px; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;
+                     color:#fff; background:linear-gradient(90deg, var(--bernstein), #e5703a); box-shadow:0 4px 12px rgba(229,112,58,.4); }
+  .kachel.geplant { opacity:.5; filter:saturate(.3); }
+  .kachel .etappe { display:inline-block; margin-top:6px; font-size:13px; padding:2px 10px; border-radius:999px; background:rgba(19,54,42,.08); }
+  .f-buero { --a1:#2bb3c0; --a2:#3b82f6; }
+  .f-werk  { --a1:#f0a442; --a2:#b9773a; }
+  .f-geld  { --a1:#5fd3a0; --a2:#2f8a74; }
+  .f-verw  { --a1:#a78bfa; --a2:#6d5bd0; }
+
+  /* Kennzahlen */
+  .zahlen { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:10px; }
+  .zahl { display:block; padding:18px 22px; border-radius:22px; background:var(--flaeche); border:1px solid var(--rand);
+          box-shadow:var(--schatten); position:relative; overflow:hidden; color:var(--text); text-decoration:none;
+          transition:transform .35s var(--weich), box-shadow .35s; }
+  a.zahl:hover { color:var(--text); transform:translateY(-3px); box-shadow:var(--schatten-hoch); }
+  .zahl::after { content:""; position:absolute; right:-40px; bottom:-60px; width:170px; height:170px; border-radius:50%;
+                 background:radial-gradient(circle, var(--leuchten, rgba(95,211,160,.38)), transparent 70%); }
+  .zahl small { color:var(--grau); display:block; font-size:15px; }
+  .zahl b { font-size:30px; display:block; margin-top:4px; }
+  .zahl.warn { --leuchten:rgba(240,164,66,.45); }
+  .zahl.warn b { color:#b5651d; }
+  .zahl.blau { --leuchten:rgba(43,179,192,.38); }
+
+  /* ============================================================ Navi-Knopf und Navi */
+  .navi-knopf { position:fixed; right:24px; bottom:24px; z-index:50; width:84px; height:84px; border-radius:50%; border:0; padding:0;
+                cursor:pointer; color:#fff; font-family:inherit; font-weight:700; font-size:15px; line-height:1.1; display:grid; place-items:center;
+                background:conic-gradient(from 0deg, var(--minze), var(--tuerkis), #3b82f6, #a78bfa, var(--bernstein), var(--minze));
+                box-shadow:0 10px 30px rgba(19,54,42,.35); transition:transform .4s var(--weich); }
+  .navi-knopf:hover { transform:rotate(30deg) scale(1.05); }
+  .navi-knopf .innen { width:70px; height:70px; border-radius:50%; background:var(--tanne); display:grid; place-items:center; transition:transform .4s var(--weich); }
+  .navi-knopf:hover .innen { transform:rotate(-30deg); }
+  .navi-knopf span { font-size:24px; display:block; }
+
+  dialog.navi { border:0; padding:0; background:transparent; width:100vw; height:100vh; max-width:none; max-height:none; color:#fff; }
+  dialog.navi::backdrop { background:radial-gradient(circle at center, rgba(19,54,42,.55), rgba(8,22,17,.88)); backdrop-filter:blur(6px); }
+  dialog.navi[open] { display:flex; flex-direction:column; animation:einblenden .3s ease; }
+  @keyframes einblenden { from { opacity:0; } to { opacity:1; } }
+  .navi-kopf { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px 24px; }
+  .navi-kopf b { font-size:20px; }
+  .navi-kopf small { opacity:.75; }
+  .navi-kopf .pfeil { background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.3); }
+  .navi-inhalt { flex:1; display:flex; align-items:center; justify-content:center; overflow:auto; padding:10px; }
+
+  /* Rad (großer Bildschirm) */
+  .rad { position:relative; width:780px; height:780px; flex:none; transform-origin:center; }
+  .rad .ring { position:absolute; inset:0; border-radius:50%; background:var(--sektoren); border:1px solid rgba(255,255,255,.15);
+               animation:aufdrehen .9s var(--weich); }
+  .rad .ring.innen { inset:200px; background:rgba(19,54,42,.6); border-color:rgba(255,255,255,.2); animation-duration:1.1s; }
+  @keyframes aufdrehen { from { transform:rotate(-45deg) scale(.85); opacity:0; } to { transform:none; opacity:1; } }
+  .rad .mitte { position:absolute; inset:275px; border-radius:50%; display:grid; place-items:center; text-align:center; color:#fff;
+                text-decoration:none; font-weight:700; font-size:20px;
+                background:linear-gradient(135deg, var(--gruen-tief), var(--tanne)); box-shadow:0 0 40px rgba(95,211,160,.5);
+                transition:transform .3s var(--weich), box-shadow .3s; }
+  .rad .mitte:hover { transform:scale(1.06); box-shadow:0 0 60px rgba(95,211,160,.8); color:#fff; }
+  .rad .mitte small { display:block; font-weight:400; opacity:.8; font-size:14px; margin-top:4px; }
+  .rad .navi-ziel { position:absolute; width:100px; margin:-48px 0 0 -50px; text-align:center; color:#fff; font-size:13px;
+                    font-weight:600; text-decoration:none; transition:transform .3s var(--weich); animation:aufdrehen .9s var(--weich); }
+  .rad .navi-ziel .z { display:grid; place-items:center; width:60px; height:60px; margin:0 auto 6px; border-radius:18px; font-size:27px;
+                       background:linear-gradient(135deg, var(--a1), var(--a2)); box-shadow:0 8px 20px -4px var(--a1); }
+  .rad a.navi-ziel:hover { transform:scale(1.14); color:#fff; }
+  .rad .navi-ziel.spaeter { opacity:.55; }
+  .rad .navi-ziel.spaeter .z { background:rgba(255,255,255,.14); box-shadow:none; filter:grayscale(.6); }
+  .rad .navi-ziel small { display:block; font-weight:400; opacity:.8; font-size:11px; }
+  .rad .bereich { position:absolute; transform:translate(-50%, -50%); color:rgba(255,255,255,.8); font-size:11px; letter-spacing:2px;
+                  text-transform:uppercase; font-weight:700; text-align:center; width:120px; }
+
+  /* Liste (Handy / kleines Fenster) */
+  .navi-liste { display:none; width:100%; max-width:620px; }
+  .navi-gruppe h3 { margin:18px 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:2px; color:rgba(255,255,255,.75); }
+  .navi-ziele { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
+  .navi-liste .navi-ziel { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center;
+                           padding:14px 8px; border-radius:18px; color:#fff; text-decoration:none; font-weight:600; min-height:96px;
+                           background:linear-gradient(135deg, var(--a1), var(--a2)); box-shadow:0 8px 20px -8px var(--a1); }
+  .navi-liste .navi-ziel .z { font-size:28px; }
+  .navi-liste .navi-ziel.spaeter { background:rgba(255,255,255,.1); box-shadow:none; opacity:.6; font-weight:400; }
+  .navi-liste .navi-ziel small { font-size:12px; opacity:.85; }
+  @media (max-width:700px), (max-height:520px) { .rad { display:none; } .navi-liste { display:block; } }
+  @media (max-width:600px) { .navi-kopf .lang, .navi-kopf small { display:none; } .navi-kopf { padding:12px 14px; } }
+
+  /* ============================================================ Handy */
+  @media (max-width:600px) {
+    body { font-size:17px; }
+    header { padding:10px 14px; } header .marke { font-size:17px; letter-spacing:1px; }
+    header .name, header .passwort { display:none; }
+    .navleiste { top:58px; } .navleiste .innen { padding:6px 12px; } .pfeil { padding:7px 12px; font-size:15px; }
+    main { padding:20px 14px 130px; }
+    h1 { font-size:26px; }
+    .breit { display:none; }
+    dl.daten { grid-template-columns:1fr; } dl.daten dd { margin-bottom:8px; }
+    .karte { padding:16px; border-radius:18px; }
+    .navi-knopf { right:16px; bottom:16px; }
+  }
+  @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
 <header>
-  <a class="marke" href="{% url 'startseite' %}">PFALZ-WERK</a>
+  <a class="marke" href="{% url 'startseite' %}"><span class="logo">🪵</span>PFALZ-WERK</a>
   {% if user.is_authenticated %}
   <div class="wer">
-    {{ user.get_full_name|default:user.username }} · {{ user.get_rolle_display }}
-    &nbsp;<a class="knopf leise" href="{% url 'passwort' %}">Passwort</a>
+    <span class="name">{{ user.get_full_name|default:user.username }} · {{ user.get_rolle_display }}</span>
+    <a class="knopf leise passwort" href="{% url 'passwort' %}">Passwort</a>
     <form method="post" action="{% url 'abmelden' %}">{% csrf_token %}
       <button class="knopf leise" type="submit">Abmelden</button></form>
   </div>
@@ -122,7 +261,7 @@
   <div class="innen">
     <button class="pfeil" type="button" onclick="history.length > 1 ? history.back() : location.href='{% url 'startseite' %}'" title="Eine Seite zurück (Alt + ←)">← Zurück</button>
     <a class="pfeil" href="{% url 'startseite' %}" title="Zur Startseite">⌂ Start</a>
-    <button class="pfeil" type="button" onclick="naviAuf()" title="Alle Bereiche (Taste N)">☰ Navi</button>
+    <button class="pfeil" type="button" onclick="naviAuf()" title="Alle Bereiche (Taste N)">☸ Navi</button>
     <span class="pfad"><a href="{% url 'startseite' %}">Start</a>{% block pfad %}{% endblock %}</span>
   </div>
 </nav>
@@ -132,29 +271,72 @@
   {% block inhalt %}{% endblock %}
 </main>
 {% if user.is_authenticated and navi %}
-<button class="navi-knopf" type="button" onclick="naviAuf()" title="Alle Bereiche öffnen (Taste N)"><span>☸</span>Navi</button>
+<button class="navi-knopf" type="button" onclick="naviAuf()" title="Alle Bereiche öffnen (Taste N)"><span class="innen"><span>☸</span>Navi</span></button>
 <dialog class="navi" id="navi">
-  <div class="navi-kopf"><b>☸ Navi – wohin möchten Sie?</b> <small style="opacity:.7">{{ pfalzwerk_fassung }}</small>
+  <div class="navi-kopf"><b>☸ Navi<span class="lang"> – wohin möchten Sie?</span></b> <small>{{ pfalzwerk_fassung }}</small>
     <button class="pfeil" type="button" onclick="document.getElementById('navi').close()">✕ Schließen</button></div>
   <div class="navi-inhalt">
-    <div class="navi-ziele" style="margin-bottom:6px">
-      <a class="navi-ziel" href="{% url 'startseite' %}"><span class="z">⌂</span>Startseite</a>
-    </div>
-    {% for bereich, module in navi %}
-    <div class="navi-gruppe"><h3>{{ bereich }}</h3>
-      <div class="navi-ziele">
+    <div class="rad" id="rad">
+      <div class="ring"></div><div class="ring innen"></div>
+      <a class="mitte" href="{% url 'startseite' %}"><span>⌂ Start<small>Startseite</small></span></a>
+      {% for bereich, module in navi %}
+        <span class="bereich" data-bereich="{{ forloop.counter0 }}">{{ bereich }}</span>
         {% for m in module %}
-          {% if m.url %}<a class="navi-ziel" href="{% url m.url %}"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}</a>
-          {% else %}<div class="navi-ziel spaeter"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}<small>kommt in Etappe {{ m.etappe }}</small></div>{% endif %}
+          {% if m.url %}<a class="navi-ziel f-{{ m.farbe }}" data-bereich="{{ forloop.parentloop.counter0 }}" href="{% url m.url %}"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}</a>
+          {% else %}<span class="navi-ziel spaeter f-{{ m.farbe }}" data-bereich="{{ forloop.parentloop.counter0 }}"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}<small>Etappe {{ m.etappe }}</small></span>{% endif %}
         {% endfor %}
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+    <div class="navi-liste">
+      <div class="navi-ziele"><a class="navi-ziel f-geld" href="{% url 'startseite' %}"><span class="z">⌂</span>Startseite</a></div>
+      {% for bereich, module in navi %}
+      <div class="navi-gruppe"><h3>{{ bereich }}</h3>
+        <div class="navi-ziele">
+          {% for m in module %}
+            {% if m.url %}<a class="navi-ziel f-{{ m.farbe }}" href="{% url m.url %}"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}</a>
+            {% else %}<div class="navi-ziel spaeter"><span class="z">{{ m.zeichen }}</span>{{ m.titel }}<small>kommt in Etappe {{ m.etappe }}</small></div>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </dialog>
 <script>
+  // Rad aufbauen: Ziele gleichmäßig auf dem Ring verteilen, Bereiche als farbige Viertel dahinter
+  (function () {
+    const rad = document.getElementById('rad');
+    if (!rad) return;
+    const ziele = [...rad.querySelectorAll('.navi-ziel')];
+    const n = ziele.length, mitte = 390, radius = 318, beschriftung = 228;
+    const farben = { 'f-buero': 'rgba(43,179,192,.24)', 'f-werk': 'rgba(240,164,66,.24)',
+                     'f-geld': 'rgba(95,211,160,.24)', 'f-verw': 'rgba(167,139,250,.24)' };
+    const sektoren = [], bereiche = {};
+    ziele.forEach((z, i) => {
+      const winkel = (i + 0.5) / n * 2 * Math.PI;           // im Uhrzeigersinn ab 12 Uhr
+      z.style.left = (mitte + radius * Math.sin(winkel)) + 'px';
+      z.style.top = (mitte - radius * Math.cos(winkel)) + 'px';
+      z.style.animationDelay = (i * 25) + 'ms';
+      const b = z.dataset.bereich;
+      (bereiche[b] = bereiche[b] || { von: i, bis: i, farbe: farben[[...z.classList].find(k => k.startsWith('f-'))] }).bis = i;
+    });
+    Object.entries(bereiche).forEach(([b, s]) => {
+      const von = s.von / n * 100, bis = (s.bis + 1) / n * 100;
+      sektoren.push(`${s.farbe} ${von}% ${bis}%`);
+      const winkel = ((s.von + s.bis + 1) / 2) / n * 2 * Math.PI;
+      const schild = rad.querySelector(`.bereich[data-bereich="${b}"]`);
+      schild.style.left = (mitte + beschriftung * Math.sin(winkel)) + 'px';
+      schild.style.top = (mitte - beschriftung * Math.cos(winkel)) + 'px';
+    });
+    rad.style.setProperty('--sektoren', `conic-gradient(${sektoren.join(', ')})`);
+    // Rad passt sich der Fenstergröße an (kleinere Bildschirme: etwas kleiner)
+    const anpassen = () => rad.style.transform = `scale(${Math.min(1, (innerHeight - 90) / 780, (innerWidth - 30) / 780)})`;
+    anpassen(); addEventListener('resize', anpassen);
+  })();
   function naviAuf() { const d = document.getElementById('navi'); if (d && !d.open) d.showModal(); }
-  document.getElementById('navi').addEventListener('click', e => { if (e.target.id === 'navi') e.target.close(); });
+  document.getElementById('navi').addEventListener('click', e => {
+    if (e.target.classList.contains('navi-inhalt') || e.target.id === 'navi') document.getElementById('navi').close();
+  });
   document.addEventListener('keydown', e => {
     const tippen = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
     if (!tippen && !e.ctrlKey && !e.altKey && !e.metaKey && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); naviAuf(); }

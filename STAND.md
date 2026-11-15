@@ -12,7 +12,7 @@ Letzte Aktualisierung: 13.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.3 (Etappe 2, Paket 3).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 2.4 (neues Design).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -262,14 +262,33 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Zurück zum Original (Link „Storno zu“) → „Storniert durch …“, Offen 0, kein Mahn-/Zahlungsbereich mehr.
 5. Rechnungsliste → Auswahl „Storniert / Storno“.
 
+### Zwischenpaket Design – GEBAUT 15.11.2026, Abnahme offen (Entwurf als Bild von Chris freigegeben: „los“)
+Wunsch: an Excel angelehnt, „futuristischer, moderner, fließende Übergänge und Farben“.
+- Nur Aussehen (`vorlagen/basis.html`, Startseite, Anmeldung, `kern/module.py` Farben, `kern/views.py` Kennzahlen);
+  keine Fachlogik geändert, alle Tests grün.
+- Farbwelt: Grün der Excel-Formulare (RGB 53,107,74) als Grundton, Verläufe Richtung Türkis; Bereichsfarben
+  Büro Blau-Türkis, Werkstatt Holz/Orange, Geld Grün, Verwaltung Violett. Hintergrund mit weichen Farbflächen.
+- Kopfzeile mit Farbverlauf und Logo, Navigationsleiste halb durchsichtig, Karten/Tabellen abgerundet,
+  Knöpfe mit Verlauf und Anheben beim Darüberfahren, Auswahlfelder als Karten (gewählte grün hervorgehoben),
+  Seiten blenden weich ein; „Bewegung reduzieren“ in Windows wird beachtet.
+- Startseite: Kennzahlen (offene Rechnungen, davon überfällig – nur Chef/Admin/Buchhaltung –, offene Projekte;
+  antippbar), Kacheln nach Bereichen mit farbigen Symbolen, Hinweis „x überfällig“ an der Rechnungs-Kachel.
+- Navi als **Rad**: Ziele gleichmäßig auf dem Ring, Bereiche als farbige Viertel, Startseite in der Mitte, dreht sich
+  beim Öffnen auf, passt sich der Fenstergröße an. Auf dem Handy (schmal) als farbige Kachelliste.
+- Offen: Excel-Bildschirmfotos hat Chris noch nicht geschickt – bei Bedarf Feinabstimmung nachziehen.
+- Symbole sind Windows-Emojis, sehen auf Chris' PC etwas anders aus als auf den Vorschaubildern.
+
+### So testest du es (Design)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 2.4“ stehen.
+1. Anmeldeseite und Startseite ansehen: Kennzahlen oben, Kacheln nach Bereichen, Maus über eine Kachel fahren.
+2. Runden „Navi“-Knopf unten rechts (oder Taste N) → Rad öffnet sich → ein Ziel anklicken.
+3. Rechnungen, Kunden, eine Rechnung öffnen: alles im neuen Aussehen, alles funktioniert wie vorher.
+4. Am Handy (gleiches WLAN, falls eingerichtet) oder Browserfenster schmal ziehen → Navi als Kachelliste.
+
 ## Nächstes Paket
-**Zwischenpaket Design** (Wunsch von Chris, 13.11.2026): Oberfläche an die Excel anlehnen und darüber hinaus
-modernisieren – „futuristischer, moderner, fließende Übergänge und Farben“. Vorgehen: Chris schickt 2–3
-Bildschirmfotos der Excel (Startbild/Cockpit, Navi-Rad, Rechnungsfenster); daraus Farbwelt (Makro-Formulare nutzen
-Grün RGB 53,107,74 / 231,236,232), dann neues Erscheinungsbild für alle Seiten (Farbverläufe, sanfte Übergänge,
-Kacheln, Navi-Rad), bedienbar bleiben (große Schrift/Knöpfe, Handy). Nur `vorlagen/basis.html` + Vorlagen, keine
-Fachlogik. Ein Vorschlag als Bild zur Abnahme vor dem Umbau.
-Danach: **Etappe 2, Paket 4: Eingangsrechnungen** (PW_Eingang.bas), Paket 5 Finanz-Übersicht + DATEV-Export.
+**Etappe 2, Paket 4: Eingangsrechnungen** (PW_Eingang.bas) – vorher Paket 3 (Mahnungen/Storno, Fassung 2.3)
+von Chris testen lassen (lief bei ihm noch nicht, er hatte Fassung 2.2). Danach Paket 5 Finanz-Übersicht + DATEV-Export.
 Code-Fundstellen in Drive (Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3):
 - **PW_Rechnung.bas** (Datei-ID 1tsCb67ESZt05QbJHnkrbxxC6HJOeAIOh) – Ausgangsrechnungen (komplett übernommen)
 - **PW_Eingang.bas** (Datei-ID 1Hq3KJMK0Nn3kWEck7GMf4T10g3LoFZ1c) – Eingangsrechnungen, vermutlich DATEV-EXTF

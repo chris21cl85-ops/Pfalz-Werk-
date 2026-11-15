@@ -8,6 +8,8 @@ VERWALTUNG = (Rolle.CHEF, Rolle.ADMIN)
 
 # Bereiche wie in der Excel-Fassung (Cockpit, Planung, Produktion, Material, Verwaltung)
 BEREICHE = ["Büro & Planung", "Werkstatt & Material", "Geld", "Verwaltung"]
+# Farbe je Bereich (CSS-Klasse f-…): Büro Blau-Türkis, Werkstatt Holz, Geld Grün, Verwaltung Violett
+FARBEN = {"Büro & Planung": "buero", "Werkstatt & Material": "werk", "Geld": "geld", "Verwaltung": "verw"}
 
 MODULE = [
     # (Titel, Beschreibung, Etappe, Rollen, URL-Name oder None, Bereich, Zeichen)
@@ -34,7 +36,7 @@ MODULE = [
 def module_fuer(benutzer):
     """Liefert die Bereiche, die dieser Benutzer sehen darf."""
     return [
-        {"titel": t, "text": b, "etappe": e, "url": u, "bereich": ber, "zeichen": z}
+        {"titel": t, "text": b, "etappe": e, "url": u, "bereich": ber, "zeichen": z, "farbe": FARBEN[ber]}
         for t, b, e, rollen, u, ber, z in MODULE
         if benutzer.hat_rolle(*rollen)
     ]

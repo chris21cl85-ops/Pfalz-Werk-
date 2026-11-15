@@ -1,16 +1,20 @@
 {% extends "basis.html" %}
 {% block titel %}Anmelden – PFALZ-WERK{% endblock %}
 {% block inhalt %}
-<div class="karte" style="max-width:480px;margin:40px auto;">
-  <h1>Anmelden</h1>
-  {% if form.errors %}<p class="fehler">Benutzername oder Passwort stimmt nicht.</p>{% endif %}
+<div class="karte" style="max-width:460px;margin:50px auto;padding:34px;text-align:left">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+    <span class="logo" style="width:52px;height:52px;font-size:28px;border-radius:16px">🪵</span>
+    <div><b style="font-size:22px;letter-spacing:2px">PFALZ-WERK</b><div class="grau" style="font-size:15px">Weniger Büro, mehr Handwerk</div></div>
+  </div>
+  <h1 style="margin-top:22px">Anmelden</h1>
+  {% if form.errors %}<div class="meldung error">Benutzername oder Passwort stimmt nicht.</div>{% endif %}
   <form method="post">{% csrf_token %}
     <label for="id_username">Benutzername</label>
     <input type="text" name="username" id="id_username" autofocus autocomplete="username" required>
     <label for="id_password">Passwort</label>
     <input type="password" name="password" id="id_password" autocomplete="current-password" required>
     <input type="hidden" name="next" value="{{ next }}">
-    <p><button class="knopf" type="submit">Anmelden</button></p>
+    <p style="margin-top:22px"><button class="knopf" type="submit" style="width:100%">Anmelden</button></p>
   </form>
 </div>
 {% endblock %}
