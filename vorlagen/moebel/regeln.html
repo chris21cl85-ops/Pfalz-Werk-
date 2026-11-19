@@ -19,6 +19,9 @@
   <div class="karte"><h3 style="margin-top:0">Nennlängen Schubkasten</h3><div>{% for n in r.nennlaengen %}{{ n|floatformat:"0" }}{% if not forloop.last %} · {% endif %}{% endfor %} mm</div></div>
   <div class="karte"><h3 style="margin-top:0">Standardmaterial</h3>{% for name, nr in r.standardmaterial.items %}<div>{{ name }}: {{ nr }}</div>{% endfor %}</div>
 </div>
+<div class="karte"><h3 style="margin-top:0">Oberflächen</h3>
+  <div class="tabelle-rahmen"><table><tr><th>Oberfläche</th><th class="breit">Arbeitsgänge</th><th>Material 1 je m²/Seite</th><th>Material 2 je m²/Seite</th><th>Seiten</th><th class="breit">Schliff</th></tr>
+  {% for o in r.oberflaechen %}<tr><td>{{ o.0 }}{% if o.8 %}<div class="hilfe">{{ o.8 }}</div>{% endif %}</td><td class="breit hilfe">{{ o.1|default:"–" }}</td><td>{% if o.2 %}{{ o.2 }} · {{ o.3 }}{% else %}–{% endif %}</td><td>{% if o.4 %}{{ o.4 }} · {{ o.5 }}{% else %}–{% endif %}</td><td>{{ o.6 }}</td><td class="breit">{{ o.7 }}</td></tr>{% endfor %}</table></div></div>
 <div class="karte"><h3 style="margin-top:0">Beschlagsysteme</h3>
   <div class="tabelle-rahmen"><table><tr><th>System</th><th>Topfband</th><th class="breit">Montageplatte</th><th class="breit">Bodenträger</th><th class="breit">Sockelfuß</th><th class="breit">Griff</th></tr>
   {% for name, v in r.systeme.items %}<tr><td>{{ name }}</td><td>{{ v.0|default:"–" }}</td><td class="breit">{{ v.1|default:"–" }}</td><td class="breit">{{ v.2|default:"–" }}</td><td class="breit">{{ v.3|default:"–" }}</td><td class="breit">{{ v.7|default:"–" }}</td></tr>{% endfor %}</table></div>

@@ -34,6 +34,14 @@ def standard_nennlaengen():
     return list(rechner.STANDARD_NENNLAENGEN)
 
 
+def standard_oberflaechen():
+    return [list(x) for x in rechner.STANDARD_OBERFLAECHEN]
+
+
+def leere_liste():
+    return []
+
+
 class Regelwerk(models.Model):
     """Werkstatt-Standards – genau ein Datensatz. Startwerte wie im Makro, per Excel-Import oder Seite änderbar."""
 
@@ -44,6 +52,7 @@ class Regelwerk(models.Model):
     systeme = models.JSONField(default=standard_systeme)
     standardmaterial = models.JSONField(default=standard_material)
     nennlaengen = models.JSONField(default=standard_nennlaengen)
+    oberflaechen = models.JSONField(default=standard_oberflaechen)
     im_programm_geaendert = models.BooleanField(default=False)
     geaendert_am = models.DateTimeField(auto_now=True)
 
@@ -67,7 +76,8 @@ class Regelwerk(models.Model):
                               fachboden=[tuple(x) for x in self.fachboden],
                               verbinder={k: tuple(v) for k, v in self.verbinder.items()}, systeme=dict(self.systeme),
                               nennlaengen=[float(x) for x in (self.nennlaengen or rechner.STANDARD_NENNLAENGEN)],
-                              material={**rechner.STANDARD_MATERIAL, **(self.standardmaterial or {})})
+                              material={**rechner.STANDARD_MATERIAL, **(self.standardmaterial or {})},
+                              oberflaechen=self.oberflaechen or [list(x) for x in rechner.STANDARD_OBERFLAECHEN])
 
 
 class MoebelPosition(models.Model):
@@ -83,6 +93,8 @@ class MoebelPosition(models.Model):
     ergebnis = models.JSONField(default=dict)
     status = models.CharField("Status", max_length=40, choices=Status.choices, default=Status.ENTWURF)
     version = models.PositiveIntegerField("Version", default=1)
+    aenderungen = models.JSONField("Änderungen (neueste zuerst)", default=leere_liste, blank=True)
+    stueckliste_veraltet = models.BooleanField("Nach Übernahme geändert", default=False)
     gespeichert_von = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT,
                                         related_name="+")
     gespeichert_am = models.DateTimeField("Gespeichert am", auto_now=True)

@@ -28,7 +28,12 @@
     {% include "moebel/_feld.html" with feld=form.tueren %}{% include "moebel/_feld.html" with feld=form.tuerart %}
     {% include "moebel/_feld.html" with feld=form.fachboeden %}{% include "moebel/_feld.html" with feld=form.beschlagsystem %}
   </div></div>
-  <div class="karte"><h3 style="margin-top:0">5 · Aufteilung (Felder, Schubkästen, Fächer)</h3><div class="raster">
+  <div class="karte"><h3 style="margin-top:0">5 · Oberfläche & Kalkulation</h3><div class="raster">
+    {% include "moebel/_feld.html" with feld=form.oberflaeche_korpus %}{% include "moebel/_feld.html" with feld=form.oberflaeche_front %}
+    {% include "moebel/_feld.html" with feld=form.kantenprofil %}{% include "moebel/_feld.html" with feld=form.plattenbedarf %}
+    {% include "moebel/_feld.html" with feld=form.schnellfaktor %}
+  </div><p class="hilfe">Oberflächen kommen aus den Werkstatt-Regeln: Material je m² und Seite fließt in den Bedarf, die Arbeitsgänge (Schleifen, Ölen, Trocknen …) in die Produktion. „Verschnittfaktor“ rechnet Platten nach Fläche + Verschnitt statt in ganzen Platten.</p></div>
+  <div class="karte"><h3 style="margin-top:0">6 · Aufteilung (Felder, Schubkästen, Fächer)</h3><div class="raster">
     {% include "moebel/_feld.html" with feld=form.felder %}{% include "moebel/_feld.html" with feld=form.feldbreiten %}
     {% include "moebel/_feld.html" with feld=form.teilungsregel %}{% include "moebel/_feld.html" with feld=form.zwischenboeden %}
     {% include "moebel/_feld.html" with feld=form.kastensystem %}{% include "moebel/_feld.html" with feld=form.kastenverbindung %}

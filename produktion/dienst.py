@@ -102,38 +102,10 @@ def _naechste_nr(projekt, praefix) -> int:
 
 
 def codes_fuer_moebel(position) -> list[tuple[str, str]]:
-    """Wie ArbeitsgaengeBilden() + AGSortiert(): (Code, Bereich) in Standardfolge."""
-    from moebel.models import Regelwerk
-    teile = position.ergebnis.get("teile", [])
-    platte = any(t["l"] is not None for t in teile)
-    kante = any(t["kl1"] or t["kl2"] or t["kb1"] or t["kb2"] for t in teile)
-    besch = any(t["l"] is None for t in teile)
-    ag = {}
-
-    def plus(code, bereich):
-        if code not in ag:
-            ag[code] = bereich
-        elif bereich.lower() not in ag[code].lower():
-            ag[code] += ", " + bereich
-
-    plus("VOR-010", "Material")
-    if platte:
-        plus("PL-010", "Platten")
-        plus("PL-020", "Platten")
-    if kante:
-        plus("KA-010", "Kanten")
-    if float(Regelwerk.laden().werte.get("CNC_JA") or 0) > 0:
-        plus("CNC-010", "Bohrbild")
-        plus("CNC-020", "Bohrbild")
-    else:
-        plus("BE-010", "Bohren/Dübeln")
-    plus("QM-020", "Bohrbild")
-    plus("MO-010", "Korpus")
-    if besch:
-        plus("MO-020", "Beschläge")
-    plus("QM-010", "Maße")
-    plus("QM-040", "Endkontrolle")
-    plus("LOG-010", "Lieferung")
+    """Wie ArbeitsgaengeBilden() + AGSortiert(): (Code, Bereich) aus dem Möbelrechner in Standardfolge
+    (QM-Prüfungen direkt nach ihrem Arbeitsschritt)."""
+    from moebel.dienst import rechnen
+    ag = dict(rechnen(position.eingaben).get("arbeitsgaenge") or [])
     folge = {v.code: v.standardfolge for v in Vorlage.objects.filter(code__in=ag)}
     return sorted(ag.items(), key=lambda kv: QM_FOLGE.get(kv[0], folge.get(kv[0]) or 9999))
 
@@ -149,6 +121,8 @@ def aus_moebel(position, benutzer) -> int:
         raise ProduktionsFehler(f"Arbeitsgänge dieser Position sind schon begonnen ({begonnen.agid}: {begonnen.status}). "
                                 "Keine Übernahme – Änderung bitte in der Produktion von Hand.")
     codes = codes_fuer_moebel(position)
+    from moebel.models import Regelwerk
+    warte = Decimal(str(Regelwerk.laden().als_regeln().r("WARTE_STD")))
     with transaction.atomic():
         alt.delete()
         vorher = None
@@ -157,7 +131,8 @@ def aus_moebel(position, benutzer) -> int:
             vorher = Arbeitsgang.objects.create(
                 agid=f"{position.positions_id}-AG{n:02d}", projekt=position.projekt, moebel=position,
                 bereich=f"{position.bezeichnung} ({position.pos}) - {bereich}", name=v.name if v else code, code=code,
-                typ=v.typ if v else "", reihenfolge=n * 10, bemerkung=f"aus Möbelrechner, {code}", vorgaenger=vorher)
+                typ=v.typ if v else "", reihenfolge=n * 10, bemerkung=f"aus Möbelrechner, {code}", vorgaenger=vorher,
+                wartezeit_std=warte if v and v.typ == WARTEZEIT else Decimal("0"))
         position.status = MoebelPosition.Status.ARBEITSGAENGE
         position.save(update_fields=["status"])
     protokolliere("arbeitsgaenge_aus_moebel", position.positions_id, benutzer=benutzer,

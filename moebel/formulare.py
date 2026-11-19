@@ -15,7 +15,8 @@ ABWEICHUNGEN = [("FUGE_AUSSEN", "Fuge außen (mm)"), ("FUGE_MITTE", "Fuge Mitte 
                 ("NUT_TIEFE", "Nuttiefe Rückwand (mm)"), ("NUT_ABSTAND", "Nutabstand hinten (mm)"),
                 ("TRAV_B", "Traversenbreite (mm)"), ("VERSCHNITT", "Verschnitt (%)")]
 
-ZAHLEN = ["anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe"] + [f"abw_{k}" for k, _ in ABWEICHUNGEN]
+ZAHLEN = ["anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe", "schnellfaktor"] + \
+    [f"abw_{k}" for k, _ in ABWEICHUNGEN]
 ZONEN_ZEILEN = 12  # wie Zonentabelle A39:E58 (dort 20 Zeilen)
 
 
@@ -60,6 +61,13 @@ class MoebelFormular(forms.Form):
     beschlagsystem = forms.ChoiceField(label="Beschlagsystem")
     raumhoehe = forms.DecimalField(label="Raumhöhe (mm, für Kippmaß – leer = keine Prüfung)", required=False,
                                    min_value=0, decimal_places=0)
+    # Stufe 3: Oberfläche / Kalkulation
+    oberflaeche_korpus = forms.ChoiceField(label="Oberfläche Korpus", required=False)
+    oberflaeche_front = forms.ChoiceField(label="Oberfläche Front", required=False)
+    kantenprofil = forms.ChoiceField(label="Kantenprofil Front", required=False, choices=[(x, x) for x in rechner.KANTENPROFILE])
+    plattenbedarf = forms.ChoiceField(label="Plattenbedarf", required=False, choices=[(x, x) for x in rechner.PLATTENBEDARF])
+    schnellfaktor = forms.DecimalField(label="Schnellpreis-Faktor (leer = Regel)", required=False, min_value=0,
+                                       decimal_places=2)
     # Stufe 2: Aufteilung
     felder = forms.IntegerField(label="Felder (Mittelwände = Felder − 1)", min_value=1, max_value=9, initial=1,
                                 required=False)
@@ -117,6 +125,12 @@ class MoebelFormular(forms.Form):
         self.fields["mat_rueckwand"].choices = leer + _materialwahl("platte", e.get("mat_rueckwand"))
         self.fields["kante_korpus"].choices = leer + _materialwahl("kante", e.get("kante_korpus"))
         self.fields["kante_front"].choices = leer + _materialwahl("kante", e.get("kante_front"))
+        namen = [o[0] for o in (regeln.oberflaechen or []) if o and o[0]]
+        for k in ("oberflaeche_korpus", "oberflaeche_front"):
+            wahl = [("", "– keine Angabe –")] + [(n, n) for n in namen]
+            if e.get(k) and e[k] not in namen:
+                wahl.append((e[k], f"{e[k]} (nicht mehr in der Tabelle)"))
+            self.fields[k].choices = wahl
         systeme = list(regeln.systeme)
         if e.get("beschlagsystem") and e["beschlagsystem"] not in systeme:
             systeme.append(e["beschlagsystem"])
@@ -143,8 +157,11 @@ class MoebelFormular(forms.Form):
                                           "mat_front", "kante_front", "rueckwand_art", "mat_rueckwand", "sockel",
                                           "tueren", "tuerart", "verbindung", "beschlagsystem")}
         e["bezeichnung"] = e["bezeichnung"].strip()
-        for k in ("anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe"):
+        for k in ("anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe", "schnellfaktor"):
             e[k] = z(d.get(k))
+        for k, std in (("oberflaeche_korpus", ""), ("oberflaeche_front", ""), ("kantenprofil", "gerade"),
+                       ("plattenbedarf", "ganze Platten")):
+            e[k] = (d.get(k) or "").strip() or std
         e["fachboeden"] = d.get("fachboeden") or 0
         e["felder"] = d.get("felder") or 1
         for k, std in (("feldbreiten", ""), ("teilungsregel", "gleich"), ("zwischenboeden", "Ja"),
@@ -184,6 +201,7 @@ class RegelFormular(forms.Form):
         "BOX_RW_ABZUG": "Metallbox: Rückwand = lichte Weite minus (mm)", "BOX_RW_H": "Metallbox: Rückwandhöhe (mm)",
         "ERGO_SK_MAX": "Ergonomie: Schubkasten-Oberkante max. (mm)", "ERGO_UNTEN": "Ergonomie: Schubkasten sehr tief unter (mm)",
         "ERGO_FACH_MAX": "Ergonomie: Fach darüber nur mit Tritt (mm)",
+        "WARTE_STD": "Wartezeit Trocknen/Aushärten bei AG-Übernahme (Std.)", "CNC_JA": "Bohren/Fräsen auf CNC (1 = ja, 0 = von Hand)",
     }
 
     def __init__(self, *args, regelwerk=None, **kwargs):

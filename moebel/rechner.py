@@ -30,6 +30,24 @@ TEILUNGSREGELN = ["gleich", "Goldener Schnitt", "Fibonacci", "gestaffelt", "Rast
 KASTENSYSTEME = ["Holzkasten Unterflur", "Metallbox"]
 KASTENVERBINDUNGEN = ["Dübel", "Schwalbenschwanz", "Nut und Feder", "Lamello"]
 STANDARD_NENNLAENGEN = [270, 300, 350, 400, 450, 500, 550, 600]
+# Stufe 3 (RegelnStufe3, Möbel-Regeln AW:BE): Oberfläche, AG-Codes, Material 1 + Menge je m² und Seite,
+# Material 2 + Menge, Seiten, Schliff, Hinweis
+STANDARD_OBERFLAECHEN = [
+    ["beschichtet (Dekor)", "", "", 0, "", 0, 0, "-", ""],
+    ["furniert, geölt", "MH-060;WZ-010;SL-010;SL-020;OF-010;WZ-020;QM-030", "OF-OSMO-HWO", 0.08, "FU-EI-06", 1.15, 2,
+     "120 / 180", "Furnier beidseitig inkl. 15 % Zugabe – Holzart wählen"],
+    ["furniert, lackiert", "MH-060;WZ-010;SL-010;SL-020;OF-020;WZ-020;QM-030", "OF-LACK-WB", 0.25, "FU-EI-06", 1.15, 2,
+     "120 / 180 / 240", "Furnier beidseitig inkl. 15 % Zugabe"],
+    ["lackiert deckend (MDF)", "SL-010;OF-010;WZ-020;SL-020;OF-020;WZ-020;QM-030", "OF-LACK-WB", 0.3, "", 0, 2,
+     "180 / 240 / 320", "Grundierung + 2 x Decklack"],
+    ["HPL belegt", "MH-060;WZ-010;QM-030", "KL-KONTAKT", 0.3, "HPL-RES-WEI-08", 1.1, 2, "-", "beidseitig belegen (Gegenzug)"],
+    ["Massivholz geölt", "SL-010;SL-020;OF-010;WZ-020;QM-030", "OF-OSMO-HWO", 0.08, "", 0, 2, "120 / 150 / 180", ""],
+    ["Massivholz lackiert", "SL-010;SL-020;OF-020;WZ-020;QM-030", "OF-LACK-WB", 0.25, "", 0, 2, "120 / 180 / 240", ""],
+    ["gebeizt + lackiert", "SL-010;SL-020;OF-010;WZ-020;OF-020;WZ-020;QM-030", "OF-BEIZE", 0.1, "OF-LACK-WB", 0.25, 2,
+     "120 / 180 / 240", "Probe auf Originalholz"],
+]
+KANTENPROFILE = ["gerade", "Fase 2 mm", "Radius 2 mm", "Radius 3 mm", "Profil nach Zeichnung"]
+PLATTENBEDARF = ["ganze Platten", "Verschnittfaktor"]
 
 # Werkstatt-Standards (RegelnAnlegen + RegelnStufe3) – werden aus „Möbel-Regeln“ übernommen, hier nur Startwerte
 STANDARD_REGELN = {
@@ -43,6 +61,8 @@ STANDARD_REGELN = {
     "NL_RESERVE": 10, "SKL_ABZUG": 10, "SAB": 42, "ZAB": 40, "ZH_MIN": 60, "BODEN_NUT": 8, "HS_ABZUG": 13, "FEDER": 8,
     "BOX_BODEN_ABZUG": 75, "BOX_RW_ABZUG": 87, "BOX_RW_H": 70, "ERGO_SK_MAX": 1500, "ERGO_UNTEN": 150,
     "ERGO_FACH_MAX": 1900,
+    # Stufe 3
+    "WARTE_STD": 12, "CNC_JA": 1,
 }
 STANDARD_BAENDER = [(900, 2), (1600, 3), (2000, 4), (2400, 5)]           # Türhöhe bis → Bänder
 STANDARD_FACHBODEN = [(16, 550), (19, 700), (22, 800), (25, 900), (99, 1000)]  # Stärke bis → Spannweite max
@@ -83,6 +103,10 @@ class Regeln:
     systeme: dict = field(default_factory=lambda: dict(STANDARD_SYSTEME))
     nennlaengen: list = field(default_factory=lambda: list(STANDARD_NENNLAENGEN))
     material: dict = field(default_factory=lambda: dict(STANDARD_MATERIAL))
+    oberflaechen: list = field(default_factory=lambda: [list(x) for x in STANDARD_OBERFLAECHEN])
+
+    def oberflaeche(self, name):
+        return next((o for o in self.oberflaechen if o and o[0] == name), None)
 
     def nennlaenge(self, max_l):
         """Größte Nennlänge, die in max_l passt (wie Nennlaenge())."""
@@ -188,6 +212,7 @@ class Rechner:
         self.teile, self.pruefungen, self.kennzahlen = [], [], {}
         self.bedarf, self.bedarf_grund = {}, {}
         self.varianten, self.verb_extra = [], 0
+        self.ag = {}  # AG-Code → Bereich (wie gAG im Makro)
 
     # ---------------------------------------------------------- Hilfen
     def mat(self, nr):
@@ -482,7 +507,96 @@ class Rechner:
                 if fl > 0 and (max(t["l"], t["b"]) > fl or min(t["l"], t["b"]) > fb):
                     self.pruef("Plattenformat", ROT, f"{t['teil']} ({zahl(t['l'])} x {zahl(t['b'])} mm) größer als Platte "
                                                      f"{zahl(fl)} x {zahl(fb)} mm")
+        # Stufe 3: Oberfläche, Profil, Arbeitsgänge
+        self._oberflaechen(mat_k, mat_r)
+        self._profil()
+        self._arbeitsgaenge()
         return self._abschluss(anz)
+
+    # ---------------------------------------------------------- Stufe 3: Oberfläche, Profil, Arbeitsgänge
+    def ag_plus(self, code, bereich):
+        if code not in self.ag:
+            self.ag[code] = bereich
+        elif bereich.lower() not in self.ag[code].lower():
+            self.ag[code] += ", " + bereich
+
+    def _oberflaechen(self, mat_k, mat_r):
+        """Wie Oberflaechen(): Fläche Korpus bzw. Front × Seiten × Menge je m² → Bedarf; AG-Codes der Oberfläche."""
+        for gruppe, schluessel in (("Korpus", "oberflaeche_korpus"), ("Front", "oberflaeche_front")):
+            name = (self.e.get(schluessel) or "").strip()
+            if not name:
+                continue
+            o = self.R.oberflaeche(name)
+            if o is None:
+                self.pruef(f"Oberfläche {gruppe}", GELB, f"{name} steht nicht in der Oberflächen-Tabelle (Werkstatt-Regeln).")
+                continue
+            flaeche = 0.0
+            for t in self.teile:
+                if t["l"] is None:
+                    continue
+                if gruppe == "Front" and t["gruppe"] == "Front":
+                    flaeche += t["m2"]
+                elif gruppe == "Korpus" and t["gruppe"] in ("Korpus", "Innenausbau", "Sockel") and \
+                        (t["material"] != mat_r or mat_r == mat_k):
+                    flaeche += t["m2"]
+            seiten = float(o[6] or 0)
+            if flaeche > 0 and seiten > 0:
+                for nr, menge in ((o[2], o[3]), (o[4], o[5])):
+                    if nr and float(menge or 0) > 0:
+                        if self.mat(nr) is None:
+                            self.pruef("Oberflächenmaterial", GELB, f"{nr} fehlt im Materialstamm (Oberflächen-Tabelle prüfen).")
+                        else:
+                            self.bedarf_plus(nr, flaeche * seiten * float(menge), f"Belag/Anstrich {gruppe}")
+            if flaeche > 0:
+                for code in str(o[1] or "").split(";"):
+                    if code.strip():
+                        self.ag_plus(code.strip(), gruppe)
+            schliff = o[7] if o[7] not in ("", "-", None) else ""
+            self.kennzahlen[f"Oberfläche {gruppe}"] = f"{name}{', Schliff ' + schliff if schliff else ''} ({flaeche:.2f} m²)".replace(".", ",")
+            if o[8] and flaeche > 0:
+                self.pruef(f"Oberfläche {gruppe}", GRUEN, o[8])
+
+    def _profil(self):
+        """Wie ProfilAnwenden(): Kantenprofil an allen Frontteilen vermerken."""
+        pr = (self.e.get("kantenprofil") or "").strip()
+        if not pr or pr.lower() == "gerade":
+            return
+        n = 0
+        for t in self.teile:
+            if t["gruppe"] == "Front" and t["l"] is not None:
+                t["bearbeitung"] = (t["bearbeitung"] + "; " if t["bearbeitung"] else "") + f"Kantenprofil {pr}"
+                n += 1
+        if n:
+            self.ag_plus("CNC-020" if self.R.r("CNC_JA") > 0 else "BE-010", "Profil Front")
+
+    def _arbeitsgaenge(self):
+        """Wie ArbeitsgaengeBilden(): automatische Arbeitsgänge aus Teilen, Kanten, Beschlägen."""
+        platte = any(t["l"] is not None for t in self.teile)
+        kante = any(t["kl1"] or t["kl2"] or t["kb1"] or t["kb2"] for t in self.teile)
+        besch = any(t["l"] is None and t["gruppe"] == "Beschlag" for t in self.teile)
+        vorher = dict(self.ag)
+        self.ag = {}
+        self.ag_plus("VOR-010", "Material")
+        if platte:
+            self.ag_plus("PL-010", "Platten")
+            self.ag_plus("PL-020", "Platten")
+        if kante:
+            self.ag_plus("KA-010", "Kanten")
+        for code, bereich in vorher.items():  # Oberfläche, Profil … in der Reihenfolge des Makros vorn
+            for b in bereich.split(", "):
+                self.ag_plus(code, b)
+        if self.R.r("CNC_JA") > 0:
+            self.ag_plus("CNC-010", "Bohrbild")
+            self.ag_plus("CNC-020", "Bohrbild")
+        else:
+            self.ag_plus("BE-010", "Bohren/Dübeln")
+        self.ag_plus("QM-020", "Bohrbild")
+        self.ag_plus("MO-010", "Korpus")
+        if besch:
+            self.ag_plus("MO-020", "Beschläge")
+        self.ag_plus("QM-010", "Maße")
+        self.ag_plus("QM-040", "Endkontrolle")
+        self.ag_plus("LOG-010", "Lieferung")
 
     # ---------------------------------------------------------- Stufe 2: Felder, Zonen, Schubkästen
     def _mat_oder_leer(self, nr):
@@ -702,19 +816,20 @@ class Rechner:
         bedarf = [] if ohne_bedarf else self.bedarf_final()
         ampel = max((p["status"] for p in self.pruefungen), default=GRUEN)
         return {"teile": self.teile, "pruefungen": self.pruefungen, "kennzahlen": self.kennzahlen, "bedarf": bedarf,
-                "varianten": self.varianten,
+                "varianten": self.varianten, "arbeitsgaenge": [[c, b] for c, b in self.ag.items()],
                 "ampel": ampel, "kosten": round(sum(x["kosten"] or 0 for x in bedarf), 2)}
 
     def bedarf_final(self):
         """Wie BedarfFinal(): Platten als ganze Platten (Streifenzuschnitt), sonst + Verschnitt; Stück aufrunden."""
         vs = self.r("VERSCHNITT") / 100
+        ganze = (self.e.get("plattenbedarf") or "ganze Platten").lower().startswith("ganze")
         liste, fehlt = [], []
         for nr, menge in self.bedarf.items():
             m = self.mat(nr)
             einheit = m.einheit if m else ""
             grund = self.bedarf_grund[nr]
             if "Fläche netto" in grund:
-                n_pl, fl, fb, nutz, std = (self.platten_zaehlen(nr) if ist_m2(einheit) else (0, 0, 0, 0, False))
+                n_pl, fl, fb, nutz, std = (self.platten_zaehlen(nr) if ist_m2(einheit) and ganze else (0, 0, 0, 0, False))
                 if n_pl > 0:
                     menge = n_pl * fl * fb / 1_000_000
                     grund = (f"{n_pl} ganze Platte(n) {zahl(fl)} x {zahl(fb)} mm, Ausnutzung {nutz:.0f} %"
@@ -731,7 +846,10 @@ class Rechner:
                           "einheit": einheit, "menge": menge, "grund": grund, "ek": ek,
                           "kosten": round(ek * menge, 2) if ek else None})
         kosten = sum(x["kosten"] or 0 for x in liste)
-        faktor = self.r("SCHNELL_FAKTOR")
+        try:
+            faktor = float(str(self.e.get("schnellfaktor") or "").replace(",", ".")) or self.r("SCHNELL_FAKTOR")
+        except ValueError:
+            faktor = self.r("SCHNELL_FAKTOR")
         self.kennzahlen["Materialkosten netto (EK)"] = round(kosten, 2)
         self.kennzahlen[f"Schnellpreis (Material x {zahl(faktor)}) – ohne Lohn"] = round(kosten * faktor, 0)
         if fehlt:

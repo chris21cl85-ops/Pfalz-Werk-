@@ -73,16 +73,17 @@ def test_arbeitsgaenge_aus_moebel(stamm, projekt, chef):  # noqa: F811
     with pytest.raises(dienst.ProduktionsFehler, match="erst"):
         dienst.aus_moebel(p, chef)
     moebel.in_stueckliste(p, chef)
-    assert dienst.aus_moebel(p, chef) == 11
+    assert dienst.aus_moebel(p, chef) == 12
     ags = list(p.arbeitsgaenge.order_by("pk"))
-    assert [a.code for a in ags] == ["VOR-010", "PL-010", "PL-020", "QM-010", "KA-010", "BE-010", "QM-020", "MO-010",
-                                     "MO-020", "QM-040", "LOG-010"]
+    # wie Excel (Regel CNC_JA = 1): Reihenfolge wie im Blatt „Produktion Arbeitsgänge“ der Kommode Flur
+    assert [a.code for a in ags] == ["VOR-010", "PL-010", "PL-020", "QM-010", "KA-010", "CNC-010", "CNC-020", "QM-020",
+                                     "MO-010", "MO-020", "QM-040", "LOG-010"]
     assert ags[0].agid == "P-2026-001-M01-AG01" and ags[3].name == "Maße / Winkel prüfen"
     assert ags[1].vorgaenger == ags[0] and ags[0].vorgaenger is None and ags[2].reihenfolge == 30
     assert ags[4].bereich == "Spüle links (M01) - Kanten"
     p.refresh_from_db()
     assert p.status == MoebelPosition.Status.ARBEITSGAENGE
-    assert dienst.aus_moebel(p, chef) == 11 and Arbeitsgang.objects.count() == 11  # geplante werden ersetzt
+    assert dienst.aus_moebel(p, chef) == 12 and Arbeitsgang.objects.count() == 12  # geplante werden ersetzt
     erster = p.arbeitsgaenge.order_by("pk").first()
     dienst.starten(erster, chef)
     with pytest.raises(dienst.ProduktionsFehler, match="schon begonnen"):
@@ -264,7 +265,7 @@ def test_moebel_knopf_arbeitsgaenge(stamm, projekt, chef, chef_client):  # noqa:
     moebel.in_stueckliste(p, chef)
     assert "M01" in chef_client.get(reverse("produktion:projekt", args=[projekt.pk])).content.decode()  # Hinweis
     chef_client.post(p.get_absolute_url(), {"aktion": "arbeitsgaenge"})
-    assert p.arbeitsgaenge.count() == 11
+    assert p.arbeitsgaenge.count() == 12
     assert "→ in der Produktion einplanen" in chef_client.get(p.get_absolute_url()).content.decode()
 
 

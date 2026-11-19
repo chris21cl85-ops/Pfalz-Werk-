@@ -12,6 +12,8 @@
 </div>
 
 <h2 class="abschnitt">1 · Stückliste (Materialbedarf)</h2>
+{% if moebel_veraltet %}<div class="meldung warning">⚠ Nach der Übernahme geändert – Stückliste erneut übernehmen:
+  {% for m in moebel_veraltet %}<a href="{{ m.get_absolute_url }}">{{ m.positions_id }} {{ m.bezeichnung }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
 {% if darf_moebel %}<div class="leiste"><a class="knopf zweit" href="{% url 'moebel:liste' %}?projekt={{ p.pk }}">📐 Möbelrechner ({{ moebel|length }} Möbel)</a>
   <a class="knopf zweit" href="{% url 'moebel:neu' %}?projekt={{ p.pk }}">+ Möbel rechnen</a></div>{% endif %}
 <div class="tabelle-rahmen"><table>

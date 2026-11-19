@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.1 (Etappe 5, Paket 5a).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.2 (Etappe 5, Paket 5b).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -640,10 +640,32 @@ Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B), im NEUE
 2. Unterschrank 1200 breit, 2 Felder, Feldbreiten „400;Rest“, Feld 1 Schubkasten unten + Tür oben, Feld 2 Fach offen.
 3. Speichern → „Etiketten (PDF)“.
 
+### Paket 5b: Möbelrechner Oberfläche, Profil, Änderungen (Stufe 3) – GEBAUT 19.11.2026
+Vorlage: Oberflaechen, ProfilAnwenden, ArbeitsgaengeBilden, BedarfFinal (Plattenbedarf), AenderungPruefen, RegelnStufe3.
+- Karte „5 · Oberfläche & Kalkulation“: Oberfläche Korpus / Front (Tabelle aus den Werkstatt-Regeln, 8 Startwerte wie
+  Excel: beschichtet, furniert geölt/lackiert, lackiert deckend, HPL, Massivholz geölt/lackiert, gebeizt + lackiert),
+  Kantenprofil Front, Plattenbedarf (ganze Platten / Verschnittfaktor), eigener Schnellpreis-Faktor.
+- Oberfläche: Fläche (Korpus inkl. Innenausbau/Sockel, ohne fremde Rückwand; bzw. Front) × Seiten × Menge je m² →
+  Materialbedarf; fehlt das Material im Stamm → gelber Hinweis. AG-Codes der Oberfläche (Schleifen, Ölen, Trocknen …)
+  gehen in die Arbeitsgänge. Kantenprofil wird an allen Frontteilen vermerkt (+ CNC-020 bzw. BE-010).
+- Arbeitsgänge kommen jetzt direkt aus dem Rechner. Neue Regeln **CNC_JA = 1** (wie Excel: Bohren/Fräsen auf der CNC →
+  CNC-010/CNC-020 statt BE-010; 0 = von Hand) und **WARTE_STD = 12** (Wartezeit für Trocknen/Aushärten).
+  Damit 12 statt 11 Arbeitsgänge beim Standard-Unterschrank – gleiche Reihenfolge wie in Chris' Excel.
+- Änderungsverfolgung: jede Änderung „Feld: alt -> neu“ (+ Materialkosten) an der Position, neueste zuerst.
+  War die Position schon in der Stückliste → Warnung auf Möbel- und Kalkulationsseite, bis neu übernommen.
+- Import Oberflächen-Tabelle (Möbel-Regeln AW:BE).
+- 446 automatische Tests, alle grün.
+
+### So testest du es (Etappe 5, Paket 5b)
+Fassung „5.2“ herunterladen (ANLEITUNG Teil B).
+1. Möbel bearbeiten → Oberfläche Front „furniert, geölt“ → Berechnen → Bedarf Öl/Furnier, Kennzahl Oberfläche.
+2. Speichern einer schon übernommenen Position → Warnung „nach der Übernahme geändert“, Änderungsliste unten.
+3. Werkstatt-Regeln → Tabelle Oberflächen ansehen; CNC_JA auf 0 → Arbeitsgänge mit „Fräsen / Bohren / Dübeln“.
+
 ## Nächstes Paket
-**5b Möbelrechner Stufe 3**: Oberflächen (Blatt Möbel-Regeln AW:BE), Kantenprofil, Änderungsverfolgung
-(AenderungPruefen). Danach 5c, 5d, dann Kapazitätsplanung, Inventur, Handy-Ansichten, Installer.
-Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**5c Möbelrechner Stufe 4/5**: Massivholz (Zugaben, Quellmaß, m³), Rahmen + Füllung, Modulbau (Bauweise M),
+Formteile (Rundungen), Bauteilzerlegung. Danach 5d CNC-Export, dann Kapazitätsplanung, Inventur, Handy-Ansichten,
+Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

@@ -18,7 +18,8 @@ class MoebelRegelImporter(Importer):
     reihenfolge = 70
     spalten = {"A": "key", "B": "wert", "O": "sys", "P": "s1", "Q": "s2", "R": "s3", "S": "s4", "T": "s5", "U": "s6",
                "V": "s7", "W": "s8", "Y": "band_h", "Z": "band_n", "AB": "fb_s", "AC": "fb_max", "AE": "v_art",
-               "AF": "v_nr", "AG": "v_abst", "AP": "nl"}
+               "AF": "v_nr", "AG": "v_abst", "AP": "nl", "AW": "of", "AX": "of_ag", "AY": "of_m1",
+               "AZ": "of_q1", "BA": "of_m2", "BB": "of_q2", "BC": "of_seiten", "BD": "of_schliff", "BE": "of_hinweis"}
     startzeile = 4
     endzeile = 120
 
@@ -26,7 +27,7 @@ class MoebelRegelImporter(Importer):
         self.rw = Regelwerk.laden()
         self.gesperrt = self.rw.im_programm_geaendert
         self.neu = {"werte": {}, "systeme": {}, "baender": [], "fachboden": [], "verbinder": {}, "standardmaterial": {},
-                    "nennlaengen": []}
+                    "nennlaengen": [], "oberflaechen": []}
 
     def zeile_uebernehmen(self, z):
         key = als_text(z["key"])
@@ -40,6 +41,11 @@ class MoebelRegelImporter(Importer):
             self.neu["baender"].append([float(als_zahl(z["band_h"])), int(als_zahl(z["band_n"]))])
         if als_zahl(z["fb_s"]) and als_zahl(z["fb_max"]):
             self.neu["fachboden"].append([float(als_zahl(z["fb_s"])), float(als_zahl(z["fb_max"]))])
+        if als_text(z["of"]) and als_text(z["of"]) != "Oberfläche":
+            zahlwert = lambda w: float(als_zahl(w) or 0) if als_zahl(w) is not False else 0  # noqa: E731
+            self.neu["oberflaechen"].append([als_text(z["of"]), als_text(z["of_ag"]), als_text(z["of_m1"]), zahlwert(z["of_q1"]),
+                                             als_text(z["of_m2"]), zahlwert(z["of_q2"]), zahlwert(z["of_seiten"]),
+                                             als_text(z["of_schliff"]), als_text(z["of_hinweis"])])
         nl = als_zahl(z["nl"])
         if nl and nl is not False and nl > 0:
             self.neu["nennlaengen"].append(float(nl))

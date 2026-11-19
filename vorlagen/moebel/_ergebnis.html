@@ -56,7 +56,7 @@
   {% for v in erg.varianten %}<tr><td class="nowrap">Feld {{ v.feld }}<div class="hilfe">{{ v.verfuegbar|floatformat:"-1" }} mm</div></td>
     {% for r in v.regeln %}<td {% if r.gewaehlt %}style="font-weight:700;background:rgba(95,211,160,.15)"{% endif %}>{{ r.text }}</td>{% endfor %}</tr>{% endfor %}
 </table></div>
-<p class="hilfe">Feste Fronthöhen bleiben fest. Andere Regel wählen = Karte 5 „Teilungsregel“, dann neu berechnen.</p>
+<p class="hilfe">Feste Fronthöhen bleiben fest. Andere Regel wählen = Karte 6 „Teilungsregel“, dann neu berechnen.</p>
 {% endif %}
 {% if erg.kennzahlen %}
 <h3>Kennzahlen</h3>

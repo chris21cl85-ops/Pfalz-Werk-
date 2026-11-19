@@ -14,6 +14,7 @@
   {% if p.status != "Gespeichert" %}<form method="post" style="display:contents" onsubmit="return confirm('Arbeitsgänge für {{ p.positions_id }} in der Produktion anlegen (Status Geplant)?{% if arbeitsgaenge %} Noch geplante Arbeitsgänge dieser Position werden ersetzt.{% endif %}')">{% csrf_token %}
     <button class="knopf zweit" type="submit" name="aktion" value="arbeitsgaenge">Arbeitsgänge übernehmen</button></form>{% endif %}
 </div>
+{% if p.stueckliste_veraltet %}<div class="meldung warning">⚠ Diese Position wurde nach der Übernahme in die Stückliste geändert. Materialbedarf bitte mit „In Stückliste übernehmen“ erneut übernehmen{% if arbeitsgaenge %} und die Arbeitsgänge prüfen{% endif %}.</div>{% endif %}
 <div class="karte">
   <h3 style="margin-top:0">Eingaben</h3>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 18px">
@@ -30,6 +31,9 @@
     {% if e.felder and e.felder > 1 or e.zonen %}<div><small class="grau">Aufteilung</small><div>{{ e.felder|default:1 }} Feld{{ e.felder|default:1|pluralize:"er" }}{% if e.feldbreiten %} ({{ e.feldbreiten }}){% endif %} · {{ e.teilungsregel }}{% if e.zwischenboeden == "Nein" %} · ohne Zwischenböden{% endif %}</div></div>
     {% for z in e.zonen %}<div><small class="grau">Feld {{ z.feld }} · Zone {{ z.zone }}</small><div>{{ z.art }}{% if z.hoehe %} · {{ z.hoehe }} mm{% endif %}{% if z.fachboeden %} · {{ z.fachboeden }} Fachb.{% endif %}</div></div>{% endfor %}
     {% if "Schubkasten" in e.zonen|stringformat:"s" %}<div><small class="grau">Schubkästen</small><div>{{ e.kastensystem }} · {{ e.kastenverbindung }}</div></div>{% endif %}{% endif %}
+    {% if e.oberflaeche_korpus or e.oberflaeche_front %}<div><small class="grau">Oberfläche Korpus / Front</small><div>{{ e.oberflaeche_korpus|default:"–" }} / {{ e.oberflaeche_front|default:"–" }}</div></div>{% endif %}
+    {% if e.kantenprofil and e.kantenprofil != "gerade" %}<div><small class="grau">Kantenprofil Front</small><div>{{ e.kantenprofil }}</div></div>{% endif %}
+    {% if e.plattenbedarf == "Verschnittfaktor" %}<div><small class="grau">Plattenbedarf</small><div>Verschnittfaktor</div></div>{% endif %}
     {% for text, wert in abweichungen %}<div><small class="grau">Abweichung</small><div>{{ text }}: {{ wert }}</div></div>{% endfor %}
   </div>
 </div>
@@ -44,4 +48,8 @@
   <p class="hilfe"><a href="{% url 'produktion:projekt' p.projekt.pk %}">→ in der Produktion einplanen</a></p></div>
 {% endif %}
 {% include "moebel/_ergebnis.html" %}
+{% if p.aenderungen %}<h3>Änderungen (neueste zuerst)</h3>
+<div class="tabelle-rahmen"><table><tr><th>Wann</th><th>Version</th><th>Was</th></tr>
+  {% for a in p.aenderungen %}<tr><td class="nowrap">{{ a.zeit }}<div class="hilfe">{{ a.von }}</div></td><td>{{ a.version }}</td><td>{{ a.text }}</td></tr>{% endfor %}
+</table></div>{% endif %}
 {% endblock %}

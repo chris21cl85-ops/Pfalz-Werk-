@@ -39,6 +39,38 @@ def naechste_pos(projekt) -> str:
     return f"M{hoechste + 1:02d}"
 
 
+BESCHRIFTUNG = {
+    "bezeichnung": "Bezeichnung", "typ": "Typ", "anzahl": "Anzahl", "breite": "Breite", "hoehe": "Höhe", "tiefe": "Tiefe",
+    "bauweise": "Bauweise", "abschluss": "Abschluss", "mat_korpus": "Korpusmaterial", "kante_korpus": "Kante Korpus",
+    "mat_front": "Frontmaterial", "kante_front": "Kante Front", "rueckwand_art": "Rückwand", "mat_rueckwand": "Rückwandmaterial",
+    "sockel": "Sockel", "sockel_h": "Sockelhöhe", "tueren": "Türen", "tuerart": "Türart", "fachboeden": "Fachböden",
+    "verbindung": "Verbindung", "beschlagsystem": "Beschlagsystem", "raumhoehe": "Raumhöhe", "felder": "Felder",
+    "feldbreiten": "Feldbreiten", "teilungsregel": "Teilungsregel", "zwischenboeden": "Zwischenböden",
+    "kastensystem": "Schubkastensystem", "kastenverbindung": "Kastenverbindung", "zonen": "Zonen",
+    "oberflaeche_korpus": "Oberfläche Korpus", "oberflaeche_front": "Oberfläche Front", "kantenprofil": "Kantenprofil",
+    "plattenbedarf": "Plattenbedarf", "schnellfaktor": "Schnellpreis-Faktor", "abweichungen": "Abweichende Regeln",
+}
+
+
+def _wert(k, v):
+    if k == "zonen":
+        return ", ".join(f"F{z.get('feld')}Z{z.get('zone')} {z.get('art')}" + (f" {z.get('hoehe')}" if z.get("hoehe") else "")
+                         for z in v or []) or "–"
+    if isinstance(v, dict):
+        return ", ".join(f"{a}={b}" for a, b in v.items()) or "–"
+    return "–" if v in (None, "") else str(v)
+
+
+def aenderungstext(alt: dict, neu: dict) -> str:
+    """Wie AenderungPruefen(): „Feld: alt -> neu“ für jede geänderte Eingabe."""
+    teile = []
+    for k in list(BESCHRIFTUNG) + [k for k in {**alt, **neu} if k not in BESCHRIFTUNG]:
+        a, n = _wert(k, alt.get(k)), _wert(k, neu.get(k))
+        if a != n and not (k in ("zonen", "abweichungen") and a == n == "–"):
+            teile.append(f"{BESCHRIFTUNG.get(k, k)}: {a} -> {n}")
+    return "; ".join(teile)
+
+
 def speichern(*, projekt, eingaben, benutzer, position=None) -> MoebelPosition:
     ergebnis = rechnen(eingaben)
     bez = (eingaben.get("bezeichnung") or eingaben.get("typ") or "Möbel").strip()
@@ -48,6 +80,15 @@ def speichern(*, projekt, eingaben, benutzer, position=None) -> MoebelPosition:
             aktion = "moebel_angelegt"
         else:
             if position.eingaben != eingaben:
+                text = aenderungstext(position.eingaben, eingaben)
+                alt_kosten = (position.ergebnis or {}).get("kosten")
+                if alt_kosten is not None and abs(alt_kosten - ergebnis["kosten"]) >= 0.01:
+                    text += f"; Materialkosten {alt_kosten:.2f} -> {ergebnis['kosten']:.2f}".replace(".", ",")
+                position.aenderungen = [{"zeit": timezone.localtime().strftime("%d.%m.%Y %H:%M"),
+                                         "von": benutzer.get_username() if benutzer else "", "version": position.version + 1,
+                                         "text": text[:2000]}] + list(position.aenderungen or [])
+                if position.status != MoebelPosition.Status.ENTWURF:
+                    position.stueckliste_veraltet = True  # war schon in der Stückliste → neu übernehmen
                 position.version += 1
                 position.status = MoebelPosition.Status.ENTWURF  # Stückliste muss neu übernommen werden
             aktion = "moebel_geaendert"
@@ -97,7 +138,8 @@ def in_stueckliste(position, benutzer) -> int:
             n += 1
         position.ergebnis = ergebnis
         position.status = MoebelPosition.Status.STUECKLISTE
-        position.save(update_fields=["ergebnis", "status", "gespeichert_am"])
+        position.stueckliste_veraltet = False
+        position.save(update_fields=["ergebnis", "status", "stueckliste_veraltet", "gespeichert_am"])
     protokolliere("moebel_in_stueckliste", position.positions_id, benutzer=benutzer,
                   details=f"{n} Materialpositionen (Status Geplant) in Projekt {position.projekt.projektnr}")
     return n

@@ -367,3 +367,71 @@ def test_import_nennlaengen_und_kastenmaterial(tmp_path):
     rw = Regelwerk.laden()
     assert rw.nennlaengen == [350, 500] and rw.als_regeln().material["kasten"] == "MPX-BI-12"
     assert rw.als_regeln().material["kastenboden"] == "HDF-08"
+
+
+# ------------------------------------------------------------------ Stufe 3: Oberfläche, Profil, Änderungen
+@pytest.fixture
+def oel(stamm):
+    Material.objects.create(materialnr="OF-OSMO-HWO", bezeichnung="Hartwachsöl", einheit="l", ek_netto=Decimal("40"))
+
+
+def test_oberflaeche_bedarf_und_arbeitsgaenge(oel):
+    erg = dienst.rechnen({**UNTERSCHRANK, "oberflaeche_front": "furniert, geölt"})
+    tuer = teil(erg, "Tür")
+    oel_bedarf = next(b for b in erg["bedarf"] if b["material"] == "OF-OSMO-HWO")
+    front_m2 = sum(t["m2"] for t in erg["teile"] if t["gruppe"] == "Front")
+    assert oel_bedarf["menge"] == pytest.approx(round(front_m2 * 2 * 0.08, 3)) and "Belag/Anstrich Front" in oel_bedarf["grund"]
+    assert any("FU-EI-06 fehlt" in p["hinweis"] for p in erg["pruefungen"])  # Furnier nicht im Stamm → gelb
+    codes = dict(erg["arbeitsgaenge"])
+    assert codes["OF-010"] == "Front" and codes["WZ-020"] == "Front" and "CNC-010" in codes
+    assert "Schliff 120 / 180" in erg["kennzahlen"]["Oberfläche Front"] and tuer is not None
+    unbekannt = dienst.rechnen({**UNTERSCHRANK, "oberflaeche_korpus": "Gold"})
+    assert any("nicht in der Oberflächen-Tabelle" in p["hinweis"] for p in unbekannt["pruefungen"])
+
+
+def test_profil_plattenbedarf_faktor(stamm):
+    erg = dienst.rechnen({**UNTERSCHRANK, "kantenprofil": "Radius 2 mm", "plattenbedarf": "Verschnittfaktor",
+                          "schnellfaktor": 2.5})
+    assert "Kantenprofil Radius 2 mm" in teil(erg, "Tür")["bearbeitung"]
+    assert "Kantenprofil" not in teil(erg, "Seite")["bearbeitung"]
+    platte = next(b for b in erg["bedarf"] if b["material"] == "PL-WEI-P2-19")
+    assert "Verschnitt" in platte["grund"] and "ganze Platte" not in platte["grund"]
+    assert "Schnellpreis (Material x 2,5) – ohne Lohn" in erg["kennzahlen"]
+
+
+def test_cnc_regel(stamm):
+    rw = Regelwerk.laden()
+    rw.werte = {**rw.werte, "CNC_JA": 0}
+    rw.save()
+    codes = dict(dienst.rechnen(UNTERSCHRANK)["arbeitsgaenge"])
+    assert "BE-010" in codes and "CNC-010" not in codes
+
+
+def test_aenderungsverfolgung(stamm, projekt, chef, chef_client):
+    p = dienst.speichern(projekt=projekt, eingaben=UNTERSCHRANK, benutzer=chef)
+    dienst.in_stueckliste(p, chef)
+    dienst.speichern(projekt=projekt, eingaben={**UNTERSCHRANK, "breite": 450, "tueren": "1 Tür"}, benutzer=chef, position=p)
+    p.refresh_from_db()
+    assert p.stueckliste_veraltet and p.version == 2
+    text = p.aenderungen[0]["text"]
+    assert "Breite: 600 -> 450" in text and "Türen: automatisch -> 1 Tür" in text and "Materialkosten" in text
+    seite = chef_client.get(reverse("kalkulation:projekt", args=[projekt.pk])).content.decode()
+    assert "Nach der Übernahme geändert" in seite
+    assert "Breite: 600 -&gt; 450" in chef_client.get(p.get_absolute_url()).content.decode()
+    dienst.in_stueckliste(p, chef)
+    p.refresh_from_db()
+    assert not p.stueckliste_veraltet
+
+
+def test_import_oberflaechen(tmp_path):
+    from openpyxl.utils import column_index_from_string as c
+    mappe = Workbook()
+    ws = mappe.active
+    ws.title = "Möbel-Regeln"
+    ws.cell(row=3, column=c("AW"), value="Oberfläche")
+    for spalte, wert in {"AW": "Wachs", "AX": "SL-020;OF-010", "AY": "OF-WACHS", "AZ": 0.05, "BC": 1, "BD": "180"}.items():
+        ws.cell(row=4, column=c(spalte), value=wert)
+    pfad = tmp_path / "pw.xlsx"
+    mappe.save(pfad)
+    ausfuehren(pfad, probelauf=False)
+    assert Regelwerk.laden().oberflaechen == [["Wachs", "SL-020;OF-010", "OF-WACHS", 0.05, "", 0, 1, "180", ""]]
