@@ -1,0 +1,97 @@
+# Baut die Fassung zum Installieren auf einem Windows-Rechner von GitHub:
+# eingebettetes Python + Pakete + Programm, Probestart, ZIP und Setup-Programm.
+# Ergebnis: unter „Releases“ (rechte Seite der Projektseite) als PFALZ-WERK-Setup-<Fassung>.exe und als ZIP.
+name: Fassung bauen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tests-windows:
+    name: Tests unter Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -r requirements.txt tzdata
+      - run: python -m pytest -q -p no:cacheprovider
+        env:
+          PYTHONUTF8: "1"
+
+  fassung:
+    name: Fassung bauen
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Eingebettetes Python holen
+        shell: pwsh
+        run: |
+          $v = python -c "import platform; print(platform.python_version())"
+          Write-Host "Python $v"
+          Invoke-WebRequest "https://www.python.org/ftp/python/$v/python-$v-embed-amd64.zip" -OutFile embed.zip
+
+      - name: Fassung zusammenbauen
+        run: python verteilung/fassung_bauen.py --embed embed.zip
+
+      - name: Probestart (ohne installiertes Python)
+        shell: pwsh
+        env:
+          PFALZWERK_LOKAL: ${{ runner.temp }}\daten
+          PYTHONUTF8: "1"
+        run: |
+          $py = "dist\PFALZ-WERK\python\python.exe"
+          $m = "dist\PFALZ-WERK\manage.py"
+          & $py -c "import django, openpyxl, reportlab, PIL, sqlite3; print('Pakete ok', django.get_version())"
+          if ($LASTEXITCODE) { exit 1 }
+          & $py $m check
+          if ($LASTEXITCODE) { exit 1 }
+          & $py $m migrate --noinput -v 0
+          if ($LASTEXITCODE) { exit 1 }
+          $server = Start-Process -FilePath $py -ArgumentList "$m runserver 127.0.0.1:8000 --noreload --insecure" -PassThru -NoNewWindow
+          Start-Sleep -Seconds 8
+          $antwort = Invoke-WebRequest "http://127.0.0.1:8000/anmelden/" -UseBasicParsing
+          Stop-Process -Id $server.Id -Force
+          if ($antwort.StatusCode -ne 200 -or $antwort.Content -notmatch "PFALZ-WERK") { Write-Error "Anmeldeseite fehlt"; exit 1 }
+          Write-Host "Probestart ok: Anmeldeseite geladen"
+
+      - name: Setup-Programm bauen (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          $nr = (Get-Content dist\PFALZ-WERK\FASSUNG.txt).Split(" ")[-1].Trim()
+          & $iscc "/DFassung=$nr" verteilung\PFALZ-WERK.iss
+          if ($LASTEXITCODE) { exit 1 }
+          "NR=$nr" | Out-File -Append $env:GITHUB_ENV
+
+      - name: Als Release veröffentlichen
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "fassung-$env:NR"
+          $dateien = @("dist\PFALZ-WERK-Setup-$env:NR.exe", "dist\PFALZ-WERK-$env:NR-Windows.zip")
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE) {
+            gh release create $tag @dateien --title "PFALZ-WERK Fassung $env:NR" --notes "Setup-Programm herunterladen und doppelklicken. Kein Python nötig. Daten bleiben bei Updates erhalten (Ordner Dokumente\PFALZ-WERK-Daten)."
+          } else {
+            gh release upload $tag @dateien --clobber
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PFALZ-WERK-Windows
+          path: |
+            dist/*.exe
+            dist/*.zip

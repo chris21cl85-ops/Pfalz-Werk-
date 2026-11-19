@@ -5,7 +5,6 @@ import subprocess
 import sys
 import threading
 import time
-import venv
 import webbrowser
 from pathlib import Path
 
@@ -19,9 +18,17 @@ def python_der_umgebung() -> Path:
     return UMGEBUNG / unter
 
 
+def eingebaut() -> bool:
+    """Installierte Fassung: Python liegt im Programmordner (python/), Pakete sind schon dabei."""
+    return (ORDNER / "python" / "python.exe").exists()
+
+
 def vorbereiten():
+    if eingebaut():
+        return Path(sys.executable)
     py = python_der_umgebung()
     if not py.exists():
+        import venv
         print("Erster Start: richte Programmumgebung ein (einmalig, ca. 1 Minute) ...")
         venv.create(UMGEBUNG, with_pip=True)
     marke = UMGEBUNG / "pakete.txt"

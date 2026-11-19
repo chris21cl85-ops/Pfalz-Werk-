@@ -4,6 +4,34 @@ Diese Anleitung setzt kein Vorwissen voraus. Jeder Schritt sagt, **wo** du klick
 
 ---
 
+## Neu ab Fassung 5.8: Setup-Programm (empfohlen – ohne Python, ohne Entpacken)
+
+Damit brauchst du die Teile A und B nicht mehr. Das Setup bringt alles mit, was das Programm braucht.
+
+1. Öffne **https://github.com/chris21cl85-ops/Pfalz-Werk-** (vorher bei GitHub angemeldet sein).
+2. Rechts neben der Dateiliste steht der Abschnitt **„Releases“**. Klicke darunter auf die neueste
+   **„PFALZ-WERK Fassung …“** (grünes Schild „Latest“).
+3. Unter **„Assets“** auf **`PFALZ-WERK-Setup-….exe`** klicken. Die Datei landet in **Downloads**.
+4. **Doppelklick** auf die Datei.
+5. Kommt ein blaues Fenster „Der Computer wurde durch Windows geschützt“:
+   **„Weitere Informationen“** → **„Trotzdem ausführen“**.
+   (Das kommt, weil das Programm nicht bei Microsoft gekauft/signiert ist – es ist trotzdem deins.)
+6. Im Setup: **„Weiter“** → Haken bei **„Verknüpfung auf dem Desktop anlegen“** lassen → **„Weiter“** →
+   **„Installieren“** → **„Fertigstellen“**. Administratorrechte sind nicht nötig.
+7. PFALZ-WERK startet sofort – weiter bei **Teil C, Schritt 3**.
+   Künftig startest du es mit dem Symbol **„PFALZ-WERK“** auf dem Desktop oder im Startmenü.
+
+**Bei einer neuen Fassung:** Neues Setup genauso herunterladen und installieren – es ersetzt das alte Programm.
+Deine Daten (Ordner **Dokumente → PFALZ-WERK-Daten**) bleiben erhalten, auch beim Deinstallieren.
+
+**Ohne Setup (Notlösung):** Unter „Assets“ gibt es auch **`PFALZ-WERK-…-Windows.zip`**. Rechtsklick →
+„Alle extrahieren …“ → im Ordner **PFALZ-WERK** Doppelklick auf **`PFALZ-WERK starten.bat`**. Auch dafür
+braucht es kein Python.
+
+> Die Teile A und B unten gelten nur noch, falls du das Programm wie bisher als Quelltext-ZIP startest.
+
+---
+
 ## A. Einmalig: Python installieren (ca. 5 Minuten)
 
 PFALZ-WERK braucht das Programm „Python“. Das musst du nur ein einziges Mal installieren.

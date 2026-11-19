@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.7 (Etappe 5, Paket 8 Handy).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.8 (Etappe 5, Paket 9 Installation).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -757,9 +757,26 @@ OneDrive-Abgleich: das Handy öffnet PFALZ-WERK direkt im Betriebs-WLAN. Neue Ap
   (Bestellvorschläge bleiben im Büro), Team-Liste.
 - 473 automatische Tests, alle grün.
 
+### Paket 9: Fassung zum Installieren – GEBAUT 19.11.2026
+Vorlage: `PW_Verkaufsversion.bas` (saubere Kopie ohne Bewegungsdaten). Im Programm ist jede Neuinstallation von sich
+aus „sauber“: Programm und Daten sind getrennt, ein neuer Rechner startet mit leerem Datenordner.
+- **Setup-Programm ohne Python** (FEHLER Nr. 2): `verteilung/fassung_bauen.py` baut den Programmordner mit
+  eingebettetem Windows-Python (python.org „embeddable“), allen Paketen (Django, openpyxl, reportlab, tzdata) und
+  der Startdatei `PFALZ-WERK starten.bat` → `python\python.exe start.py`. `start.py` erkennt das eingebettete Python
+  und überspringt Umgebung/pip. `verteilung/PFALZ-WERK.iss` (Inno Setup): installiert ohne Administratorrechte nach
+  `%LOCALAPPDATA%\Programs\PFALZ-WERK`, Startmenü + Desktop-Symbol, Deinstallieren über Windows; Daten bleiben im
+  Datenordner (Dokumente → PFALZ-WERK-Daten) und werden nie angefasst.
+- **Automatischer Bau auf GitHub** (`.github/workflows/fassung.yml`, Windows-Rechner von GitHub, bei jedem Hochladen):
+  1. alle Tests unter Windows, 2. Fassung zusammenbauen, 3. Probestart mit dem eingebetteten Python (Pakete laden,
+  `check`, Datenbank anlegen, Server starten, Anmeldeseite abrufen), 4. Setup bauen, 5. als Release
+  „PFALZ-WERK Fassung x.y“ veröffentlichen (Setup .exe + ZIP).
+- Anleitung für Chris: ANLEITUNG.md, neuer Abschnitt „Setup-Programm“ (Teile A/B nur noch für die Quelltext-Variante).
+- Hier im Container nicht prüfbar: python.org ist gesperrt, und es gibt kein Windows. Der Bau läuft deshalb auf GitHub.
+- Tests 9 neue (`tests/test_verteilung.py`).
+
 ## Nächstes Paket
-**9 Fassung zum Installieren** (FEHLER Nr. 2: Start ohne installiertes Python). Vorlage für die Auslieferung:
-PW_Verkaufsversion.bas (Drive 1MbL_6-0tYRQx5-IxE1G9rMVag5IIRc3D). Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+Etappe 5 ist damit fertig gebaut. Als Nächstes steht Chris' **vollständiger Test** an (Pakete 5a–9 nach den
+Testschritten oben).
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
