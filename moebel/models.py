@@ -30,6 +30,10 @@ def standard_material():
     return dict(rechner.STANDARD_MATERIAL)
 
 
+def standard_nennlaengen():
+    return list(rechner.STANDARD_NENNLAENGEN)
+
+
 class Regelwerk(models.Model):
     """Werkstatt-Standards – genau ein Datensatz. Startwerte wie im Makro, per Excel-Import oder Seite änderbar."""
 
@@ -39,6 +43,7 @@ class Regelwerk(models.Model):
     verbinder = models.JSONField(default=standard_verbinder)
     systeme = models.JSONField(default=standard_systeme)
     standardmaterial = models.JSONField(default=standard_material)
+    nennlaengen = models.JSONField(default=standard_nennlaengen)
     im_programm_geaendert = models.BooleanField(default=False)
     geaendert_am = models.DateTimeField(auto_now=True)
 
@@ -60,7 +65,9 @@ class Regelwerk(models.Model):
         werte.update({k: v for k, v in self.werte.items() if v not in (None, "")})
         return rechner.Regeln(werte=werte, baender=[tuple(x) for x in self.baender],
                               fachboden=[tuple(x) for x in self.fachboden],
-                              verbinder={k: tuple(v) for k, v in self.verbinder.items()}, systeme=dict(self.systeme))
+                              verbinder={k: tuple(v) for k, v in self.verbinder.items()}, systeme=dict(self.systeme),
+                              nennlaengen=[float(x) for x in (self.nennlaengen or rechner.STANDARD_NENNLAENGEN)],
+                              material={**rechner.STANDARD_MATERIAL, **(self.standardmaterial or {})})
 
 
 class MoebelPosition(models.Model):

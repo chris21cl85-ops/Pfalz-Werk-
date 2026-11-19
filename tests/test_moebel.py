@@ -258,3 +258,112 @@ def test_import_regelwert_null(tmp_path):
     mappe.save(pfad)
     ausfuehren(pfad, probelauf=False)
     assert Regelwerk.laden().werte["KIPP_LUFT"] == 0
+
+
+# ------------------------------------------------------------------ Stufe 2: Aufteilung
+@pytest.fixture
+def kastenholz(stamm):
+    Material.objects.create(materialnr="MPX-BI-15", bezeichnung="Multiplex Birke 15", einheit="m²",
+                            staerke_mm=Decimal("15"), ek_netto=Decimal("30"), format="2500 x 1250 mm")
+    Material.objects.create(materialnr="BL-FUE-400", bezeichnung="Führung NL 400 (Paar)", einheit="Paar",
+                            ek_netto=Decimal("18"))
+
+
+KOMMODE = {**UNTERSCHRANK, "typ": "Kommode", "bezeichnung": "Kommode Flur", "breite": 1000, "hoehe": 900, "tiefe": 450,
+           "abschluss": "Deckel", "sockel": "Sockelkasten", "fachboeden": 0, "teilungsregel": "Goldener Schnitt",
+           "zonen": [{"feld": 1, "zone": i, "art": "Schubkasten"} for i in (1, 2, 3)]}
+
+
+def test_teilen_regeln():
+    assert rechner.teilen(791, [0, 0, 0], "gleich") == ([265, 263, 263], "")
+    assert rechner.teilen(791, [0, 0, 0], "Goldener Schnitt")[0] == [396, 244, 151]
+    assert rechner.teilen(791, [0, 0, 0], "Fibonacci")[0] == [397, 263, 131]
+    assert rechner.teilen(791, [0, 0, 0], "Raster 32")[0] == [279, 256, 256]
+    assert rechner.teilen(791, [0, 200, 0], "gleich")[0] == [296, 200, 295]
+    assert rechner.teilen(500, [300, 300], "gleich")[1].startswith("Feste Maße ergeben 600")
+    assert "Kein Platz" in rechner.teilen(500, [300, 300, 0], "gleich")[1]
+
+
+def test_kommode_schubkaesten(kastenholz):
+    erg = dienst.rechnen(KOMMODE)
+    fronten = [t for t in erg["teile"] if t["teil"] == "Schubkastenfront"]
+    assert [(t["l"], t["b"]) for t in fronten] == [(997, 396), (997, 244), (997, 151)]
+    seite = next(t for t in erg["teile"] if t["teil"] == "Kastenseite")
+    boden = next(t for t in erg["teile"] if t["teil"] == "Kastenboden")
+    assert (seite["l"], seite["b"], seite["material"]) == (390, 356, "MPX-BI-15")  # NL 400 − 10, Front − 40
+    assert (boden["l"], boden["b"]) == (382, 905)
+    assert teil(erg, "Zwischenboden")["menge"] == 2
+    fuehrung = [t for t in erg["teile"] if t["teil"] == "Führung NL 400 (Paar)"]
+    assert len(fuehrung) == 3 and fuehrung[0]["material"] == "BL-FUE-400"
+    assert erg["kennzahlen"]["Feld 1 Fronthöhen (unten zuerst)"] == "396 / 244 / 151 mm (Goldener Schnitt)"
+    assert [r["regel"] for r in erg["varianten"][0]["regeln"] if r["gewaehlt"]] == ["Goldener Schnitt"]
+    assert not any("Tür" in t["teil"] for t in erg["teile"]) and erg["ampel"] != rechner.ROT
+
+
+def test_felder_mittelwand_und_feste_breite(kastenholz):
+    e = {**UNTERSCHRANK, "breite": 1200, "felder": 2, "feldbreiten": "400;Rest", "zonen": [
+        {"feld": 1, "zone": 1, "art": "Schubkasten", "hoehe": 200}, {"feld": 1, "zone": 2, "art": "Tür", "fachboeden": 1},
+        {"feld": 2, "zone": 1, "art": "Fach offen", "fachboeden": 2}]}
+    erg = dienst.rechnen(e)
+    assert teil(erg, "Mittelwand")["menge"] == 1 and erg["kennzahlen"]["Feldbreiten licht"] == "400 / 743 mm"
+    q = next(p for p in erg["pruefungen"] if p["pruefung"] == "Querschnitt Felder")
+    assert q["status"] == rechner.GRUEN
+    front = teil(erg, "Schubkastenfront")
+    assert front["b"] == 200 and front["l"] == 400 + 19 + 9.5 - 1.5 - 1.5  # Aufschlag: halbe Mittelwand, halbe Fugen
+    fb = [t for t in erg["teile"] if t["teil"] == "Fachboden"]
+    assert sorted(t["menge"] for t in fb) == [1, 2] and teil(erg, "Bodenträger")["menge"] in (4, 8)
+    assert "Montageplatten-Bohrungen" in teil(erg, "Seite")["bearbeitung"]
+
+
+def test_metallbox_und_fehler(kastenholz):
+    box = dienst.rechnen({**KOMMODE, "kastensystem": "Metallbox"})
+    assert teil(box, "Kastenboden (Box)")["b"] == 962 - 75 and not any(t["teil"] == "Kastenseite" for t in box["teile"])
+    flach = dienst.rechnen({**KOMMODE, "tiefe": 250})
+    assert any(p["status"] == rechner.ROT and "Nennlänge" in p["hinweis"] for p in flach["pruefungen"])
+    niedrig = dienst.rechnen({**KOMMODE, "zonen": KOMMODE["zonen"] + [{"feld": 1, "zone": 4, "art": "Schubkasten", "hoehe": 80}],
+                              "teilungsregel": "gleich"})
+    assert any("zu klein" in p["hinweis"] for p in niedrig["pruefungen"])
+
+
+def test_ergonomie_hochschrank(kastenholz):
+    e = {**UNTERSCHRANK, "typ": "Hochschrank", "hoehe": 2300, "abschluss": "Deckel", "zonen": [
+        {"feld": 1, "zone": 1, "art": "Tür", "hoehe": 700}, {"feld": 1, "zone": 2, "art": "Schubkasten", "hoehe": 200},
+        {"feld": 1, "zone": 3, "art": "Schubkasten", "hoehe": 200}, {"feld": 1, "zone": 4, "art": "Tür", "fachboeden": 2}]}
+    erg = dienst.rechnen(e)
+    texte = [p["hinweis"] for p in erg["pruefungen"] if p["pruefung"].startswith("Ergonomie")]
+    assert any("nur mit Tritt" in t for t in texte)
+
+
+def test_formular_mit_zonen(kastenholz, projekt, chef_client):
+    daten = {k: v for k, v in KOMMODE.items() if k != "zonen"}
+    daten.update({"projekt": projekt.pk, "breite": "1000", "hoehe": "900", "tiefe": "450", "anzahl": "1", "felder": "1",
+                  "zwischenboeden": "Ja", "kastensystem": "Holzkasten Unterflur", "kastenverbindung": "Dübel",
+                  "z0_feld": "1", "z0_zone": "1", "z0_art": "Schubkasten", "z1_feld": "1", "z1_zone": "2",
+                  "z1_art": "Schubkasten", "z1_hoehe": "250,5", "z2_art": "Schubkasten", "aktion": "speichern"})
+    chef_client.post(reverse("moebel:neu"), daten)
+    p = MoebelPosition.objects.get()
+    assert [z["art"] for z in p.eingaben["zonen"]] == ["Schubkasten"] * 3 and p.eingaben["zonen"][1]["hoehe"] == 250.5
+    assert p.eingaben["zonen"][2]["zone"] == 3  # leere Zonennummer = Zeile
+    seite = chef_client.get(reverse("moebel:bearbeiten", args=[p.pk])).content.decode()
+    assert 'value="250,5"' in seite
+    detail = chef_client.get(p.get_absolute_url()).content.decode()
+    assert "Teilungsregeln im Vergleich" in detail and "Feld 1 · Zone 2" in detail
+    pdf = chef_client.get(reverse("moebel:etiketten", args=[p.pk]))
+    assert pdf["Content-Type"] == "application/pdf" and pdf.content.startswith(b"%PDF")
+
+
+def test_import_nennlaengen_und_kastenmaterial(tmp_path):
+    from openpyxl.utils import column_index_from_string
+    mappe = Workbook()
+    ws = mappe.active
+    ws.title = "Möbel-Regeln"
+    ws.cell(row=4, column=column_index_from_string("AP"), value=350)
+    ws.cell(row=5, column=column_index_from_string("AP"), value=500)
+    ws.cell(row=95, column=1, value="Kastenmaterial (Holzkasten)")
+    ws.cell(row=95, column=2, value="MPX-BI-12")
+    pfad = tmp_path / "pw.xlsx"
+    mappe.save(pfad)
+    ausfuehren(pfad, probelauf=False)
+    rw = Regelwerk.laden()
+    assert rw.nennlaengen == [350, 500] and rw.als_regeln().material["kasten"] == "MPX-BI-12"
+    assert rw.als_regeln().material["kastenboden"] == "HDF-08"

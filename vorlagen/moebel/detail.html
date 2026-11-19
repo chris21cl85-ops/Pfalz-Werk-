@@ -7,6 +7,7 @@
 <div class="leiste">
   <a class="knopf" href="{% url 'moebel:bearbeiten' p.pk %}">Bearbeiten</a>
   <a class="knopf zweit" href="{% url 'moebel:pdf' p.pk %}" target="_blank">Teileliste drucken (PDF)</a>
+  <a class="knopf zweit" href="{% url 'moebel:etiketten' p.pk %}" target="_blank">Etiketten (PDF)</a>
   <form method="post" style="display:contents">{% csrf_token %}<button class="knopf zweit" type="submit" name="aktion" value="kopieren">Als Variante kopieren</button></form>
   <form method="post" style="display:contents" onsubmit="return confirm('Materialbedarf als „Geplant“ in die Stückliste von {{ p.projekt.projektnr }} übernehmen?{% if in_liste %} Die bisherigen geplanten Zeilen dieses Möbels werden ersetzt.{% endif %}')">{% csrf_token %}
     <button class="knopf zweit" type="submit" name="aktion" value="stueckliste" {% if erg.ampel == 2 %}disabled title="Ampel rot – erst die Fehler beheben"{% endif %}>In Stückliste übernehmen</button></form>
@@ -26,6 +27,9 @@
     <div><small class="grau">Türen · Fachböden</small><div>{{ e.tueren }} ({{ e.tuerart }}) · {{ e.fachboeden }}</div></div>
     <div><small class="grau">Verbindung · Beschläge</small><div>{{ e.verbindung }} · {{ e.beschlagsystem }}</div></div>
     {% if e.raumhoehe %}<div><small class="grau">Raumhöhe</small><div>{{ e.raumhoehe }} mm</div></div>{% endif %}
+    {% if e.felder and e.felder > 1 or e.zonen %}<div><small class="grau">Aufteilung</small><div>{{ e.felder|default:1 }} Feld{{ e.felder|default:1|pluralize:"er" }}{% if e.feldbreiten %} ({{ e.feldbreiten }}){% endif %} · {{ e.teilungsregel }}{% if e.zwischenboeden == "Nein" %} · ohne Zwischenböden{% endif %}</div></div>
+    {% for z in e.zonen %}<div><small class="grau">Feld {{ z.feld }} · Zone {{ z.zone }}</small><div>{{ z.art }}{% if z.hoehe %} · {{ z.hoehe }} mm{% endif %}{% if z.fachboeden %} · {{ z.fachboeden }} Fachb.{% endif %}</div></div>{% endfor %}
+    {% if "Schubkasten" in e.zonen|stringformat:"s" %}<div><small class="grau">Schubkästen</small><div>{{ e.kastensystem }} · {{ e.kastenverbindung }}</div></div>{% endif %}{% endif %}
     {% for text, wert in abweichungen %}<div><small class="grau">Abweichung</small><div>{{ text }}: {{ wert }}</div></div>{% endfor %}
   </div>
 </div>

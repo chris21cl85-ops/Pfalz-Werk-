@@ -7,7 +7,8 @@ from material.importer import als_zahl
 from .models import Regelwerk
 
 STANDARD_NAMEN = {"korpus": "korpus", "front": "front", "rückwand": "rueckwand", "kante korpus": "kante_korpus",
-                  "kante front": "kante_front"}
+                  "kante front": "kante_front", "kastenmaterial (holzkasten)": "kasten",
+                  "kastenboden (holzkasten)": "kastenboden"}
 
 
 @registrieren
@@ -17,14 +18,15 @@ class MoebelRegelImporter(Importer):
     reihenfolge = 70
     spalten = {"A": "key", "B": "wert", "O": "sys", "P": "s1", "Q": "s2", "R": "s3", "S": "s4", "T": "s5", "U": "s6",
                "V": "s7", "W": "s8", "Y": "band_h", "Z": "band_n", "AB": "fb_s", "AC": "fb_max", "AE": "v_art",
-               "AF": "v_nr", "AG": "v_abst"}
+               "AF": "v_nr", "AG": "v_abst", "AP": "nl"}
     startzeile = 4
     endzeile = 120
 
     def __init__(self):
         self.rw = Regelwerk.laden()
         self.gesperrt = self.rw.im_programm_geaendert
-        self.neu = {"werte": {}, "systeme": {}, "baender": [], "fachboden": [], "verbinder": {}, "standardmaterial": {}}
+        self.neu = {"werte": {}, "systeme": {}, "baender": [], "fachboden": [], "verbinder": {}, "standardmaterial": {},
+                    "nennlaengen": []}
 
     def zeile_uebernehmen(self, z):
         key = als_text(z["key"])
@@ -38,6 +40,9 @@ class MoebelRegelImporter(Importer):
             self.neu["baender"].append([float(als_zahl(z["band_h"])), int(als_zahl(z["band_n"]))])
         if als_zahl(z["fb_s"]) and als_zahl(z["fb_max"]):
             self.neu["fachboden"].append([float(als_zahl(z["fb_s"])), float(als_zahl(z["fb_max"]))])
+        nl = als_zahl(z["nl"])
+        if nl and nl is not False and nl > 0:
+            self.neu["nennlaengen"].append(float(nl))
         if als_text(z["v_art"]) and als_text(z["v_nr"]):
             self.neu["verbinder"][als_text(z["v_art"])] = [als_text(z["v_nr"]), float(als_zahl(z["v_abst"]) or 150)]
         for feld, wert in self.neu.items():

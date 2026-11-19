@@ -24,6 +24,12 @@ TUEREN = ["automatisch", "1 Tür", "2 Türen", "keine Tür / offen"]
 TUERARTEN = ["Aufschlag", "Einlage"]
 VERBINDUNGEN = ["Dübel", "Confirmat", "Lamello", "Domino"]
 ABSCHLUESSE = ["Traversen", "Deckel"]
+# Stufe 2: Aufteilung (Möbel-Regeln AP–AU)
+ZONENARTEN = ["Tür", "Schubkasten", "Fach offen", "Blende"]
+TEILUNGSREGELN = ["gleich", "Goldener Schnitt", "Fibonacci", "gestaffelt", "Raster 32", "manuell"]
+KASTENSYSTEME = ["Holzkasten Unterflur", "Metallbox"]
+KASTENVERBINDUNGEN = ["Dübel", "Schwalbenschwanz", "Nut und Feder", "Lamello"]
+STANDARD_NENNLAENGEN = [270, 300, 350, 400, 450, 500, 550, 600]
 
 # Werkstatt-Standards (RegelnAnlegen + RegelnStufe3) – werden aus „Möbel-Regeln“ übernommen, hier nur Startwerte
 STANDARD_REGELN = {
@@ -33,6 +39,10 @@ STANDARD_REGELN = {
     "FRAESZUGABE": 0, "VERSCHNITT": 20, "BAND_MITTE": 100, "LOCH_VORN": 37, "RASTER": 32, "DIAG_TOL": 1,
     "KIPP_LUFT": 10, "RW_DUENN": 3, "RW_DUENN_B": 1000, "RW_DUENN_H": 2000,
     "SAEGE": 4, "BESAEUM": 10, "PLATTE_L": 2800, "PLATTE_B": 2070, "SCHNELL_FAKTOR": 3,
+    # Stufe 2 (RegelnStufe2): Schubkästen und Ergonomie
+    "NL_RESERVE": 10, "SKL_ABZUG": 10, "SAB": 42, "ZAB": 40, "ZH_MIN": 60, "BODEN_NUT": 8, "HS_ABZUG": 13, "FEDER": 8,
+    "BOX_BODEN_ABZUG": 75, "BOX_RW_ABZUG": 87, "BOX_RW_H": 70, "ERGO_SK_MAX": 1500, "ERGO_UNTEN": 150,
+    "ERGO_FACH_MAX": 1900,
 }
 STANDARD_BAENDER = [(900, 2), (1600, 3), (2000, 4), (2400, 5)]           # Türhöhe bis → Bänder
 STANDARD_FACHBODEN = [(16, 550), (19, 700), (22, 800), (25, 900), (99, 1000)]  # Stärke bis → Spannweite max
@@ -46,7 +56,8 @@ STANDARD_SYSTEME = {
     "Grass": ["BL-GRA-TB-110", "BL-GRA-MPL", "BL-BODTR-5", "BL-SOCKELFUSS", "BL-SOCKELCLIP", "BL-AUFH", "BL-AUFH-SCHIENE", "BL-GRIFF"],
 }
 STANDARD_MATERIAL = {"korpus": "PL-WEI-P2-19", "front": "PL-WEI-P2-19", "rueckwand": "HDF-08",
-                     "kante_korpus": "ABS-W-08", "kante_front": "ABS-W-20"}
+                     "kante_korpus": "ABS-W-08", "kante_front": "ABS-W-20",
+                     "kasten": "MPX-BI-15", "kastenboden": "HDF-08"}  # B95/B96: Holzkasten
 
 GRUEN, GELB, ROT = 0, 1, 2
 
@@ -70,6 +81,12 @@ class Regeln:
     fachboden: list = field(default_factory=lambda: list(STANDARD_FACHBODEN))
     verbinder: dict = field(default_factory=lambda: dict(STANDARD_VERBINDER))
     systeme: dict = field(default_factory=lambda: dict(STANDARD_SYSTEME))
+    nennlaengen: list = field(default_factory=lambda: list(STANDARD_NENNLAENGEN))
+    material: dict = field(default_factory=lambda: dict(STANDARD_MATERIAL))
+
+    def nennlaenge(self, max_l):
+        """Größte Nennlänge, die in max_l passt (wie Nennlaenge())."""
+        return int(max([n for n in self.nennlaengen if 0 < float(n) <= max_l], default=0))
 
     def r(self, key):
         return float(self.werte.get(key, STANDARD_REGELN[key]))
@@ -129,12 +146,48 @@ def aufrunden(x):
     return math.ceil(x - 1e-9)
 
 
+def fib(m):
+    a, b = 1, 2
+    if m <= 0:
+        return 1
+    for _ in range(2, m + 1):
+        a, b = b, a + b
+    return b
+
+
+def teilen(gesamt, fest, regel, raster=32):
+    """Wie Teilen(): feste Maße bleiben, freie Teile nach Regel (ganze mm, Raster 32 auf 32 mm);
+    Rest an das unterste freie Teil. Liefert (Liste, Hinweis)."""
+    n = len(fest)
+    erg = [float(f) if f and f > 0 else 0.0 for f in fest]
+    rest = gesamt - sum(erg)
+    frei = [i for i in range(n) if erg[i] == 0]
+    k = len(frei)
+    if k == 0:
+        return erg, (f"Feste Maße ergeben {zahl(gesamt - rest)} statt {zahl(gesamt)} mm." if abs(rest) > 0.05 else "")
+    if rest <= 0:
+        return erg, f"Kein Platz für die freien Teile (Rest {zahl(rest)} mm)."
+    art = (regel or "gleich").lower()[:4]
+    phi = (1 + math.sqrt(5)) / 2
+    w = {}
+    for j, i in enumerate(frei):
+        w[i] = {"gold": phi ** (k - 1 - j), "fibo": fib(k - 1 - j), "gest": k - j}.get(art, 1)
+    sw = sum(w.values())
+    summe = 0
+    for i in frei:
+        erg[i] = (int(rest * w[i] / sw / raster) * raster) if art == "rast" else int(rest * w[i] / sw)
+        summe += erg[i]
+    erg[frei[0]] += rest - summe
+    return [round(x, 1) for x in erg], ""
+
+
 class Rechner:
     def __init__(self, eingaben: dict, regeln: Regeln, material):
         """material: Funktion Material-Nr. → Material oder None."""
         self.e, self.R, self._mat = eingaben, regeln, material
         self.teile, self.pruefungen, self.kennzahlen = [], [], {}
         self.bedarf, self.bedarf_grund = {}, {}
+        self.varianten, self.verb_extra = [], 0
 
     # ---------------------------------------------------------- Hilfen
     def mat(self, nr):
@@ -182,7 +235,7 @@ class Rechner:
         if menge <= 0:
             return
         if not nr:
-            hinweis = (hinweis + " ⚠ keine Material-Nr. im Beschlagsystem hinterlegt").strip()
+            hinweis = (hinweis + " ⚠ keine Material-Nr. (Beschlagsystem bzw. Materialstamm prüfen)").strip()
         m = self.mat(nr)
         self.teile.append({"teil": name, "gruppe": gruppe, "menge": menge, "l": None, "b": None, "dicke": None, "zl": None,
                            "zb": None, "material": nr, "kl1": "", "kl2": "", "kb1": "", "kb2": "", "maser": "",
@@ -222,6 +275,10 @@ class Rechner:
         sys = e.get("beschlagsystem") or ""
         raum = float(e.get("raumhoehe") or 0)
         haengend = "ohne" in sockel.lower() and typ == "Oberschrank"
+        # Stufe 2: Felder und Zonen (Feld, Zone von unten, Art, Fronthöhe, Fachböden)
+        zonen_liste = [z for z in (e.get("zonen") or []) if (z.get("art") or "").strip()]
+        felder = max(1, int(e.get("felder") or 1))
+        zonen = felder > 1 or bool(zonen_liste)
 
         fa, fm, fo, fe = self.r("FUGE_AUSSEN"), self.r("FUGE_MITTE"), self.r("FUGE_OBEN"), self.r("FUGE_EINLAGE")
         nut_t, nut_a, trav = self.r("NUT_TIEFE"), self.r("NUT_ABSTAND"), self.r("TRAV_B")
@@ -237,6 +294,7 @@ class Rechner:
             return self._abschluss(anz, ohne_bedarf=True)
         self.mat_pruefen(mat_k, "Korpusmaterial")
         front_da = bool(mat_f) and "keine" not in tueren.lower() and typ != "Regal"
+        zonen_mit_tuer = any("tür" in z["art"].lower() for z in zonen_liste) or (not zonen_liste and front_da)
         if front_da:
             self.mat_pruefen(mat_f, "Frontmaterial")
         rw_da = rw_art != "ohne"
@@ -276,7 +334,7 @@ class Rechner:
             bearb.append(f"Falz {falz} x {zahl(d_r + 1)} mm hinten")
         if n_fb > 0:
             bearb.append(f"Lochreihen {zahl(R.r('RASTER'))} mm, {zahl(R.r('LOCH_VORN'))} mm von vorn")
-        if front_da and tuerart == "Aufschlag":
+        if front_da and tuerart == "Aufschlag" and (not zonen or zonen_mit_tuer):
             bearb.append("Montageplatten-Bohrungen")
         bearb.append(f"Verbinder {verb}")
         bearb_seite = "; ".join(bearb)
@@ -314,8 +372,8 @@ class Rechner:
                 self.pruef("Rückwand-Aussteifung", GELB,
                            "Dünne Rückwand bei großem Korpus – stärkere Rückwand oder zusätzliche Aussteifung prüfen.")
 
-        # ---- Fachböden
-        if n_fb > 0:
+        # ---- Fachböden (ohne Aufteilung)
+        if n_fb > 0 and not zonen:
             self.teil("Fachboden", "Innenausbau", n_fb, ib - R.r("FB_LUFT"), ti - R.r("FB_ABZUG_T"), mat_k, k_k,
                       maser="quer", bearb="lose auf Bodenträgern", ort="Innenraum")
             raster = R.r("RASTER")
@@ -349,8 +407,15 @@ class Rechner:
             self.beschlag("Schrankaufhänger", "Beschlag", 2, R.system_wert(sys, 6), "Aufhängung")
             self.beschlag("Aufhängeschiene (m)", "Beschlag", b / 1000, R.system_wert(sys, 7), "Aufhängung")
 
-        # ---- Fronten
-        if front_da:
+        # ---- Felder und Zonen (Stufe 2)
+        if zonen:
+            boden = -1 if haengend else hs + (s + fe if tuerart == "Einlage" else 0)
+            self._zonen(dict(b=b, hk=hk, s=s, ib=ib, ih=ih, ti=ti, fa=fa, fm=fm, fo=fo, fe=fe, tb_max=tb_max,
+                             mat_k=mat_k, mat_f=mat_f, k_k=k_k, k_f=k_f, sys=sys, tuerart=tuerart, front_da=front_da,
+                             n_fb=n_fb, verb=verb, boden=boden, felder=felder, zonen=zonen_liste))
+
+        # ---- Fronten (ohne Aufteilung)
+        if front_da and not zonen:
             if tuerart == "Einlage":
                 fw, fh = ib - 2 * fe, ih - 2 * fe
             else:
@@ -390,6 +455,7 @@ class Rechner:
         anzahl += 4 * (aufrunden(trav / abst) + 1) if abschluss == "Traversen" else 2 * (aufrunden(tb / abst) + 1)
         if rw_art == "eingestellt":
             anzahl += 4 * (aufrunden(ih / abst) + 1) / 2
+        anzahl += self.verb_extra  # Mittelwände und Zwischenböden
         self.beschlag(f"Verbinder {verb}", "Verbinder", anzahl, nr, "Korpus")
 
         # ---- Schnittprüfungen
@@ -418,6 +484,212 @@ class Rechner:
                                                      f"{zahl(fl)} x {zahl(fb)} mm")
         return self._abschluss(anz)
 
+    # ---------------------------------------------------------- Stufe 2: Felder, Zonen, Schubkästen
+    def _mat_oder_leer(self, nr):
+        return nr if self.mat(nr) is not None else ""
+
+    def _zonen(self, k):
+        """Wie FeldBreiten() + RechnenZonen(): Mittelwände, Felder, Zonen je Feld von unten nach oben."""
+        e, R = self.e, self.R
+        s, ib = k["s"], k["ib"]
+        regel = e.get("teilungsregel") or "gleich"
+        mit_zb = str(e.get("zwischenboeden", "Ja")).lower() not in ("nein", "false", "0")
+        k_sys = e.get("kastensystem") or "Holzkasten Unterflur"
+        k_verb = e.get("kastenverbindung") or "Dübel"
+        nr_v, abst = R.verbinder_id(k["verb"])
+        zonen = [dict(z) for z in k["zonen"]]
+        n_f = k["felder"]
+        groesstes = max([int(z.get("feld") or 1) for z in zonen], default=1)
+        if groesstes > n_f:
+            self.pruef("Felder", GELB, f"Zone in Feld {groesstes} – Felderzahl auf {groesstes} erhöht.")
+            n_f = groesstes
+        n_f = min(n_f, 9)
+        # Feldbreiten: feste Werte aus „400;Rest“, freie gleich verteilt
+        innen = ib - (n_f - 1) * s
+        tok = [t.strip() for t in str(e.get("feldbreiten") or "").replace(",", ".").split(";")]
+        fest = []
+        for i in range(n_f):
+            try:
+                fest.append(float(tok[i]) if i < len(tok) and tok[i] else 0)
+            except ValueError:
+                fest.append(0)
+        wf, hinw = teilen(innen, fest, "gleich", R.r("RASTER"))
+        if hinw:
+            self.pruef("Feldbreiten", ROT, hinw)
+            return
+        if not zonen:  # je Feld eine Tür bzw. ein offenes Fach mit den Fachböden aus der Eingabe
+            zonen = [{"feld": f, "zone": 1, "art": "Tür" if k["front_da"] else "Fach offen", "hoehe": 0,
+                      "fachboeden": k["n_fb"]} for f in range(1, n_f + 1)]
+        if n_f > 1:
+            self.teil("Mittelwand", "Korpus", n_f - 1, k["ih"], k["ti"], k["mat_k"], k["k_k"], maser="senkrecht",
+                      bearb=f"Lochreihen beidseitig; Verbinder {k['verb']}", ort="Korpus")
+            self.verb_extra += (n_f - 1) * 2 * (aufrunden(k["ti"] / abst) + 1)
+        summe = 2 * s + (n_f - 1) * s + sum(wf)
+        liste = " / ".join(zahl(w) for w in wf)
+        self.kennzahlen["Feldbreiten licht"] = liste + " mm"
+        for i, w in enumerate(wf):
+            if w <= 0:
+                self.pruef(f"Feld {i + 1}", ROT, "Feldbreite 0 oder kleiner.")
+        if abs(summe - k["b"]) > 0.05:
+            self.pruef("Querschnitt Felder", ROT, f"Seiten + Mittelwände + Felder = {zahl(summe)} statt {zahl(k['b'])} mm")
+        else:
+            self.pruef("Querschnitt Felder", GRUEN, f"{n_f + 1} x {zahl(s)} + {liste} = {zahl(k['b'])} mm")
+
+        for f in range(1, n_f + 1):
+            eigene = sorted([z for z in zonen if min(int(z.get("feld") or 1), n_f) == f],
+                            key=lambda z: float(z.get("zone") or 0))
+            w = wf[f - 1]
+            n = len(eigene)
+            if n == 0:
+                self.pruef(f"Feld {f}", GELB, "keine Zone eingetragen – Feld bleibt offen.")
+                continue
+            if w <= 0:
+                continue
+            if k["tuerart"] == "Einlage":
+                front_b = w - 2 * k["fe"]
+                fuge_z = s + 2 * k["fe"] if mit_zb else k["fm"]
+                verfueg = k["ih"] - 2 * k["fe"] - (n - 1) * fuge_z
+            else:
+                front_b = (w + (s if f == 1 else s / 2) + (s if f == n_f else s / 2)
+                           - (k["fa"] / 2 if f == 1 else k["fm"] / 2) - (k["fa"] / 2 if f == n_f else k["fm"] / 2))
+                fuge_z = k["fm"]
+                verfueg = k["hk"] - k["fo"] - (n - 1) * fuge_z
+            fest_h = [float(z.get("hoehe") or 0) for z in eigene]
+            hoehen, hinw = teilen(verfueg, fest_h, regel, R.r("RASTER"))
+            if hinw:
+                self.pruef(f"Höhenteilung Feld {f}", ROT, hinw)
+                continue
+            frei = sum(1 for x in fest_h if x <= 0)
+            if frei and regel.lower().startswith("manu"):
+                self.pruef(f"Höhenteilung Feld {f}", GELB, f"Regel manuell: {frei} Zone(n) ohne Fronthöhe wurden gleich verteilt.")
+            liste = " / ".join(zahl(x) for x in hoehen)
+            summe = (n - 1) * fuge_z + sum(hoehen)
+            self.kennzahlen[f"Feld {f} Fronthöhen (unten zuerst)"] = f"{liste} mm ({regel})"
+            self.pruef(f"Höhenteilung Feld {f}", GRUEN if abs(summe - verfueg - (n - 1) * fuge_z) < 0.05 else ROT,
+                       f"{liste} + {n - 1} x {zahl(fuge_z)} Fuge = {zahl(summe)} mm")
+            # Variantenvergleich (feste Fronthöhen bleiben fest)
+            vergleich = []
+            for name in TEILUNGSREGELN[:5]:
+                hv, hw = teilen(verfueg, fest_h, name, R.r("RASTER"))
+                vergleich.append({"regel": name, "text": hw or " / ".join(zahl(x) for x in hv), "gewaehlt": name == regel})
+            self.varianten.append({"feld": f, "verfuegbar": verfueg, "regeln": vergleich})
+
+            pos = k["boden"]
+            fb_geprueft = False
+            for j, z in enumerate(eigene):
+                art = (z.get("art") or "").lower()
+                fh = hoehen[j]
+                ort = f"Feld {f} Zone {j + 1}"
+                n_fbz = int(z.get("fachboeden") or 0)
+                if pos >= 0:
+                    if "schub" in art and pos + fh > R.r("ERGO_SK_MAX"):
+                        self.pruef(f"Ergonomie {ort}", GELB, f"Schubkasten-Oberkante {zahl(pos + fh)} mm über Boden – schlecht "
+                                                             f"einsehbar (Richtwert bis {zahl(R.r('ERGO_SK_MAX'))} mm).")
+                    elif "schub" in art and pos < R.r("ERGO_UNTEN"):
+                        self.pruef(f"Ergonomie {ort}", GRUEN, f"Schubkasten sehr tief ({zahl(pos)} mm) – für selten Gebrauchtes.")
+                    if n_fbz > 0 and pos + fh > R.r("ERGO_FACH_MAX"):
+                        self.pruef(f"Ergonomie {ort}", GELB, f"Oberstes Fach endet bei {zahl(pos + fh)} mm – nur mit Tritt erreichbar.")
+                    pos += fh + fuge_z
+                if "fach" not in art and not k["mat_f"]:
+                    self.pruef("Frontmaterial", ROT, f"{ort}: Frontmaterial wählen.")
+                elif "schub" in art:
+                    self.teil("Schubkastenfront", "Front", 1, front_b, fh, k["mat_f"], k["k_f"], k["k_f"], k["k_f"], k["k_f"],
+                              "quer", "Frontbefestigung lt. System; Griffbohrung", ort, diag=True)
+                    self.beschlag("Griff", "Beschlag", 1, R.system_wert(k["sys"], 8), ort)
+                    self._kasten(w, fh, k_sys, k_verb, ort, k)
+                elif "blende" in art:
+                    self.teil("Blende", "Front", 1, front_b, fh, k["mat_f"], k["k_f"], k["k_f"], k["k_f"], k["k_f"], "quer",
+                              "fest von innen verschraubt", ort)
+                elif "fach" not in art:
+                    nt = 2 if front_b > k["tb_max"] else 1
+                    wb = (front_b - k["fm"]) / 2 if nt == 2 else front_b
+                    band_je = R.band_anzahl(fh)
+                    if band_je > 0 and wb > k["tb_max"]:
+                        band_je += 1
+                    self.teil("Tür (links/rechts)" if nt == 2 else "Tür", "Front", nt, fh, wb, k["mat_f"], k["k_f"], k["k_f"],
+                              k["k_f"], k["k_f"], "senkrecht",
+                              f"Topfbohrung Ø35, Bandmitte {zahl(R.r('BAND_MITTE'))} mm von oben/unten; Griffbohrung", ort, diag=True)
+                    self.beschlag("Topfband", "Beschlag", band_je * nt, R.system_wert(k["sys"], 1), ort)
+                    self.beschlag("Montageplatte", "Beschlag", band_je * nt, R.system_wert(k["sys"], 2), ort)
+                    self.beschlag("Griff", "Beschlag", nt, R.system_wert(k["sys"], 8), ort)
+                    if band_je == 0:
+                        self.pruef(f"Türhöhe {ort}", ROT, f"Türhöhe {zahl(fh)} mm über der Band-Tabelle.")
+                    elif fh < 2 * R.r("BAND_MITTE") + 50:
+                        self.pruef(f"Türhöhe {ort}", GELB, f"Tür sehr niedrig ({zahl(fh)} mm) – Klappe oder Schubkasten prüfen.")
+                    elif fh / wb > 4:
+                        self.pruef(f"Türproportion {ort}", GELB, "Höhe/Breite über 4 – Verzugsgefahr.")
+                if n_fbz > 0 and "schub" not in art and "blende" not in art:
+                    self.teil("Fachboden", "Innenausbau", n_fbz, w - R.r("FB_LUFT"), k["ti"] - R.r("FB_ABZUG_T"), k["mat_k"],
+                              k["k_k"], maser="quer", bearb="lose auf Bodenträgern", ort=ort)
+                    self.beschlag("Bodenträger", "Beschlag", n_fbz * R.r("BODTR_JE"), R.system_wert(k["sys"], 3), ort)
+                    if not fb_geprueft:
+                        fb_geprueft = True
+                        spann, grenze = w - R.r("FB_LUFT"), R.fachboden_grenze(s)
+                        if spann > grenze:
+                            self.pruef(f"Fachboden Feld {f}", ROT, f"Spannweite {zahl(spann)} mm über Grenze {zahl(grenze)} mm.")
+                        elif spann > 0.85 * grenze:
+                            self.pruef(f"Fachboden Feld {f}", GELB, f"Spannweite {zahl(spann)} mm nahe Grenze {zahl(grenze)} mm.")
+            if mit_zb and n > 1:
+                self.teil("Zwischenboden", "Innenausbau", n - 1, w, k["ti"], k["mat_k"], k["k_k"], maser="quer",
+                          bearb=f"fest, Verbinder {k['verb']}", ort=f"Feld {f}")
+                self.verb_extra += (n - 1) * 2 * (aufrunden(k["ti"] / abst) + 1)
+
+    def _kasten(self, lw, fh, k_sys, k_verb, ort, k):
+        """Wie Kasten(): Schubkasten zur lichten Weite und Fronthöhe (Holzkasten Unterflur oder Metallbox)."""
+        R = self.R
+        nl = R.nennlaenge(k["ti"] - R.r("NL_RESERVE"))
+        if nl == 0:
+            self.pruef(f"Schubkasten {ort}", ROT, f"Keine Nennlänge passt in die Innentiefe {zahl(k['ti'])} mm.")
+            return
+        zh = fh - R.r("ZAB")
+        if zh < R.r("ZH_MIN"):
+            self.pruef(f"Schubkasten {ort}", ROT, f"Fronthöhe {zahl(fh)} mm zu klein (Kastenhöhe {zahl(zh)} < "
+                                                  f"{zahl(R.r('ZH_MIN'))} mm).")
+            return
+        if "metall" in k_sys.lower():
+            self.teil("Kastenboden (Box)", "Schubkasten", 1, nl - 10, lw - R.r("BOX_BODEN_ABZUG"), k["mat_k"], maser="quer",
+                      bearb="in die Zargen einschrauben", ort=ort)
+            self.teil("Kastenrückwand (Box)", "Schubkasten", 1, lw - R.r("BOX_RW_ABZUG"), R.r("BOX_RW_H"), k["mat_k"],
+                      maser="quer", bearb="an Rückwandhalter, Höhe nach Zarge prüfen", ort=ort)
+            self.beschlag(f"Zargenset NL {nl} (Paar)", "Beschlag", 1, self._mat_oder_leer(f"BL-BOX-{nl}"), ort)
+            self.beschlag(f"Führung NL {nl} (Paar)", "Beschlag", 1, self._mat_oder_leer(f"BL-FUE-{nl}"), ort)
+            self.pruef(f"Schubkasten {ort}", GRUEN, f"Metallbox NL {nl}, Boden {zahl(nl - 10)} x "
+                                                    f"{zahl(lw - R.r('BOX_BODEN_ABZUG'))} mm")
+            return
+        mat_ka, mat_bo = R.material.get("kasten", ""), R.material.get("kastenboden", "")
+        tk, d_b = self.staerke(mat_ka), self.staerke(mat_bo)
+        if tk <= 0 or d_b <= 0:
+            self.pruef("Kastenmaterial", ROT, "Kastenmaterial oder Kastenboden (Werkstatt-Regeln, Standardmaterial) "
+                                              "fehlt im Materialstamm oder hat keine Stärke.")
+            return
+        skl = nl - R.r("SKL_ABZUG")
+        kb = lw - R.r("SAB")
+        nv = 0
+        if "schwalben" in k_verb.lower():
+            vl, bearb = kb, "Schwalbenschwanz-Zinken"
+        elif "nut" in k_verb.lower():
+            vl, bearb = kb - 2 * tk + 2 * R.r("FEDER"), f"Feder {zahl(R.r('FEDER'))} mm, Nut in den Seiten"
+        else:
+            vl, bearb = kb - 2 * tk, f"Verbinder {k_verb}"
+            nr_kv, abst = R.verbinder_id(k_verb)
+            nv = 4 * max(2, aufrunden(zh / abst) + 1)
+        hs_h = zh - R.r("HS_ABZUG")
+        nut = R.r("BODEN_NUT")
+        self.teil("Kastenseite", "Schubkasten", 2, skl, zh, mat_ka, maser="längs",
+                  bearb=f"Bodennut {zahl(d_b + 0.5)} x {zahl(nut)} mm; {bearb}", ort=ort)
+        self.teil("Vorderstück", "Schubkasten", 1, vl, zh, mat_ka, maser="längs", bearb=f"Bodennut; {bearb}", ort=ort)
+        self.teil("Hinterstück", "Schubkasten", 1, vl, hs_h, mat_ka, maser="längs", bearb=f"steht auf dem Boden; {bearb}", ort=ort)
+        self.teil("Kastenboden", "Schubkasten", 1, skl - tk + nut - 1, kb - 2 * tk + 2 * nut - 1, mat_bo,
+                  bearb="in Nut, hinten am Hinterstück verschraubt", ort=ort)
+        if nv > 0:
+            self.beschlag(f"Kastenverbinder {k_verb}", "Verbinder", nv, nr_kv, ort)
+        self.beschlag(f"Führung NL {nl} (Paar)", "Beschlag", 1, self._mat_oder_leer(f"BL-FUE-{nl}"), ort,
+                      f"Kasten außen {zahl(kb)} mm – Herstellermaße prüfen")
+        if kb <= 2 * tk:
+            self.pruef(f"Schubkasten {ort}", ROT, "Feld zu schmal für einen Kasten.")
+        else:
+            self.pruef(f"Schubkasten {ort}", GRUEN, f"NL {nl}, Kasten {zahl(skl)} x {zahl(kb)} x {zahl(zh)} mm ({k_verb})")
+
     # ---------------------------------------------------------- Anzahl + Bedarf
     def _abschluss(self, anz, ohne_bedarf=False):
         if anz != 1:  # wie MitAnzahl(): alles multiplizieren
@@ -430,6 +702,7 @@ class Rechner:
         bedarf = [] if ohne_bedarf else self.bedarf_final()
         ampel = max((p["status"] for p in self.pruefungen), default=GRUEN)
         return {"teile": self.teile, "pruefungen": self.pruefungen, "kennzahlen": self.kennzahlen, "bedarf": bedarf,
+                "varianten": self.varianten,
                 "ampel": ampel, "kosten": round(sum(x["kosten"] or 0 for x in bedarf), 2)}
 
     def bedarf_final(self):

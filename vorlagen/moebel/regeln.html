@@ -16,6 +16,7 @@
   <div class="karte"><h3 style="margin-top:0">Bänder je Türhöhe</h3>{% for x in r.baender %}<div>bis {{ x.0 }} mm → {{ x.1 }} Bänder</div>{% endfor %}</div>
   <div class="karte"><h3 style="margin-top:0">Fachboden-Spannweite</h3>{% for x in r.fachboden %}<div>Stärke bis {{ x.0 }} mm → max. {{ x.1 }} mm</div>{% endfor %}</div>
   <div class="karte"><h3 style="margin-top:0">Verbinder</h3>{% for name, v in r.verbinder.items %}<div>{{ name }}: {{ v.0 }} · Abstand {{ v.1 }} mm</div>{% endfor %}</div>
+  <div class="karte"><h3 style="margin-top:0">Nennlängen Schubkasten</h3><div>{% for n in r.nennlaengen %}{{ n|floatformat:"0" }}{% if not forloop.last %} · {% endif %}{% endfor %} mm</div></div>
   <div class="karte"><h3 style="margin-top:0">Standardmaterial</h3>{% for name, nr in r.standardmaterial.items %}<div>{{ name }}: {{ nr }}</div>{% endfor %}</div>
 </div>
 <div class="karte"><h3 style="margin-top:0">Beschlagsysteme</h3>

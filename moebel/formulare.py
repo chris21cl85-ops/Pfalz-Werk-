@@ -16,6 +16,7 @@ ABWEICHUNGEN = [("FUGE_AUSSEN", "Fuge außen (mm)"), ("FUGE_MITTE", "Fuge Mitte 
                 ("TRAV_B", "Traversenbreite (mm)"), ("VERSCHNITT", "Verschnitt (%)")]
 
 ZAHLEN = ["anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe"] + [f"abw_{k}" for k, _ in ABWEICHUNGEN]
+ZONEN_ZEILEN = 12  # wie Zonentabelle A39:E58 (dort 20 Zeilen)
 
 
 def _materialwahl(nur, aktuell=""):
@@ -59,6 +60,16 @@ class MoebelFormular(forms.Form):
     beschlagsystem = forms.ChoiceField(label="Beschlagsystem")
     raumhoehe = forms.DecimalField(label="Raumhöhe (mm, für Kippmaß – leer = keine Prüfung)", required=False,
                                    min_value=0, decimal_places=0)
+    # Stufe 2: Aufteilung
+    felder = forms.IntegerField(label="Felder (Mittelwände = Felder − 1)", min_value=1, max_value=9, initial=1,
+                                required=False)
+    feldbreiten = forms.CharField(label="Feldbreiten licht mm (leer = gleich; z. B. 400;Rest)", required=False,
+                                  max_length=60)
+    teilungsregel = forms.ChoiceField(label="Teilungsregel Fronthöhen", choices=[(x, x) for x in rechner.TEILUNGSREGELN], required=False)
+    zwischenboeden = forms.ChoiceField(label="Zwischenböden zwischen Zonen", choices=[("Ja", "Ja"), ("Nein", "Nein")], required=False)
+    kastensystem = forms.ChoiceField(label="Schubkastensystem", choices=[(x, x) for x in rechner.KASTENSYSTEME], required=False)
+    kastenverbindung = forms.ChoiceField(label="Kastenverbindung (Holzkasten)",
+                                         choices=[(x, x) for x in rechner.KASTENVERBINDUNGEN], required=False)
 
     def __init__(self, *args, eingaben=None, mit_projekt=True, **kwargs):
         regeln = Regelwerk.laden()
@@ -72,7 +83,14 @@ class MoebelFormular(forms.Form):
                  "mat_front": std.get("front", ""), "mat_rueckwand": std.get("rueckwand", ""),
                  "kante_korpus": std.get("kante_korpus", ""), "kante_front": std.get("kante_front", ""),
                  "beschlagsystem": next(iter(regeln.systeme), "")}
-        initial = {k: v for k, v in e.items() if k != "abweichungen"}
+        initial = {k: v for k, v in e.items() if k not in ("abweichungen", "zonen")}
+        initial.setdefault("felder", 1)
+        initial.setdefault("teilungsregel", "gleich")
+        initial.setdefault("zwischenboeden", "Ja")
+        for i, z in enumerate((e.get("zonen") or [])[:ZONEN_ZEILEN]):
+            for feld in ("feld", "zone", "art", "hoehe", "fachboeden"):
+                if z.get(feld) not in (None, "", 0) or feld == "art":
+                    initial[f"z{i}_{feld}"] = z.get(feld)
         for k, wert in (e.get("abweichungen") or {}).items():
             initial[f"abw_{k}"] = wert
         for feld in ZAHLEN:  # Zahlen mit deutschem Komma anzeigen
@@ -83,6 +101,14 @@ class MoebelFormular(forms.Form):
         for k, text in ABWEICHUNGEN:
             self.fields[f"abw_{k}"] = forms.DecimalField(label=f"{text} – Regel {rechner.zahl(regeln.als_regeln().r(k))}",
                                                          required=False, min_value=0, decimal_places=2)
+        for i in range(ZONEN_ZEILEN):
+            self.fields[f"z{i}_feld"] = forms.IntegerField(min_value=1, max_value=9, required=False)
+            self.fields[f"z{i}_zone"] = forms.IntegerField(min_value=1, max_value=20, required=False)
+            self.fields[f"z{i}_art"] = forms.ChoiceField(required=False, choices=[("", "–")] + [(x, x) for x in rechner.ZONENARTEN])
+            self.fields[f"z{i}_hoehe"] = forms.DecimalField(min_value=0, max_value=3000, decimal_places=1, required=False)
+            self.fields[f"z{i}_fachboeden"] = forms.IntegerField(min_value=0, max_value=10, required=False)
+            for teil in ("feld", "zone", "hoehe", "fachboeden"):
+                self.fields[f"z{i}_{teil}"].widget.attrs.update({"inputmode": "numeric", "style": "min-width:0"})
         if not mit_projekt:
             del self.fields["projekt"]
         leer = [("", "– ohne –")]
@@ -95,9 +121,13 @@ class MoebelFormular(forms.Form):
         if e.get("beschlagsystem") and e["beschlagsystem"] not in systeme:
             systeme.append(e["beschlagsystem"])
         self.fields["beschlagsystem"].choices = [(s, s) for s in systeme]
-        komma_felder(self, ZAHLEN)
+        komma_felder(self, ZAHLEN + [f"z{i}_hoehe" for i in range(ZONEN_ZEILEN)])
         for feld in ("fachboeden",):
             self.fields[feld].widget.attrs["inputmode"] = "numeric"
+
+    def zonen_zeilen(self):
+        """Für die Vorlage: je Zeile die fünf Felder."""
+        return [[self[f"z{i}_{t}"] for t in ("feld", "zone", "art", "hoehe", "fachboeden")] for i in range(ZONEN_ZEILEN)]
 
     def eingaben(self) -> dict:
         """Formularwerte → Eingaben für den Rechner (JSON-tauglich)."""
@@ -116,6 +146,16 @@ class MoebelFormular(forms.Form):
         for k in ("anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe"):
             e[k] = z(d.get(k))
         e["fachboeden"] = d.get("fachboeden") or 0
+        e["felder"] = d.get("felder") or 1
+        for k, std in (("feldbreiten", ""), ("teilungsregel", "gleich"), ("zwischenboeden", "Ja"),
+                       ("kastensystem", "Holzkasten Unterflur"), ("kastenverbindung", "Dübel")):
+            e[k] = (d.get(k) or "").strip() or std
+        e["zonen"] = []
+        for i in range(ZONEN_ZEILEN):
+            if d.get(f"z{i}_art"):
+                e["zonen"].append({"feld": d.get(f"z{i}_feld") or 1, "zone": d.get(f"z{i}_zone") or (i + 1),
+                                   "art": d[f"z{i}_art"], "hoehe": z(d.get(f"z{i}_hoehe")) or 0,
+                                   "fachboeden": d.get(f"z{i}_fachboeden") or 0})
         e["abweichungen"] = {k: z(d.get(f"abw_{k}")) for k, _ in ABWEICHUNGEN if d.get(f"abw_{k}") not in (None, "")}
         return e
 
@@ -136,6 +176,14 @@ class RegelFormular(forms.Form):
         "RW_DUENN": "Dünne Rückwand bis (mm)", "RW_DUENN_B": "… ab Breite Hinweis (mm)", "RW_DUENN_H": "… ab Höhe Hinweis (mm)",
         "SAEGE": "Sägeschnitt (mm)", "BESAEUM": "Besäumen je Seite (mm)", "PLATTE_L": "Standardplatte Länge (mm)",
         "PLATTE_B": "Standardplatte Breite (mm)", "SCHNELL_FAKTOR": "Schnellpreis-Faktor (× Material)",
+        "NL_RESERVE": "Nennlänge: max. Innentiefe minus (mm)", "SKL_ABZUG": "Holzkasten: Seite = Nennlänge minus (mm)",
+        "SAB": "Holzkasten außen = lichte Weite minus (mm)", "ZAB": "Kastenhöhe = Fronthöhe minus (mm)",
+        "ZH_MIN": "Kleinste Kastenhöhe (mm)", "BODEN_NUT": "Holzkasten: Bodennut Tiefe (mm)",
+        "HS_ABZUG": "Hinterstück niedriger als Seite (mm)", "FEDER": "Nut und Feder: Federlänge je Seite (mm)",
+        "BOX_BODEN_ABZUG": "Metallbox: Boden = lichte Weite minus (mm)",
+        "BOX_RW_ABZUG": "Metallbox: Rückwand = lichte Weite minus (mm)", "BOX_RW_H": "Metallbox: Rückwandhöhe (mm)",
+        "ERGO_SK_MAX": "Ergonomie: Schubkasten-Oberkante max. (mm)", "ERGO_UNTEN": "Ergonomie: Schubkasten sehr tief unter (mm)",
+        "ERGO_FACH_MAX": "Ergonomie: Fach darüber nur mit Tritt (mm)",
     }
 
     def __init__(self, *args, regelwerk=None, **kwargs):

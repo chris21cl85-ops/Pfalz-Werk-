@@ -28,6 +28,17 @@
     {% include "moebel/_feld.html" with feld=form.tueren %}{% include "moebel/_feld.html" with feld=form.tuerart %}
     {% include "moebel/_feld.html" with feld=form.fachboeden %}{% include "moebel/_feld.html" with feld=form.beschlagsystem %}
   </div></div>
+  <div class="karte"><h3 style="margin-top:0">5 · Aufteilung (Felder, Schubkästen, Fächer)</h3><div class="raster">
+    {% include "moebel/_feld.html" with feld=form.felder %}{% include "moebel/_feld.html" with feld=form.feldbreiten %}
+    {% include "moebel/_feld.html" with feld=form.teilungsregel %}{% include "moebel/_feld.html" with feld=form.zwischenboeden %}
+    {% include "moebel/_feld.html" with feld=form.kastensystem %}{% include "moebel/_feld.html" with feld=form.kastenverbindung %}
+  </div>
+  <p class="hilfe">Ohne Zonen und mit 1 Feld gilt der einfache Korpus von oben (Türen und Fachböden aus Karte 4). Zonen je Feld von unten (1) nach oben; leere Fronthöhe = Teilungsregel.</p>
+  <div class="tabelle-rahmen"><table id="zonen">
+    <tr><th>Feld</th><th>Zone (1 = unten)</th><th>Art</th><th>Fronthöhe mm (leer = Regel)</th><th>Fachböden</th></tr>
+    {% for zeile in form.zonen_zeilen %}<tr class="zone{% if forloop.counter > 4 and not zeile.2.value %} leer{% endif %}">{% for feld in zeile %}<td>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</td>{% endfor %}</tr>{% endfor %}
+  </table></div>
+  <p><button type="button" class="knopf zweit" id="mehr-zonen">+ weitere Zonen</button></p></div>
   <details class="karte" {% for f in abweichungen %}{% if f.value %}open{% endif %}{% endfor %}><summary style="cursor:pointer;font-weight:600">Abweichende Regeln nur für dieses Möbel (selten nötig)</summary>
     <div class="raster" style="margin-top:8px">{% for f in abweichungen %}{% include "moebel/_feld.html" with feld=f %}{% endfor %}</div>
     <p class="hilfe">Leer lassen = Werkstatt-Regel gilt.</p></details>
@@ -39,7 +50,8 @@
 </form>
 {% if vorschau %}<h2 class="abschnitt" id="vorschau">Vorschau – noch nicht gespeichert</h2>{% include "moebel/_ergebnis.html" with erg=vorschau %}{% endif %}
 {{ vorgaben|json_script:"typ-vorgaben" }}
-<style>@media (min-width:760px){.knopfleiste{position:sticky;bottom:10px;padding:12px 14px;z-index:5;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-radius:16px;box-shadow:0 6px 24px rgba(19,54,42,.12);margin-right:90px}}
+<style>#zonen td{padding:4px 6px}#zonen input,#zonen select{padding:8px;font-size:15px}tr.zone.leer{display:none}
+@media (min-width:760px){.knopfleiste{position:sticky;bottom:10px;padding:12px 14px;z-index:5;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-radius:16px;box-shadow:0 6px 24px rgba(19,54,42,.12);margin-right:90px}}
 .raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 18px}</style>
 <script>
 (function () {
@@ -50,6 +62,15 @@
     const v = vorgaben[typ.value]; if (!v) return;
     f.elements["breite"].value = v[0]; f.elements["hoehe"].value = v[1]; f.elements["tiefe"].value = v[2];
     f.elements["abschluss"].value = v[3]; f.elements["sockel"].value = v[4]; f.elements["tueren"].value = v[5];
+    const leer = !Array.from(document.querySelectorAll("#zonen select")).some(s => s.value);
+    if (typ.value === "Kommode" && leer) {  // wie Neue Position: 3 Schubkästen, Goldener Schnitt
+      for (let i = 0; i < 3; i++) { f.elements["z" + i + "_feld"].value = 1; f.elements["z" + i + "_zone"].value = i + 1; f.elements["z" + i + "_art"].value = "Schubkasten"; }
+      f.elements["teilungsregel"].value = "Goldener Schnitt"; f.elements["fachboeden"].value = 0;
+    }
+  });
+  document.getElementById("mehr-zonen").addEventListener("click", function () {
+    const versteckt = document.querySelectorAll("tr.zone.leer"); for (let i = 0; i < 4 && i < versteckt.length; i++) versteckt[i].classList.remove("leer");
+    if (versteckt.length <= 4) this.style.display = "none";
   });
   {% if vorschau %}document.getElementById("vorschau").scrollIntoView({behavior: "smooth"});{% endif %}
 })();

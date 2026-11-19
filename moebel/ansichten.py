@@ -127,6 +127,14 @@ def pdf(request, pk):
 
 
 @rolle_erforderlich(*RECHTE)
+def etiketten(request, pk):
+    position = get_object_or_404(MoebelPosition.objects.select_related("projekt"), pk=pk)
+    antwort = HttpResponse(dienst.etiketten_pdf(position), content_type="application/pdf")
+    antwort["Content-Disposition"] = f'inline; filename="Etiketten_{position.positions_id}.pdf"'
+    return antwort
+
+
+@rolle_erforderlich(*RECHTE)
 def regeln(request):
     regelwerk = Regelwerk.laden()
     if request.method == "POST":

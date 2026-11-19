@@ -157,3 +157,45 @@ def druckliste_pdf(position) -> bytes:
     teile.append(p("Fachliche Vorplanung – ersetzt kein Aufmaß und keine konstruktive Detailprüfung.", klein))
     doc.build(teile)
     return puffer.getvalue()
+
+
+def etiketten_pdf(position) -> bytes:
+    """Wie PW_Moebel_Etiketten_Drucken: je Plattenteil und Stück ein Etikett (bei Menge 2: 1/2 und 2/2).
+    A4, 3 × 7 Etiketten à 70 × 42,3 mm (übliche Etikettenbögen)."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.pdfgen import canvas
+
+    teile = [t for t in position.ergebnis.get("teile", []) if t["l"] is not None]
+    puffer = BytesIO()
+    c = canvas.Canvas(puffer, pagesize=A4)
+    c.setTitle(f"Etiketten {position.positions_id}")
+    breite, hoehe = 70 * mm, 297 * mm / 7
+    n = 0
+    for nr, t in enumerate(teile, start=1):
+        menge = int(round(t["menge"]))
+        kanten = " ".join(k for k, v in (("L1", t["kl1"]), ("L2", t["kl2"]), ("B1", t["kb1"]), ("B2", t["kb2"])) if v) or "–"
+        for m in range(1, menge + 1):
+            if n and n % 21 == 0:
+                c.showPage()
+            spalte, zeile = n % 3, (n % 21) // 3
+            x, y = spalte * breite + 4 * mm, A4[1] - zeile * hoehe - 7 * mm
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(x, y, f"{position.positions_id}-{nr}  ({m}/{menge})"[:52])
+            c.setFont("Helvetica-Bold", 11)
+            c.drawString(x, y - 5 * mm, f"{t['teil']}"[:30])
+            c.setFont("Helvetica", 8)
+            c.drawString(x, y - 9 * mm, (t["ort"] or "")[:45])
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(x, y - 14 * mm, f"{t['l']:g} x {t['b']:g} x {t['dicke']:g} mm")
+            c.setFont("Helvetica", 8)
+            c.drawString(x, y - 18.5 * mm, f"Zuschnitt {t['zl']:g} x {t['zb']:g}  {t['material']}"[:52])
+            c.drawString(x, y - 22.5 * mm, f"Kanten: {kanten}   Maser: {t['maser'] or '–'}"[:52])
+            c.drawString(x, y - 26.5 * mm, (t["bearbeitung"] or "")[:52])
+            c.drawString(x, y - 30.5 * mm, (t["bearbeitung"] or "")[52:104])
+            n += 1
+    if n == 0:
+        c.setFont("Helvetica", 11)
+        c.drawString(20 * mm, A4[1] - 30 * mm, "Keine Plattenteile – erst rechnen und speichern.")
+    c.save()
+    return puffer.getvalue()

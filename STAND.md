@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 4.2 (Etappe 4, Paket 4b).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.1 (Etappe 5, Paket 5a).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -576,7 +576,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 6. Produktion: einen Arbeitsgang mit Stunden rückmelden → die Zeit steht danach auch in der Zeiterfassung;
    Kalkulation & Aufträge → „Ist-Kosten“ enthalten jetzt die Löhne.
 
-### Paket 4b: Auswertungen für den Chef – GEBAUT 19.11.2026, Abnahme offen
+### Paket 4b: Auswertungen für den Chef – weitergegeben am 19.11.2026 (Gesamttest am Schluss)
 Vorlage: Blätter „Cockpit“, „Finanz-Cockpit“ (Löhne zum Monatsende), „Kalkulationsvergleich“, Dashboards
 (Produktion/Material). Neue App `auswertung` (nur lesen).
 - Kachel „Auswertungen“ (Chef, Admin): Jahr wählbar (5 Jahre). Kennzahlen: Umsatz netto mit Vorjahresvergleich bis
@@ -604,13 +604,46 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 4. Finanzen → Liquidität: am Monatsende stehen „davon Löhne“ (Brutto aus den Arbeitsverträgen).
 
 ## Gesamttest (Wunsch von Chris, 19.11.2026)
-Chris macht nach Etappe 4 einen vollständigen Test aller Bereiche. Bis dahin werden 4a und 4b ohne Einzelabnahme
-weitergegeben. Danach Fehler aus dem Gesamttest beheben.
+Chris testet alles am Schluss. Bis dahin werden alle Pakete ohne Einzelabnahme weitergegeben.
+
+## Etappe 5 – Ausbau: IN ARBEIT
+Reihenfolge laut Chris (19.11.2026): **Möbelrechner → Kapazitätsplanung → Inventur → Handy-Ansichten →
+Fassung zum Installieren**. Möbelrechner-Ausbau geteilt: 5a Aufteilung (Stufe 2), 5b Oberflächen + Kantenprofil +
+Änderungsverfolgung (Stufe 3), 5c Massivholz, Rahmen + Füllung, Modulbau, Formteile (Stufe 4/5), 5d CNC-Export (Stufe 6).
+
+### Paket 5a: Möbelrechner Aufteilung (Stufe 2) – GEBAUT 19.11.2026
+Vorlage: `PW_Moebelrechner.bas` RechnenZonen, Teilen, Fib, Kasten, FeldBreiten, VariantenSammeln, Etiketten_Drucken,
+RegelnStufe2.
+- Neue Karte „5 · Aufteilung“: Felder (Mittelwände), Feldbreiten („400;Rest“), Teilungsregel (gleich, Goldener Schnitt,
+  Fibonacci, gestaffelt, Raster 32, manuell), Zwischenböden Ja/Nein, Schubkastensystem (Holzkasten Unterflur / Metallbox),
+  Kastenverbindung (Dübel, Schwalbenschwanz, Nut und Feder, Lamello); Zonentabelle Feld · Zone (1 = unten) · Art
+  (Tür, Schubkasten, Fach offen, Blende) · Fronthöhe (leer = Regel) · Fachböden. Typ „Kommode“ setzt 3 Schubkästen
+  im Goldenen Schnitt (wie Neue Position).
+- Rechnen wie Makro: Fronthöhen je Feld nach Regel (Rest an die unterste freie Zone), Frontbreiten je Feld (Aufschlag
+  mit halber Mittelwand und halben Fugen; Einlage), Türen je Zone (2 Türen über max. Türbreite), Fachböden je Zone
+  mit Durchbiegung, Zwischenböden, Mittelwände + Verbinder. **Schubkasten**: Nennlänge (größte, die in Innentiefe −
+  Reserve passt), Holzkasten mit Seiten, Vorder-/Hinterstück, Boden in Nut, Kastenverbinder, Führung BL-FUE-NL;
+  Metallbox mit Boden, Rückwand, Zargenset BL-BOX-NL. Prüfungen: Querschnitt Felder, Höhenteilung, Ergonomie
+  (Schubkasten zu hoch/tief, Fach nur mit Tritt), Nennlänge, Kastenhöhe.
+- **Variantenvergleich** der Teilungsregeln je Feld im Ergebnis (gewählte Regel markiert).
+- **Etiketten (PDF)**: je Plattenteil und Stück, 3 × 7 je A4 (70 × 42 mm).
+- Werkstatt-Regeln: 14 neue Zahlen (Schubkasten, Box, Ergonomie), Nennlängen, Kastenmaterial/-boden;
+  Import aus „Möbel-Regeln“ (Spalte AP, Zeilen 95/96).
+- Nicht übernommen: Führungen/Zargen werden nicht automatisch im Materialstamm angelegt (Makro tat das) – fehlen sie,
+  steht beim Beschlag „keine Material-Nr.“; bitte im Materialstamm anlegen (BL-FUE-400 usw.) oder per Import.
+- 441 automatische Tests, alle grün.
+
+### So testest du es (Etappe 5, Paket 5a)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B), im NEUEN Ordner starten, Fassung „5.1“.
+1. Möbelrechner → Neues Möbel → Typ „Kommode“ → Zonentabelle hat 3 Schubkästen → Berechnen → Fronthöhen und
+   Kastenmaße mit der Excel vergleichen; Variantenvergleich ansehen.
+2. Unterschrank 1200 breit, 2 Felder, Feldbreiten „400;Rest“, Feld 1 Schubkasten unten + Tür oben, Feld 2 Fach offen.
+3. Speichern → „Etiketten (PDF)“.
 
 ## Nächstes Paket
-**Verkaufsfassung / Installer** (FEHLER Nr. 2: Start ohne installiertes Python) – nach dem Gesamttest mit Chris klären.
-Offen als eigene Pakete: Möbelrechner Stufen 2–6, Excel-Inventur (Blätter 25–32, 62–68), Kapazitätsplanung
-(Personal-Gate), Handy-Ansichten. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**5b Möbelrechner Stufe 3**: Oberflächen (Blatt Möbel-Regeln AW:BE), Kantenprofil, Änderungsverfolgung
+(AenderungPruefen). Danach 5c, 5d, dann Kapazitätsplanung, Inventur, Handy-Ansichten, Installer.
+Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

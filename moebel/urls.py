@@ -10,4 +10,5 @@ urlpatterns = [
     path("<int:pk>/", a.detail, name="detail"),
     path("<int:pk>/bearbeiten/", a.bearbeiten, name="bearbeiten"),
     path("<int:pk>/teileliste.pdf", a.pdf, name="pdf"),
+    path("<int:pk>/etiketten.pdf", a.etiketten, name="etiketten"),
 ]
