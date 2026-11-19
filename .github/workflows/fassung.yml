@@ -70,7 +70,8 @@ jobs:
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
-          $nr = (Get-Content dist\PFALZ-WERK\FASSUNG.txt).Split(" ")[-1].Trim()
+          $nr = (Get-Content dist\PFALZ-WERK\FASSUNG.txt | Select-Object -First 1).Split(" ")[-1].Trim()
+          if (-not $nr) { Write-Error "Fassungsnummer fehlt"; exit 1 }
           & $iscc "/DFassung=$nr" verteilung\PFALZ-WERK.iss
           if ($LASTEXITCODE) { exit 1 }
           "NR=$nr" | Out-File -Append $env:GITHUB_ENV

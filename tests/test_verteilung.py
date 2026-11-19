@@ -94,3 +94,12 @@ def test_setup_loescht_keine_daten():
     assert "PrivilegesRequired=lowest" in iss
     assert '{app}\\*"' not in iss  # nie den ganzen Programmordner leeren (Notfall-Datenordner „lokal“)
     assert "German.isl" in iss
+
+
+def test_startdatei_und_fassung_mit_windows_zeilenenden(bauen, tmp_path, monkeypatch):
+    monkeypatch.setattr(bauen, "pakete_installieren", lambda site: None)
+    monkeypatch.setattr(sys, "argv", ["x", "--ziel", str(tmp_path), "--ohne-zip"])
+    bauen.main()
+    bat = (tmp_path / "PFALZ-WERK" / "PFALZ-WERK starten.bat").read_bytes()
+    assert b"\r\n" in bat and b"\r\r\n" not in bat
+    assert (tmp_path / "PFALZ-WERK" / "FASSUNG.txt").read_bytes() == f"PFALZ-WERK Fassung {bauen.fassung()}\r\n".encode()

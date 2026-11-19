@@ -89,8 +89,9 @@ def main():
     programm.mkdir(parents=True)
     print(f"PFALZ-WERK Fassung {nummer}: Programm kopieren …")
     programm_kopieren(programm)
-    (programm / "PFALZ-WERK starten.bat").write_text(STARTDATEI.replace("\n", "\r\n"), encoding="ascii")
-    (programm / "FASSUNG.txt").write_text(f"PFALZ-WERK Fassung {nummer}\r\n", encoding="utf-8")
+    # write_bytes: unter Windows würde write_text aus \r\n ein \r\r\n machen
+    (programm / "PFALZ-WERK starten.bat").write_bytes(STARTDATEI.replace("\n", "\r\n").encode("ascii"))
+    (programm / "FASSUNG.txt").write_bytes(f"PFALZ-WERK Fassung {nummer}\r\n".encode("utf-8"))
     if args.embed:
         print("Python einbetten …")
         py = python_einbetten(args.embed, programm)
