@@ -1,0 +1,7 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Zuschnitt{% endblock %}
+{% block inhalt %}
+<h1>Zuschnittlisten</h1>
+{% for p in liste %}<a class="karte" style="display:block;text-decoration:none;color:inherit" href="{% url 'handy:zuschnitt_detail' p.pk %}"><b>{{ p.positions_id }}</b> {{ p.bezeichnung }}<div class="hilfe">{{ p.projekt.name }} · {{ p.masse }}</div></a>
+{% empty %}<p>Noch keine Möbel gerechnet.</p>{% endfor %}
+{% endblock %}

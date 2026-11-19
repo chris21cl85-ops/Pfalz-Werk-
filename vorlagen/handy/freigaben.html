@@ -1,0 +1,15 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Freigaben{% endblock %}
+{% block inhalt %}
+<h1>Freigaben</h1>
+<h2>Urlaub & Abwesenheit</h2>
+{% for a in abwesenheiten %}<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="art" value="abwesenheit"><input type="hidden" name="id" value="{{ a.pk }}">
+  <b>{{ a.mitarbeiter.name }}</b> · {{ a.art }}<div class="hilfe">{{ a.von|date:"d.m." }}{% if a.bis != a.von %} – {{ a.bis|date:"d.m.Y" }}{% endif %} · {{ a.tage }} Tag{{ a.tage|pluralize:"e" }}{% if a.hinweis %} · {{ a.hinweis }}{% endif %}</div>
+  <div class="reihe" style="margin-top:10px"><button class="knopf zweit" name="ja" value="0">Ablehnen</button><button class="knopf" name="ja" value="1">Freigeben</button></div></form>
+{% empty %}<p class="hilfe">Keine offenen Anträge.</p>{% endfor %}
+<h2>Aufträge</h2>
+{% for x in auftraege %}<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="art" value="auftrag"><input type="hidden" name="id" value="{{ x.a.pk }}"><input type="hidden" name="wer" value="{{ x.wer }}">
+  <b>{{ x.a.aunr }}</b> · {{ x.a.projekt.name }}<div class="hilfe">{{ x.wer|title }}-Freigabe · Angebot {{ x.a.angebot_netto|floatformat:"2g" }} €</div>
+  <div class="reihe" style="margin-top:10px"><button class="knopf zweit" name="ja" value="0">Ablehnen</button><button class="knopf" name="ja" value="1">Freigeben</button></div></form>
+{% empty %}<p class="hilfe">Keine offenen Auftragsfreigaben.</p>{% endfor %}
+{% endblock %}

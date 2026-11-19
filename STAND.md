@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.6 (Etappe 5, Paket 7 Inventur).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.7 (Etappe 5, Paket 8 Handy).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -737,10 +737,29 @@ Vorlage: `PW_Inventur.bas` (Drive 1xHUdPtnZzw1QKvy4E7cNctRfZZevlMaA) und Blätte
 - Nicht übernommen: Zählaufträge je Zähler (alle zählen in einer Liste) und Snapshot-Archiv-Blätter.
 - 466 automatische Tests, alle grün.
 
+### Paket 8: Handy-Ansichten – GEBAUT 19.11.2026
+Vorlage: `PW_Handy_Modul.bas` / `PW_HandyAssistent.bas` (Handy-Dateien je Person über OneDrive: Termine, Team, Arbeit,
+Bestellen, Lieferungen, Freigaben, Zählen, Melden) und `PW_Moebel_Zuschnitt_Handy`. Im Programm entfällt der
+OneDrive-Abgleich: das Handy öffnet PFALZ-WERK direkt im Betriebs-WLAN. Neue App `handy`.
+- **Handy im WLAN** (Verwaltung → Kachel „Handy“ → „Handy im WLAN einrichten“, nur Chef/Admin): Schalter im Datenordner,
+  danach Neustart; das Programm hört dann auf allen Netzwerkkarten (0.0.0.0:8000), zeigt Adresse + **QR-Code** zum
+  Scannen. Nur im lokalen Netz, jeder meldet sich mit seinem Zugang an. Windows-Firewall beim ersten Mal „Zulassen“.
+  Das Startfenster zeigt die Handy-Adresse.
+- **Handy-Oberfläche** `/handy/` (große Kacheln je Rolle, Leiste unten): **Mein Tag** (Termine ab heute wie Blatt
+  „Mein Tag“, Route öffnen, Arbeitsgänge von heute, Abwesenheit), **Arbeit** (Starten, Stunden, Zwischenstand, Fertig –
+  bucht Zeit mit), **Zeit buchen** (Von/Bis/Pause oder Stunden, Projekt, Woche Ist/Soll, Zeitkonto), **Zählen**
+  (laufende Inventur: ein Artikel nach dem anderen, Blindzählung, Nachzählen Vier-Augen), **Lieferungen**
+  (Chef/Admin/Meister: „Alles da“ / Teilmenge → Wareneingang), **Freigaben** (Urlaubsanträge, Auftragsfreigaben je
+  Rolle), **Meldungen** (Büro erledigt mit Antwort), **Zuschnitt** (Teile je Material mit Haken, die auf dem Gerät
+  bleiben), **Melden** (Art, Projekt, Text, Foto mit der Kamera → Büro; Fotos im Datenordner „dateien/meldungen“).
+- Auf der Startseite erscheint am Handy oben „Zur Handy-Ansicht“.
+- Nicht übernommen: separate Handy-Dateien, automatischer Abgleich alle x Stunden, „Bestellen“ vom Handy
+  (Bestellvorschläge bleiben im Büro), Team-Liste.
+- 473 automatische Tests, alle grün.
+
 ## Nächstes Paket
-**8 Handy-Ansichten** (Vorlage PW_HandyAssistent.bas 1vaC_PIVAa2f-NBeEZ4BNMWgrSs5fZ8Ta, PW_Handy_Modul.bas
-1ttdjqDJplP3mclRdidVyAWW350-UF6on), dann **9 Fassung zum Installieren** (PW_Verkaufsversion.bas als Vorlage für
-Auslieferung). Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**9 Fassung zum Installieren** (FEHLER Nr. 2: Start ohne installiertes Python). Vorlage für die Auslieferung:
+PW_Verkaufsversion.bas (Drive 1MbL_6-0tYRQx5-IxE1G9rMVag5IIRc3D). Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

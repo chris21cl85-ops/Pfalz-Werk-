@@ -1,0 +1,20 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Zeit buchen{% endblock %}
+{% block inhalt %}
+<h1>Zeit buchen</h1>
+{% if not ma %}{% include "handy/_ohne_ma.html" %}{% else %}
+<div class="karte"><div class="reihe"><div><div class="hilfe">Woche Ist / Soll</div><div class="gross">{{ ist|floatformat:"-1" }} / {{ soll|floatformat:"-1" }} h</div></div>
+  <div><div class="hilfe">Zeitkonto</div><div class="gross" style="{% if konto < 0 %}color:var(--rot){% endif %}">{{ konto|floatformat:"-1" }} h</div></div></div></div>
+<form method="post" class="karte">{% csrf_token %}
+  <label>Datum</label><input type="date" name="datum" value="{{ heute|date:'Y-m-d' }}">
+  <div class="reihe"><div><label>Von</label><input type="time" name="beginn"></div><div><label>Bis</label><input type="time" name="ende"></div><div><label>Pause Min.</label><input name="pause" inputmode="numeric" value="0"></div></div>
+  <label>… oder Stunden</label><input name="stunden" inputmode="decimal" placeholder="z. B. 7,5">
+  <label>Projekt</label><select name="projekt"><option value="">– ohne Projekt –</option>{% for p in projekte %}<option value="{{ p.pk }}">{{ p.projektnr }} {{ p.name|truncatechars:28 }}</option>{% endfor %}</select>
+  <label>Tätigkeit</label><select name="taetigkeit">{% for w, t in taetigkeiten %}<option value="{{ w }}">{{ t }}</option>{% endfor %}</select>
+  <label>Notiz</label><input name="notiz">
+  <p><button class="knopf breit">Buchen</button></p></form>
+<h2>Diese Woche</h2>
+{% for b in woche %}<div class="zeile"><div><b>{{ b.datum|date:"D d.m." }}</b> · {{ b.stunden|floatformat:"-2" }} h<div class="hilfe">{% if b.projekt %}{{ b.projekt.projektnr }}{% else %}{{ b.get_taetigkeit_display }}{% endif %}{% if b.notiz %} · {{ b.notiz }}{% endif %}</div></div></div>
+{% empty %}<p class="hilfe">Noch nichts gebucht.</p>{% endfor %}
+{% endif %}
+{% endblock %}

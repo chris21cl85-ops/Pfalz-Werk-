@@ -1,0 +1,9 @@
+{% extends "handy/basis.html" %}
+{% block inhalt %}
+<h1>Hallo{% if ma %} {{ ma.name }}{% endif %} 👋</h1>
+<p class="hilfe" style="margin-top:-6px">{{ heute|date:"l, d.m.Y" }}</p>
+<div class="kacheln">
+  {% for k in kacheln %}<a class="kachel" href="{% url k.url %}"><span class="z">{{ k.zeichen }}</span>{{ k.titel }}{% if k.zahl %}<span class="n">{{ k.zahl }}</span>{% endif %}</a>{% endfor %}
+</div>
+{% if request.user.rolle == "chef" or request.user.rolle == "admin" %}<p style="margin-top:18px"><a class="knopf zweit breit" href="{% url 'handy:verbinden' %}">📶 Handy im WLAN einrichten</a></p>{% endif %}
+{% endblock %}

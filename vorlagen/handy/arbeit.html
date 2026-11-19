@@ -1,0 +1,20 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Arbeit{% endblock %}
+{% block inhalt %}
+<h1>Meine Arbeitsgänge</h1>
+{% if not ma %}{% include "handy/_ohne_ma.html" %}{% else %}
+{% for a in ags %}<div class="karte" style="{% if a.status == 'In Arbeit' %}border-left:6px solid var(--tuerkis){% elif a.startbereit %}border-left:6px solid var(--minze){% endif %}">
+  <b style="font-size:19px">{{ a.name }}</b>{% if a.prioritaet == "Hoch" %} <span class="status" style="background:#f9e0db">hoch</span>{% endif %}
+  <div class="hilfe">{{ a.projekt.projektnr }} · {{ a.projekt.name }}{% if a.bereich %} · {{ a.bereich }}{% endif %}</div>
+  <div class="hilfe">{{ a.ist_std|floatformat:"-2" }} / {{ a.plan_std|floatformat:"-2" }} h{% if a.plan_start %} · Plan {{ a.plan_start|date:"d.m." }}{% endif %}</div>
+  {% if a.status == "Geplant" %}
+    {% if a.startbereit %}<form method="post" style="margin-top:10px">{% csrf_token %}<input type="hidden" name="ag" value="{{ a.pk }}"><button class="knopf breit" name="aktion" value="starten">▶ Starten</button></form>
+    {% else %}<div class="status" style="margin-top:8px">{{ a.startfreigabe }}</div>{% endif %}
+  {% else %}
+    <form method="post" style="margin-top:10px">{% csrf_token %}<input type="hidden" name="ag" value="{{ a.pk }}">
+      <label>Stunden heute</label><input name="stunden" inputmode="decimal" placeholder="z. B. 2,5">
+      <div class="reihe" style="margin-top:10px"><button class="knopf zweit" name="aktion" value="zwischen">Zwischenstand</button><button class="knopf" name="aktion" value="fertig" onclick="return confirm('Fertig melden?')">✓ Fertig</button></div></form>
+  {% endif %}</div>
+{% empty %}<p>Nichts offen – gute Arbeit. 🙂</p>{% endfor %}
+{% endif %}
+{% endblock %}

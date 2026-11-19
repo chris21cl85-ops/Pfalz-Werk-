@@ -1,5 +1,7 @@
 {% extends "basis.html" %}
 {% block inhalt %}
+<style>.nur-handy{display:none}@media (max-width:760px){.nur-handy{display:block}}</style>
+<a class="nur-handy meldung success" href="{% url 'handy:start' %}" style="text-decoration:none;font-weight:600">📱 Zur Handy-Ansicht (große Knöpfe) →</a>
 <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
   <h1>Guten Tag, <span class="farbig">{{ user.first_name|default:user.username }}</span></h1>
   <p class="grau" style="margin:0 0 24px">{% now "l, j. F Y" %}</p>

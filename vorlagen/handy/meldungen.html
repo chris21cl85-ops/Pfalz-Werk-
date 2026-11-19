@@ -1,0 +1,13 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Meldungen{% endblock %}
+{% block inhalt %}
+<h1>Meldungen</h1>
+<p class="hilfe" style="margin-top:-6px">{% if alle %}Alle Meldungen. <a href="?">Nur offene</a>{% else %}Offene Meldungen. <a href="?alle=1">Auch erledigte</a>{% endif %}</p>
+{% for m in liste %}<div class="karte">
+  <b>{{ m.art }}</b>{% if m.projekt %} · {{ m.projekt.projektnr }}{% endif %}<div>{{ m.text }}</div>
+  <div class="hilfe">{{ m.von.get_full_name|default:m.von.username }} · {{ m.am|date:"d.m.Y H:i" }}</div>
+  {% if m.foto %}<a href="{% url 'handy:foto' m.pk %}" target="_blank"><img src="{% url 'handy:foto' m.pk %}" alt="Foto" style="max-width:100%;border-radius:12px;margin-top:8px"></a>{% endif %}
+  {% if m.erledigt_am %}<div class="status" style="margin-top:8px">✓ {{ m.erledigt_am|date:"d.m." }} {{ m.antwort }}</div>
+  {% else %}<form method="post" style="margin-top:10px">{% csrf_token %}<input type="hidden" name="id" value="{{ m.pk }}"><input name="antwort" placeholder="erledigt mit … (optional)"><p><button class="knopf breit">✓ Erledigt</button></p></form>{% endif %}
+</div>{% empty %}<p>Keine offenen Meldungen.</p>{% endfor %}
+{% endblock %}

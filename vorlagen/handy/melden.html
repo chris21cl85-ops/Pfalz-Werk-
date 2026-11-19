@@ -1,0 +1,12 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Melden{% endblock %}
+{% block inhalt %}
+<h1>Etwas melden</h1>
+<form method="post" enctype="multipart/form-data" class="karte">{% csrf_token %}
+  <label>Was ist los?</label><select name="art">{% for w, t in arten %}<option value="{{ w }}">{{ t }}</option>{% endfor %}</select>
+  <label>Projekt (optional)</label><select name="projekt"><option value="">– ohne Projekt –</option>{% for p in projekte %}<option value="{{ p.pk }}">{{ p.projektnr }} {{ p.name|truncatechars:28 }}</option>{% endfor %}</select>
+  <label>Beschreibung</label><textarea name="text" rows="4" required placeholder="z. B. 2 Platten Eiche furniert fehlen für Küche Weber"></textarea>
+  <label>Foto (optional)</label><input type="file" name="foto" accept="image/*" capture="environment">
+  <p><button class="knopf breit">Ans Büro senden</button></p></form>
+{% if eigene %}<h2>Meine letzten Meldungen</h2>{% for m in eigene %}<div class="zeile"><div>{{ m.art }}: {{ m.text|truncatechars:50 }}<div class="hilfe">{{ m.am|date:"d.m. H:i" }}</div></div><span class="status">{% if m.erledigt_am %}✓ erledigt{% else %}offen{% endif %}</span></div>{% endfor %}{% endif %}
+{% endblock %}

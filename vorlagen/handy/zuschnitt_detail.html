@@ -1,0 +1,20 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Zuschnitt {{ p.positions_id }}{% endblock %}
+{% block inhalt %}
+<style>.teil{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rand)}.teil input{width:30px;height:30px;flex:none}.teil.ok{opacity:.45;text-decoration:line-through}</style>
+<h1>{{ p.positions_id }} · {{ p.bezeichnung }}</h1>
+<p class="hilfe" style="margin-top:-6px">Zuschnittmaß = Fertigmaß − Kante. Haken bleiben nur auf diesem Gerät.</p>
+{% for mat, name, teile in gruppen %}<h2>{{ mat }} {{ name }}</h2><div class="karte">
+  {% for t in teile %}<label class="teil" style="margin:0;font-weight:400"><input type="checkbox" data-id="{{ p.pk }}-{{ t.nr }}">
+    <div><b>{{ t.nr }}. {{ t.teil }}</b> · {{ t.menge|floatformat:"-2" }} Stk<div style="font-size:20px;font-weight:700">{{ t.zl|floatformat:"-1" }} × {{ t.zb|floatformat:"-1" }}</div>
+      <div class="hilfe">fertig {{ t.l|floatformat:"-1" }} × {{ t.b|floatformat:"-1" }} × {{ t.dicke|floatformat:"-1" }} · Kanten {{ t.kanten }}{% if t.maser %} · {{ t.maser }}{% endif %}</div></div></label>{% endfor %}</div>
+{% endfor %}
+<script>
+document.querySelectorAll(".teil input").forEach(function (c) {
+  var k = "pw-zuschnitt-" + c.dataset.id;
+  try { c.checked = localStorage.getItem(k) === "1"; } catch (e) {}
+  c.closest(".teil").classList.toggle("ok", c.checked);
+  c.addEventListener("change", function () { try { localStorage.setItem(k, c.checked ? "1" : "0"); } catch (e) {} c.closest(".teil").classList.toggle("ok", c.checked); });
+});
+</script>
+{% endblock %}

@@ -31,6 +31,7 @@ MODULE = [
     ("Auswertungen", "Umsatz, Nachkalkulation, Stunden, Werkstatt", 4, VERWALTUNG, "auswertung:uebersicht", "Geld", "📊"),
     ("Mitarbeiter", "Personal und Stundensätze", 1, VERWALTUNG, "mitarbeiter:liste", "Verwaltung", "🧑‍🔧"),
     ("Arbeitsverträge", "Soll-Stunden, Urlaub, Lohn", 4, VERWALTUNG + (Rolle.BUCHHALTUNG,), "zeiten:vertraege", "Verwaltung", "📄"),
+    ("Handy", "Handy-Ansicht, Meldungen, Handy im WLAN", 5, ALLE, "handy:start", "Büro & Planung", "📱"),
     ("Excel-Import", "Daten aus der Excel-Fassung übernehmen", 0, VERWALTUNG, "importe:uebersicht", "Verwaltung", "📥"),
     ("Sicherung", "Datensicherung anlegen und ansehen", 0, VERWALTUNG, "sicherung:uebersicht", "Verwaltung", "💾"),
     ("Protokoll", "Wer hat wann was gemacht", 0, VERWALTUNG, "protokoll", "Verwaltung", "📜"),

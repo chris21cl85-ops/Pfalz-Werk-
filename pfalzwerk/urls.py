@@ -35,5 +35,6 @@ urlpatterns = [
     path("zeiten/", include("zeiten.urls")),
     path("auswertung/", include("auswertung.urls")),
     path("inventur/", include("inventur.urls")),
+    path("handy/", include("handy.urls")),
     path("verwaltung/", admin.site.urls),
 ]

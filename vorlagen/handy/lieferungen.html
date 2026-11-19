@@ -1,0 +1,12 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Lieferungen{% endblock %}
+{% block inhalt %}
+<h1>Lieferungen</h1>
+<p class="hilfe" style="margin-top:-6px">Was ist angekommen? „Alles da“ bucht den Wareneingang und lagert ein.</p>
+{% for b in offen %}<div class="karte" style="{% if b.erwartet_am and b.erwartet_am < heute %}border-left:6px solid var(--rot){% endif %}">
+  <b>{{ b.material.bezeichnung }}</b><div class="hilfe">{{ b.bnr }} · {{ b.lieferant.name|default:"" }} · offen {{ b.rest_offen|floatformat:"-3" }} {{ b.material.einheit }}{% if b.erwartet_am %} · erwartet {{ b.erwartet_am|date:"d.m." }}{% endif %}</div>
+  <form method="post" style="margin-top:10px">{% csrf_token %}<input type="hidden" name="bestellung" value="{{ b.pk }}">
+    <button class="knopf breit" name="was" value="alles">✓ Alles da</button>
+    <div class="reihe" style="margin-top:8px"><input name="menge" inputmode="decimal" placeholder="Teilmenge"><button class="knopf zweit" name="was" value="teil">Teil da</button></div></form></div>
+{% empty %}<p>Keine offenen Lieferungen.</p>{% endfor %}
+{% endblock %}

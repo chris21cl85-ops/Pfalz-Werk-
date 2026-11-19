@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#13362a"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>{% block titel %}PFALZ-WERK Handy{% endblock %}</title>
+<style>
+:root{--tanne:#13362a;--gruen:#2f8a5e;--minze:#5fd3a0;--tuerkis:#2bb3c0;--bernstein:#f0a442;--rot:#c62828;--rand:#dbe5df;--grau:#6f8a79;--flaeche:#fff}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;color:#16261d;background:linear-gradient(180deg,#eef5f1,#f7faf8 40%);min-height:100vh;padding-bottom:84px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,var(--tanne),#2c6a4c);color:#fff;box-shadow:0 4px 16px rgba(19,54,42,.25)}
+header a{color:#fff;text-decoration:none}header .wer{margin-left:auto;font-size:14px;opacity:.85;text-align:right}
+main{padding:14px;max-width:640px;margin:0 auto}h1{font-size:23px;margin:6px 0 12px}h2{font-size:18px;margin:18px 0 8px;color:#2c6a4c}
+.karte{background:var(--flaeche);border:1px solid var(--rand);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 4px 14px rgba(19,54,42,.06)}
+.kacheln{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kachel{display:flex;flex-direction:column;justify-content:space-between;min-height:118px;padding:16px;border-radius:20px;text-decoration:none;color:#fff;font-weight:700;font-size:19px;background:linear-gradient(135deg,#2c6a4c,var(--tuerkis));box-shadow:0 8px 20px rgba(43,179,192,.25);position:relative}
+.kachel:nth-child(4n+2){background:linear-gradient(135deg,#8a5a12,var(--bernstein))}.kachel:nth-child(4n+3){background:linear-gradient(135deg,#2f4f8a,#4f8fd8)}.kachel:nth-child(4n){background:linear-gradient(135deg,#5a3c8a,#9b7be0)}
+.kachel .z{font-size:34px}.kachel .n{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.95);color:#16261d;border-radius:999px;min-width:30px;text-align:center;padding:2px 9px;font-size:16px}
+.knopf{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:52px;padding:0 20px;border:0;border-radius:16px;background:linear-gradient(135deg,var(--gruen),var(--tuerkis));color:#fff;font-size:18px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit}
+.knopf.zweit{background:#fff;color:#16261d;border:1px solid var(--rand)}.knopf.rot{background:linear-gradient(135deg,#9c3a22,#e5703a)}.knopf.breit{width:100%}
+input,select,textarea{width:100%;font-size:18px;padding:13px;border:1px solid #c9d6ce;border-radius:14px;background:#fff;font-family:inherit}
+label{display:block;font-weight:600;margin:12px 0 5px;font-size:15px}.reihe{display:flex;gap:10px}.reihe>*{flex:1}
+.hilfe{color:var(--grau);font-size:14px}.meldung{padding:12px 14px;border-radius:14px;margin:8px 0;background:#e3f2e8;border-left:6px solid var(--minze)}
+.meldung.error{background:#f9e0db;border-left-color:#e5703a}.meldung.warning{background:#fbefd5;border-left-color:var(--bernstein)}
+.status{display:inline-block;padding:3px 10px;border-radius:999px;background:#eef1ef;font-size:14px}
+.unten{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid var(--rand);backdrop-filter:blur(8px);z-index:5}
+.unten a{flex:1;text-align:center;text-decoration:none;color:#2c6a4c;font-size:12px;font-weight:600}.unten a span{display:block;font-size:23px}
+.gross{font-size:30px;font-weight:800}.zeile{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rand)}
+</style></head>
+<body>
+<header><a href="{% url 'handy:start' %}"><b>🪵 PFALZ-WERK</b></a><div class="wer">{{ request.user.get_full_name|default:request.user.username }}<br><a href="{% url 'startseite' %}">große Ansicht</a></div></header>
+<main>
+{% for m in messages %}<div class="meldung {{ m.tags }}">{{ m }}</div>{% endfor %}
+{% block inhalt %}{% endblock %}
+</main>
+<nav class="unten"><a href="{% url 'handy:start' %}"><span>⌂</span>Start</a><a href="{% url 'handy:tag' %}"><span>🌅</span>Mein Tag</a><a href="{% url 'handy:arbeit' %}"><span>🔨</span>Arbeit</a><a href="{% url 'handy:zeit' %}"><span>⏱</span>Zeit</a><a href="{% url 'handy:melden' %}"><span>⚠</span>Melden</a></nav>
+</body></html>

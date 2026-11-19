@@ -68,14 +68,20 @@ def main():
     schritt(verwalten + ["migrate", "--noinput", "-v", "0"], "Datenbank aktualisieren")
     subprocess.check_call(verwalten + ["ersteinrichtung"])  # fragt evtl. nach Eingaben, daher direkt
     schritt(verwalten + ["sicherung", "--wenn-faellig"], "Tägliche Sicherung")
+    netz = subprocess.run(verwalten + ["netzadresse"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    zeilen = (netz.stdout or "").strip().splitlines()
+    binden = zeilen[0] if zeilen else ADRESSE
 
     def browser_oeffnen():
         time.sleep(2)
         webbrowser.open(f"http://{ADRESSE}/")
 
     threading.Thread(target=browser_oeffnen, daemon=True).start()
-    print(f"\nPFALZ-WERK läuft unter http://{ADRESSE}/  –  Fenster offen lassen. Beenden mit Strg+C.\n")
-    subprocess.call(verwalten + ["runserver", ADRESSE, "--noreload", "--insecure"])
+    print(f"\nPFALZ-WERK läuft unter http://{ADRESSE}/  –  Fenster offen lassen. Beenden mit Strg+C.")
+    if len(zeilen) > 1:
+        print(f"Handys im WLAN: {zeilen[1]}  (beim ersten Mal die Windows-Firewall-Frage mit „Zulassen“ beantworten)")
+    print()
+    subprocess.call(verwalten + ["runserver", binden, "--noreload", "--insecure"])
 
 
 if __name__ == "__main__":

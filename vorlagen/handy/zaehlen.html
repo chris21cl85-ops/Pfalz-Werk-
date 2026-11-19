@@ -1,0 +1,21 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Zählen{% endblock %}
+{% block inhalt %}
+<h1>Inventur zählen</h1>
+{% if not inv %}<div class="karte">Gerade läuft keine Inventur.</div>{% else %}
+<p class="hilfe" style="margin-top:-6px">{{ inv.invid }} · {{ gesamt|add:"0" }} Positionen · noch {{ rest }} offen</p>
+{% if aktuell %}
+<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="position" value="{{ aktuell.pk }}"><input type="hidden" name="aktion" value="zaehlen">
+  <div class="hilfe">{{ aktuell.lagerplatz|default:"ohne Lagerplatz" }}</div>
+  <div class="gross" style="font-size:24px">{{ aktuell.material.materialnr }}</div><div>{{ aktuell.material.bezeichnung }}</div>
+  {% if not inv.blind %}<div class="hilfe">Soll {{ aktuell.soll|floatformat:"-3" }} {{ aktuell.einheit }}</div>{% endif %}
+  <label>Wie viel liegt da? ({{ aktuell.einheit }})</label><input name="menge" inputmode="decimal" autofocus required style="font-size:28px;text-align:center">
+  <label>Bemerkung</label><input name="bemerkung">
+  <div class="reihe" style="margin-top:12px"><button class="knopf zweit" type="submit" onclick="this.form.menge.value='0'">0</button><button class="knopf">Speichern & weiter</button></div></form>
+{% else %}<div class="meldung">Alles gezählt ✓</div>{% endif %}
+{% if nach %}<h2>Nachzählen (Vier-Augen)</h2>
+{% for p in nach %}<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="position" value="{{ p.pk }}"><input type="hidden" name="aktion" value="nach">
+  <b>{{ p.material.materialnr }}</b> {{ p.material.bezeichnung }}<div class="hilfe">Erstzählung von {{ p.zaehler }} – bitte jemand anderes</div>
+  <div class="reihe" style="margin-top:8px"><input name="menge" inputmode="decimal" placeholder="Menge" required><button class="knopf">Speichern</button></div></form>{% endfor %}{% endif %}
+{% endif %}
+{% endblock %}

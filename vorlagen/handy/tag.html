@@ -1,0 +1,17 @@
+{% extends "handy/basis.html" %}
+{% block titel %}Mein Tag{% endblock %}
+{% block inhalt %}
+<h1>Mein Tag · {{ heute|date:"D d.m." }}</h1>
+{% if not ma %}{% include "handy/_ohne_ma.html" %}{% else %}
+{% if weg %}<div class="meldung warning">🌴 Heute: {{ weg }}</div>{% endif %}
+<h2>Termine</h2>
+{% for t in termine %}<div class="karte"><b>{{ t.datum|date:"D d.m." }}{% if t.beginn %} · {{ t.beginn|time:"H:i" }}–{{ t.ende|time:"H:i" }}{% endif %}</b>
+  <div>{{ t.aufgabe }}</div><div class="hilfe">{% if t.projekt %}{{ t.projekt.projektnr }} · {{ t.projekt.kunde.name }}{% endif %}{% if t.ort %} · 📍 {{ t.ort }}{% endif %}</div>
+  {% if t.ort %}<a class="knopf zweit" style="min-height:42px;margin-top:8px" href="https://maps.google.com/?q={{ t.ort|urlencode }}" target="_blank">Route öffnen</a>{% endif %}</div>
+{% empty %}<p class="hilfe">Keine Termine.</p>{% endfor %}
+<h2>Arbeitsgänge</h2>
+{% for a in ags %}<div class="karte"><b>{{ a.name }}</b><div class="hilfe">{{ a.projekt.projektnr }} · {{ a.status }}{% if a.plan_start %} · Plan {{ a.plan_start|date:"d.m." }}{% endif %}</div></div>
+{% empty %}<p class="hilfe">Heute nichts eingeplant.</p>{% endfor %}
+<a class="knopf breit" href="{% url 'handy:arbeit' %}">🔨 Zur Arbeit</a>
+{% endif %}
+{% endblock %}

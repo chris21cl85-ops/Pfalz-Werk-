@@ -1,0 +1,17 @@
+{% extends "basis.html" %}
+{% block titel %}Handy verbinden – PFALZ-WERK{% endblock %}
+{% block pfad %} › Handy verbinden{% endblock %}
+{% block inhalt %}
+<h1>Handy verbinden</h1>
+<div class="karte">
+  <h3 style="margin-top:0">Handy im WLAN: {% if an %}<span style="color:var(--gruen)">AN</span>{% else %}AUS{% endif %}</h3>
+  <p>Ist es an, erreichen Handys und Tablets im <b>gleichen WLAN</b> wie dieser PC das Programm. Jeder meldet sich mit seinem eigenen Zugang an. Außerhalb des Betriebs (Internet) ist es nicht erreichbar.</p>
+  <form method="post">{% csrf_token %}{% if an %}<button class="knopf zweit" name="ein" value="0">Ausschalten</button>{% else %}<button class="knopf" name="ein" value="1">Einschalten</button>{% endif %}</form>
+  <p class="hilfe">Nach dem Umschalten PFALZ-WERK einmal schließen und neu starten. Beim ersten Start fragt Windows nach der Firewall – „Zulassen“ (privates Netzwerk) wählen.</p>
+</div>
+{% if an %}<div class="karte" style="display:flex;gap:22px;flex-wrap:wrap;align-items:center">
+  <div style="background:#fff;padding:10px;border-radius:14px;width:240px">{{ qr|safe }}</div>
+  <div><p>Mit der Handy-Kamera scannen oder im Handy-Browser eintippen:</p><p style="font-size:22px;font-weight:700">{{ adresse }}</p>
+    <p class="hilfe">Tipp: Auf dem Handy „Zum Startbildschirm hinzufügen“ – dann wirkt es wie eine App.<br>Erkannte Adresse dieses PCs: {{ ip }}. Ändert sie sich (anderes WLAN), neu scannen.</p></div></div>{% endif %}
+<p><a class="knopf zweit" href="{% url 'handy:start' %}">📱 Handy-Ansicht hier ansehen</a> <a class="knopf zweit" href="{% url 'handy:meldungen' %}">📣 Meldungen</a></p>
+{% endblock %}

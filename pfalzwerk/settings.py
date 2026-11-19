@@ -84,6 +84,13 @@ DEBUG = os.environ.get("PFALZWERK_DEBUG", "0") == "1"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"] + [
     h for h in os.environ.get("PFALZWERK_HOSTS", "").split(",") if h
 ]
+# Handy im WLAN (Verwaltung → Handy verbinden): dann ist das Programm im Betriebsnetz unter der IP des PCs erreichbar
+HANDY_SCHALTER = LOKAL_DIR / "handy_im_netz.txt"
+if HANDY_SCHALTER.exists():
+    ALLOWED_HOSTS = ["*"]
+# hochgeladene Dateien (z. B. Fotos zu Meldungen) – im Datenordner, nicht im Programmordner
+DATEIEN_DIR = LOKAL_DIR / "dateien"
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -110,6 +117,7 @@ INSTALLED_APPS = [
     "zeiten",
     "auswertung",
     "inventur",
+    "handy",
 ]
 
 MIDDLEWARE = [
