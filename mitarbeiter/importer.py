@@ -98,7 +98,7 @@ class VertragsdatenImporter(Importer):
             geaendert.append("eintritt")
         for feld, quelle in (("wochenstunden", "wochenstunden"), ("urlaubstage", "urlaub")):
             zahl = als_zahl(zeile[quelle])
-            if getattr(m, feld) is None and zahl not in (None, False) and zahl >= 0:
+            if getattr(m, feld) is None and zahl is not None and zahl is not False and zahl >= 0:
                 setattr(m, feld, zahl)
                 geaendert.append(feld)
         if not geaendert:

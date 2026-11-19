@@ -1,0 +1,24 @@
+{% extends "basis.html" %}
+{% block titel %}Zeiterfassung {{ name }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › Zeiterfassung{% endblock %}
+{% block inhalt %}
+{% include "zeiten/_stil.html" %}
+<h1>Zeiterfassung · {{ name }}</h1>
+<div class="leiste"><a class="knopf zweit" href="?monat={{ vor }}">← Monat</a><a class="knopf zweit" href="?">Aktueller Monat</a><a class="knopf zweit" href="?monat={{ nach }}">Monat →</a>
+  <span style="flex:1"></span><a class="knopf" href="{% url 'zeiten:meine' %}">⏱ Meine Zeiten</a>
+  <a class="knopf zweit" href="{% url 'zeiten:vertraege' %}">📄 Arbeitsverträge</a></div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Mitarbeiter</th><th style="text-align:right">Soll</th><th style="text-align:right">Ist</th><th class="breit" style="text-align:right">Abwesenheit</th><th style="text-align:right">Saldo Monat</th><th style="text-align:right">Zeitkonto</th><th class="breit" style="text-align:right">Urlaub Rest</th><th>Monat</th></tr>
+  {% for z in zeilen %}<tr class="klickbar" onclick="location.href='{% url 'zeiten:mitarbeiter' z.ma.pk %}?monat={{ erster|date:'Y-m' }}'">
+    <td><a href="{% url 'zeiten:mitarbeiter' z.ma.pk %}?monat={{ erster|date:'Y-m' }}">{{ z.ma.name }}</a>{% if not z.vertrag %}<div class="hilfe">ohne Vertrag – Soll aus Wochenstunden</div>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ z.s.soll|floatformat:"-2" }}</td>
+    <td class="nowrap" style="text-align:right">{{ z.s.ist|floatformat:"-2" }}</td>
+    <td class="nowrap breit" style="text-align:right">{{ z.s.gutschrift|floatformat:"-2" }}</td>
+    <td class="nowrap {% if z.s.saldo < 0 %}minus{% elif z.s.saldo > 0 %}plus{% endif %}" style="text-align:right">{{ z.s.saldo|floatformat:"-2" }}</td>
+    <td class="nowrap {% if z.konto < 0 %}minus{% endif %}" style="text-align:right"><b>{{ z.konto|floatformat:"-2" }}</b></td>
+    <td class="nowrap breit" style="text-align:right">{{ z.urlaub.rest|floatformat:"-1" }} T</td>
+    <td>{% if z.abgeschlossen %}🔒 abgeschlossen{% else %}<span class="grau">offen</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="8">Keine aktiven Mitarbeiter.</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">Soll bis heute aus dem Arbeitsvertrag (Mo–Fr, ohne Feiertage in Rheinland-Pfalz). Freigegebener Urlaub, Krankheit, Fortbildung und Berufsschule zählen als erfüllte Soll-Zeit; Zeitausgleich nicht. Saldo = Ist + Abwesenheit − Soll.</p>
+{% endblock %}

@@ -244,3 +244,17 @@ def test_import_laesst_im_programm_geaenderte_zahlen(tmp_path):
     ausfuehren(pfad, probelauf=False)
     rw = Regelwerk.laden()
     assert rw.werte["SOCKEL_H"] == 130 and "Häfele" in rw.systeme
+
+
+def test_import_regelwert_null(tmp_path):
+    """Eine Regel mit Wert 0 (z. B. Kippmaß-Luft 0) muss übernommen werden – früher wurde 0 als „leer“ gelesen."""
+    mappe = Workbook()
+    ws = mappe.active
+    ws.title = "Möbel-Regeln"
+    for _ in range(3):
+        ws.append([])
+    ws.append(["KIPP_LUFT", 0])
+    pfad = tmp_path / "pw.xlsx"
+    mappe.save(pfad)
+    ausfuehren(pfad, probelauf=False)
+    assert Regelwerk.laden().werte["KIPP_LUFT"] == 0

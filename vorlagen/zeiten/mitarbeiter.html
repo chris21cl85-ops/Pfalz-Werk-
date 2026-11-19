@@ -1,0 +1,41 @@
+{% extends "basis.html" %}
+{% block titel %}{{ ma.name }} {{ m.name }} – Zeiterfassung{% endblock %}
+{% block pfad %} › <a href="{% url 'zeiten:uebersicht' %}?monat={{ erster|date:'Y-m' }}">Zeiterfassung</a> › {{ ma.name }}{% endblock %}
+{% block inhalt %}
+{% include "zeiten/_stil.html" %}
+<h1>{{ ma.name }} · {{ m.name }}</h1>
+<p class="grau" style="margin-top:-12px">{% if vertrag %}{{ vertrag.vertragsid }} · {{ vertrag.art }} · Soll {{ vertrag.soll_woche|floatformat:"-2" }} h/Woche{% else %}kein Arbeitsvertrag erfasst – Soll aus Wochenstunden{% endif %}
+  {% if m.abgeschlossen %} · <b>🔒 abgeschlossen am {{ m.abgeschlossen.abgeschlossen_am|date:"d.m.Y" }}</b>{% endif %}</p>
+<div class="zahlen" style="margin-bottom:20px">
+  <div class="zahl"><small>Ist / Soll</small><b>{{ m.summe.ist|floatformat:"-2" }} / {{ m.summe.soll|floatformat:"-2" }} h</b><small>+ {{ m.summe.gutschrift|floatformat:"-2" }} h Abwesenheit</small></div>
+  <div class="zahl blau"><small>Saldo {{ m.name }}</small><b class="{% if m.summe.saldo < 0 %}minus{% endif %}">{{ m.summe.saldo|floatformat:"-2" }} h</b><small>Ist + Abwesenheit − Soll</small></div>
+  <div class="zahl warn"><small>Zeitkonto Ende {{ m.name }}</small><b>{{ konto|floatformat:"-2" }} h</b><small>inkl. Startwert aus dem Vertrag</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Urlaub {{ erster|date:"Y" }}</small><b>{{ urlaub.rest|floatformat:"-1" }} Tage</b><small>Rest von {{ urlaub.anspruch|floatformat:"-1" }}</small></div>
+</div>
+<div class="leiste"><a class="knopf zweit" href="?monat={{ vor }}">← Monat</a><a class="knopf zweit" href="?monat={{ nach }}">Monat →</a>
+  <a class="knopf zweit" href="{% url 'zeiten:stundenzettel' ma.pk %}?monat={{ erster|date:'Y-m' }}" target="_blank">Stundenzettel (PDF)</a>
+  {% if darf_abschluss and not m.abgeschlossen and monat_vorbei %}<form method="post" style="display:contents" onsubmit="return confirm('{{ m.name }} für {{ ma.name }} abschließen? Danach sind die Buchungen gesperrt.')">{% csrf_token %}<button class="knopf" name="aktion" value="abschliessen">🔒 Monat abschließen</button></form>{% endif %}
+  {% if darf_oeffnen and m.abgeschlossen %}<form method="post" style="display:contents" onsubmit="return confirm('Abschluss wirklich aufheben? Wird protokolliert.')">{% csrf_token %}<button class="knopf zweit" name="aktion" value="oeffnen">Abschluss aufheben</button></form>{% endif %}</div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Tag</th><th style="text-align:right">Soll</th><th style="text-align:right">Ist</th><th style="text-align:right">Diff.</th><th>Hinweis</th></tr>
+  {% for t in m.tage %}<tr class="{% if not t.soll and not t.ist %}frei{% endif %}">
+    <td class="nowrap">{{ t.datum|date:"D d.m." }}</td>
+    <td class="nowrap" style="text-align:right">{% if t.soll %}{{ t.soll|floatformat:"-2" }}{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{% if t.ist %}{{ t.ist|floatformat:"-2" }}{% endif %}</td>
+    <td class="nowrap {% if t.diff < 0 %}minus{% elif t.diff > 0 %}plus{% endif %}" style="text-align:right">{% if not t.zukunft and t.diff %}{{ t.diff|floatformat:"-2" }}{% endif %}</td>
+    <td>{{ t.feiertag }}{% if t.abwesend %}🌴 {{ t.abwesend }}{% endif %}</td></tr>{% endfor %}
+</table></div>
+<h2 class="abschnitt">Buchungen</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Tag</th><th>Zeit</th><th style="text-align:right">Std.</th><th>Projekt / Tätigkeit</th><th class="breit">Erfasst</th><th></th></tr>
+  {% for b in buchungen %}<tr class="{% if b.storniert_am %}storniert{% endif %}"><td class="nowrap">{{ b.datum|date:"D d.m." }}</td>
+    <td class="nowrap">{% if b.beginn %}{{ b.beginn|time:"H:i" }}–{{ b.ende|time:"H:i" }}{% if b.pause_min %}<div class="hilfe">Pause {{ b.pause_min }} Min.</div>{% endif %}{% else %}–{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ b.stunden|floatformat:"-2" }}</td>
+    <td>{% if b.projekt %}{{ b.projekt.projektnr }}{% if b.arbeitsgang %} · {{ b.arbeitsgang.name }}{% endif %}{% endif %} <span class="hilfe">{{ b.get_taetigkeit_display }}{% if b.notiz %} · {{ b.notiz }}{% endif %}</span>
+      {% if b.storniert_am %}<div class="hilfe">storniert: {{ b.storno_grund }}</div>{% endif %}</td>
+    <td class="breit hilfe">{{ b.get_quelle_display }} · {{ b.erfasst_von.username|default:"–" }}</td>
+    <td>{% if leitung and not m.abgeschlossen %}{% include "zeiten/_storno.html" %}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6">Keine Buchungen in diesem Monat.</td></tr>{% endfor %}
+</table></div>
+{% if leitung and not m.abgeschlossen %}{% include "zeiten/_buchen.html" with titel="+ Zeit für "|add:ma.name %}{% endif %}
+{% endblock %}

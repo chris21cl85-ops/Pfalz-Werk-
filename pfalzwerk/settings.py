@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     "moebel",
     "produktion",
     "planung",
+    "zeiten",
 ]
 
 MIDDLEWARE = [

@@ -55,10 +55,15 @@ def stand(projekt) -> dict:
     d = {"n": len(ags), "fertig": sum(a.status == S.FERTIG for a in ags),
          "gestartet": sum(a.status != S.GEPLANT for a in ags), "geplant": sum(a.plan_start is not None for a in ags),
          "soll": sum((a.plan_std for a in ags), Decimal("0")), "ist": sum((a.ist_std for a in ags), Decimal("0")),
-         "lohn": sum((a.lohnkosten_ist or Decimal("0") for a in ags), Decimal("0")), "qm": qm_stand(projekt),
+         "lohn": _lohn(projekt), "qm": qm_stand(projekt),
          "montage_bestanden": _montage_bestanden(projekt)}
     d["phase"] = phase(projekt, d)
     return d
+
+
+def _lohn(projekt) -> Decimal:
+    from zeiten.dienst import lohn_ist
+    return lohn_ist(projekt)
 
 
 def _montage_bestanden(projekt) -> bool:
@@ -246,12 +251,25 @@ def rueckmelden(ag: Arbeitsgang, *, stunden, fertig: bool, benutzer):
         raise ProduktionsFehler("Stunden können nicht negativ sein.")
     if not fertig and stunden == 0:
         raise ProduktionsFehler("Für einen Zwischenstand bitte Stunden eintragen.")
-    ag.ist_std += stunden
-    felder = ["ist_std"]
+    felder = []
+    if stunden > 0:
+        from zeiten import dienst as zeiten
+        ma = ag.mitarbeiter or mitarbeiter_von(benutzer)
+        if ma is not None:  # Zeitbuchung zählt die Ist-Stunden am Arbeitsgang mit
+            try:
+                zeiten.buchen(mitarbeiter=ma, datum=timezone.localdate(), stunden=stunden, arbeitsgang=ag,
+                              taetigkeit="Montage" if ag.code.startswith("MO") else "Fertigung",
+                              quelle="Produktion", benutzer=benutzer)
+            except zeiten.ZeitFehler as fehler:
+                raise ProduktionsFehler(str(fehler)) from fehler
+        else:
+            ag.ist_std += stunden
+            felder.append("ist_std")
     if fertig:
         ag.status, ag.fertig_am = S.FERTIG, timezone.now()
         felder += ["status", "fertig_am"]
-    ag.save(update_fields=felder)
+    if felder:
+        ag.save(update_fields=felder)
     protokolliere("arbeitsgang_fertig" if fertig else "arbeitsgang_zwischenstand", ag.agid, benutzer=benutzer,
                   details=f"{ag.name}: +{stunden:g} h, gesamt {ag.ist_std:g} h")
 

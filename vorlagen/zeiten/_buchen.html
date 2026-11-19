@@ -1,0 +1,6 @@
+<form method="post" class="karte">{% csrf_token %}<input type="hidden" name="aktion" value="buchen">
+  <h3 style="margin-top:0">{{ titel|default:"+ Zeit buchen" }}</h3>
+  {% if form.non_field_errors %}<div class="meldung error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div class="raster">{% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}</div>
+  <p class="hilfe">Von/Bis mit Pause – oder nur die Stunden (z. B. 7,5). Mit Arbeitsgang zählen die Stunden dort als Ist-Stunden mit. ★ = dir zugeteilt.</p>
+  <button class="knopf" type="submit">Buchen</button></form>

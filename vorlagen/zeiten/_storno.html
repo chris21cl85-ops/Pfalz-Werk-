@@ -1,0 +1,3 @@
+{% if not b.storniert_am %}<form method="post" class="inline" style="display:flex;gap:6px" onsubmit="var g=prompt('Grund für den Storno?');if(!g)return false;this.grund.value=g;return true;">{% csrf_token %}
+  <input type="hidden" name="aktion" value="storno"><input type="hidden" name="buchung" value="{{ b.pk }}"><input type="hidden" name="grund" value="">
+  <button class="pfeil" title="Stornieren" style="padding:4px 10px">✕</button></form>{% endif %}

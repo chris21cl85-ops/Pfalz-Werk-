@@ -150,10 +150,11 @@ class Arbeitsgang(models.Model):
 
     @property
     def lohnkosten_ist(self) -> Decimal | None:
-        """AJ: Ist-Stunden × Stundensatz des Mitarbeiters."""
+        """AJ: Ist-Stunden × Stundenlohn (Arbeitsvertrag, sonst Stundensatz) des Mitarbeiters."""
         if not self.mitarbeiter_id or not self.ist_std:
             return None
-        return (self.ist_std * (self.mitarbeiter.stundensatz or 0)).quantize(Decimal("0.01"))
+        from zeiten.dienst import stundenlohn
+        return (self.ist_std * stundenlohn(self.mitarbeiter)).quantize(Decimal("0.01"))
 
 
 class QMPruefung(models.Model):

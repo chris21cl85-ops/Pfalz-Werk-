@@ -1,6 +1,6 @@
 # STAND – PFALZ-WERK Neubau
 
-Letzte Aktualisierung: 15.11.2026
+Letzte Aktualisierung: 19.11.2026
 
 ## Arbeitsweise mit Chris (immer beachten)
 - Chris ist Anfänger. Jede Aufgabe an Chris wird **ausdrücklich Schritt für Schritt** beschrieben:
@@ -12,7 +12,7 @@ Letzte Aktualisierung: 15.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 3.4 (Etappe 3, Paket 3b).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 4.1 (Etappe 4, Paket 4a).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -501,7 +501,7 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 5. Alle fertig → QM „Nicht bestanden“ mit Mangel → Nacharbeit erscheint; fertig melden → QM „Bestanden“ → Schritt „Montage“.
 6. Optional: Mitarbeiter-Zugang mit Mitarbeiter verknüpfen → als dieser anmelden → „Meine Arbeitsgänge“.
 
-### Paket 3b: Teams, Montageplan, Abwesenheiten, Kalender – GEBAUT 15.11.2026, Abnahme offen
+### Paket 3b: Teams, Montageplan, Abwesenheiten, Kalender – weitergegeben am 19.11.2026 (Chris: „Kann weiter gehen mit Etappe 4“)
 Vorlage: `PW_Produktion.bas` (MontageZeigen/MontageSpeichern, Teams/Mitglied), `PW_Kalender.bas` (Sammeln, Zeilen, Passt),
 Blätter „Teams“, „Zeitdaten“, „Montageplan“, „Zeitplan“. Neue App `planung`.
 - Kachel „Montage & Kalender“ (alle) mit Reitern Woche · Montageplan · Teams · Abwesenheiten.
@@ -536,12 +536,52 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 5. Kalender: zwischen Teams / Mitarbeiter / Projekte umschalten, Woche vor und zurück.
 6. Montage → „✓ Montage bestanden“ → in der Produktion steht „Fertig“.
 
+## Etappe 4 – Zeit & Zahlen: IN ARBEIT
+Aufteilung: 4a Zeiterfassung + Arbeitsverträge (dieses Paket), 4b Auswertungen für den Chef (inkl. Löhne in der
+Liquidität), danach Verkaufsfassung/Installer (FEHLER Nr. 2).
+Die Excel hat keinen eigenen Stundenzettel: Projektstunden kamen nur aus „Produktion Arbeitsgänge“ (Ist-Std.),
+Soll und Urlaub aus „Arbeitsverträge“, Abwesenheiten aus „Zeitdaten“ (PW_Personal.bas). Das Programm führt das zusammen.
+
+### Paket 4a: Zeiterfassung + Arbeitsverträge – GEBAUT 19.11.2026, Abnahme offen
+Neue App `zeiten`.
+- **Arbeitsverträge** (Kachel unter Verwaltung; Chef/Admin ändern, Buchhaltung liest, Meister/Mitarbeiter nicht):
+  Vertragsart, Status, Eintritt, Befristung, Probezeit, Soll Mo–Fr, Urlaub/Jahr, Zeitkonto-Startwert, Brutto/Monat,
+  Stundenlohn, Kündigungsfrist, Tätigkeit, Arbeitsort. Hinweise: kein Vertrag, Probezeit endet (30 Tage),
+  Befristung endet (60 Tage), Eintritt fehlt, Stundenlohn fehlt. Protokoll ohne Beträge. Import Blatt „Arbeitsvertraege“.
+- **Zeiterfassung** (Kachel für alle): „Meine Zeiten“ – Woche mit Soll/Ist je Tag, Buchen mit Von/Bis/Pause oder nur
+  Stunden, Projekt, Arbeitsgang (★ = mir zugeteilt), Tätigkeit, Notiz; Zeitkonto und Resturlaub.
+  Büro (Chef/Admin/Meister/Buchhaltung): Monatsübersicht aller Mitarbeiter (Soll, Ist, Abwesenheit, Saldo, Zeitkonto,
+  Urlaub), Monat je Mitarbeiter mit Tagesliste und Buchungen, Buchen für andere (Chef/Admin/Meister),
+  **Stundenzettel als PDF** mit Unterschriftszeilen, **Monat abschließen** (Chef/Admin; danach gesperrt),
+  Abschluss aufheben nur Chef (protokolliert).
+- **Regeln**: Soll aus dem Vertrag (sonst Wochenstunden/5, sonst 8 h); Wochenende und Feiertage Rheinland-Pfalz
+  (inkl. Fronleichnam, Allerheiligen) = 0. Freigegebener Urlaub/Krank/Fortbildung/Berufsschule = erfüllte Soll-Zeit,
+  Zeitausgleich nicht. Zeitkonto = Startwert + Monatssalden ab dem späteren von Eintritt und erster Buchung.
+  Urlaub genommen = Arbeitstage ohne Feiertage. Buchungen max. 16 h/Tag, nicht in der Zukunft.
+  Stornieren nur mit Grund – die Buchung bleibt sichtbar (durchgestrichen).
+- **Verknüpfungen**: Rückmelden in der Produktion bucht die Stunden automatisch als Zeit (Quelle „Produktion“).
+  Lohnkosten Ist = Stunden × Stundenlohn zum Buchungszeitpunkt (+ Ist-Stunden aus der Excel ohne Buchung ×
+  aktueller Stundenlohn) → erscheint in der Produktion und in der **Nachkalkulation** (Ist-Kosten jetzt inkl. Löhne).
+- Behoben nebenbei: Wert 0 beim Excel-Import (FEHLER Nr. 11).
+- 427 automatische Tests, alle grün.
+
+### So testest du es (Etappe 4, Paket 4a)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 4.1“ stehen.
+1. Excel-Import erneut → im Bericht „Arbeitsverträge“ (Administrator wird übersprungen).
+2. Kachel „Arbeitsverträge“ → stimmen Soll-Stunden, Urlaub und Stundenlohn? Warnhinweise prüfen.
+3. Kachel „Zeiterfassung“ → „Meine Zeiten“ → eine Zeit mit Von/Bis und Pause buchen, eine nur mit Stunden (z. B. 7,5).
+4. Übersicht → Mitarbeiter → Monat ansehen → „Stundenzettel (PDF)“.
+5. Vormonat eines Mitarbeiters öffnen → „🔒 Monat abschließen“ → Buchen in diesem Monat geht nicht mehr.
+6. Produktion: einen Arbeitsgang mit Stunden rückmelden → die Zeit steht danach auch in der Zeiterfassung;
+   Kalkulation & Aufträge → „Ist-Kosten“ enthalten jetzt die Löhne.
+
 ## Nächstes Paket
-**Etappe 3 ist damit komplett gebaut** (Abnahme 3b offen). Danach **Etappe 4** (laut Plan: Zeiterfassung –
-Stunden auf Projekte, Lohnkosten in die Nachkalkulation – und Auswertungen für den Chef). Vorlage im Drive-Ordner
-1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3 (u. a. PW_Personal.bas 1Hh-DvBaSMW5el5NTIXIMKJzMAJNA013_), vor Beginn mit Chris
-Reihenfolge klären. Offen als eigene Pakete: Möbelrechner Stufen 2–6, Excel-Inventur (Blätter 25–32, 62–68),
-Kapazitätsplanung (Personal-Gate).
+**Etappe 4, Paket 4b: Auswertungen für den Chef** – Vorlage Blätter „Cockpit“, „Dashboard Start/Steuerung/Planung/
+Produktion/Material“, „Finanz-Cockpit“, „Kalkulationsvergleich“; Löhne (Brutto aus Arbeitsverträgen zum Monatsende)
+in die Liquidität. Danach Verkaufsfassung/Installer. Offen als eigene Pakete: Möbelrechner Stufen 2–6,
+Excel-Inventur (Blätter 25–32, 62–68), Kapazitätsplanung (Personal-Gate).
+Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

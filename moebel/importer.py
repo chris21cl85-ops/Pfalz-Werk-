@@ -28,7 +28,7 @@ class MoebelRegelImporter(Importer):
 
     def zeile_uebernehmen(self, z):
         key = als_text(z["key"])
-        if key and key.upper() == key and " " not in key and als_zahl(z["wert"]) not in (None, False):
+        if key and key.upper() == key and " " not in key and als_zahl(z["wert"]) is not None and als_zahl(z["wert"]) is not False:
             self.neu["werte"][key] = float(als_zahl(z["wert"]))
         elif key.lower() in STANDARD_NAMEN and als_text(z["wert"]):
             self.neu["standardmaterial"][STANDARD_NAMEN[key.lower()]] = als_text(z["wert"])

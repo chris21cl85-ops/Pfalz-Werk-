@@ -66,7 +66,7 @@ class StuecklistenImporter(Importer):
             projekt=p, material=m, pos=int(pos) if pos else (p.stueckliste.count() + 1),
             bezeichnung=als_text(zeile["bezeichnung"]) or (m.bezeichnung if m else ""), menge=als_zahl(zeile["menge"]),
             einheit=als_text(zeile["einheit"]) or (m.einheit if m else ""),
-            ek=ek if ek not in (None, False) else (m.ek_netto if m else None), status=status,
+            ek=ek if ek is not None and ek is not False else (m.ek_netto if m else None), status=status,
             notiz=f"aus Excel (Status „{als_text(zeile['status'])}“)" if als_text(zeile["status"]) else "aus Excel")
         return "neu"
 

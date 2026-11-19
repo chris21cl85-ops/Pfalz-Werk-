@@ -103,12 +103,13 @@ class Kalkulation(models.Model):
 
     @property
     def ist_kosten(self) -> Decimal:
-        """Nachkalkulation: Eingangsrechnungen (netto) + Lagerentnahmen zum Projekt. Löhne folgen mit Zeiterfassung."""
+        """Nachkalkulation: Eingangsrechnungen (netto) + Lagerentnahmen + Lohnkosten Ist (Zeiterfassung)."""
         from rechnungen.models import Eingangsrechnung
         er = sum((e.netto for e in Eingangsrechnung.objects.filter(projekt=self.projekt, storniert_am__isnull=True)), NULL)
         entnahmen = sum((p.gesamt for p in self.projekt.stueckliste.all()
                          if p.status == Stuecklistenposition.Status.ENTNOMMEN), NULL)
-        return er + entnahmen
+        from zeiten.dienst import lohn_ist
+        return er + entnahmen + lohn_ist(self.projekt)
 
 
 class Auftrag(models.Model):

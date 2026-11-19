@@ -1,0 +1,30 @@
+{% extends "basis.html" %}
+{% block titel %}Meine Zeiten – PFALZ-WERK{% endblock %}
+{% block pfad %} › Zeiterfassung{% endblock %}
+{% block inhalt %}
+{% include "zeiten/_stil.html" %}
+<h1>Meine Zeiten</h1>
+{% if not ma %}
+<div class="meldung info">Deinem Zugang ist noch kein Mitarbeiter zugeordnet. Das macht der Chef unter „Mitarbeiter“ (Feld „Zugang zum Programm“).</div>
+{% else %}
+<p class="grau" style="margin-top:-12px">{{ ma.name }} · KW {{ kw }} · {{ mo|date:"d.m." }} – {{ so|date:"d.m.Y" }}</p>
+<div class="zahlen" style="margin-bottom:20px">
+  <div class="zahl"><small>Diese Woche Ist / Soll</small><b>{{ ist|floatformat:"-2" }} / {{ soll|floatformat:"-2" }} h</b><small>Soll aus dem Arbeitsvertrag</small></div>
+  <div class="zahl blau"><small>Zeitkonto</small><b class="{% if konto < 0 %}minus{% endif %}">{{ konto|floatformat:"-2" }} h</b><small>Plus = Überstunden</small></div>
+  <div class="zahl warn"><small>Urlaub {% now "Y" %}</small><b>{{ urlaub.rest|floatformat:"-1" }} Tage</b><small>von {{ urlaub.anspruch|floatformat:"-1" }} · genommen {{ urlaub.genommen }}{% if urlaub.beantragt %} · beantragt {{ urlaub.beantragt }}{% endif %}</small></div>
+</div>
+<div class="leiste"><a class="knopf zweit" href="?woche={{ vor }}">← Woche</a><a class="knopf zweit" href="?">Heute</a><a class="knopf zweit" href="?woche={{ nach }}">Woche →</a>
+  <a class="knopf zweit" href="{% url 'planung:abwesenheiten' %}">🌴 Urlaub beantragen</a></div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Tag</th><th style="text-align:right">Soll</th><th style="text-align:right">Ist</th><th>Buchungen</th></tr>
+  {% for t in tage %}<tr class="{% if t.heute %}heute{% elif not t.soll %}frei{% endif %}">
+    <td class="nowrap"><b>{{ t.datum|date:"D d.m." }}</b>{% if t.feiertag %}<div class="hilfe">{{ t.feiertag }}</div>{% endif %}{% if t.abwesend %}<div class="hilfe">🌴 {{ t.abwesend }}</div>{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ t.soll|floatformat:"-2" }}</td>
+    <td class="nowrap" style="text-align:right">{% if t.ist %}<b>{{ t.ist|floatformat:"-2" }}</b>{% else %}–{% endif %}</td>
+    <td>{% for b in t.buchungen %}<div style="display:flex;gap:8px;align-items:center" class="{% if b.storniert_am %}storniert{% endif %}">
+      <span>{% if b.beginn %}{{ b.beginn|time:"H:i" }}–{{ b.ende|time:"H:i" }} · {% endif %}{{ b.stunden|floatformat:"-2" }} h · {% if b.projekt %}{{ b.projekt.projektnr }}{% if b.arbeitsgang %} {{ b.arbeitsgang.name }}{% endif %}{% else %}{{ b.get_taetigkeit_display }}{% endif %}{% if b.notiz %} · {{ b.notiz }}{% endif %}</span>
+      {% include "zeiten/_storno.html" %}</div>{% endfor %}</td></tr>{% endfor %}
+</table></div>
+{% include "zeiten/_buchen.html" %}
+{% endif %}
+{% endblock %}

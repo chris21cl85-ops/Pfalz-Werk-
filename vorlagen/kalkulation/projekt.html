@@ -8,7 +8,7 @@
   <div class="zahl"><small>Kosten (Kalkulation)</small><b>{% if k %}{{ k.kosten|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>{% if k %}{{ k.art }}{% else %}noch nicht kalkuliert{% endif %}</small></div>
   <div class="zahl blau"><small>Kalkulierter VK</small><b>{% if k %}{{ k.vk|floatformat:"2g" }} €{% else %}–{% endif %}</b>{% if k %}<small>+{{ k.zuschlag|floatformat:"-2" }} % Zuschlag, +{{ k.risiko|floatformat:"-2" }} % Risiko</small>{% endif %}</div>
   <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Angebot netto</small><b>{% if a %}{{ a.angebot_netto|floatformat:"2g" }} €{% else %}–{% endif %}</b>{% if marge is not None %}<small style="font-weight:600;{% if marge < 15 %}color:var(--rot){% else %}color:var(--gruen){% endif %}">Marge {{ marge|floatformat:1 }} %</small>{% endif %}</div>
-  <div class="zahl warn"><small>Ist-Kosten bisher</small><b>{% if k %}{{ k.ist_kosten|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>Eingangsrechnungen + Entnahmen</small></div>
+  <div class="zahl warn"><small>Ist-Kosten bisher</small><b>{% if k %}{{ k.ist_kosten|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>Eingangsrechnungen + Entnahmen + Löhne</small></div>
 </div>
 
 <h2 class="abschnitt">1 · Stückliste (Materialbedarf)</h2>

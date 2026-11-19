@@ -9,7 +9,7 @@
 <div class="zahlen" style="margin-bottom:22px">
   <div class="zahl"><small>Arbeitsgänge fertig</small><b>{% if d.n %}{{ d.fertig }} / {{ d.n }}{% else %}–{% endif %}</b><small>{{ d.gestartet }} begonnen</small></div>
   <div class="zahl blau"><small>Stunden Ist / Soll</small><b>{{ d.ist|floatformat:"-1" }} / {{ d.soll|floatformat:"-1" }}</b><small>Plan-Stunden aus den Arbeitsgängen</small></div>
-  <div class="zahl warn"><small>Lohnkosten Ist</small><b>{{ d.lohn|floatformat:"2g" }} €</b><small>Ist-Std. × Stundensatz</small></div>
+  <div class="zahl warn"><small>Lohnkosten Ist</small><b>{{ d.lohn|floatformat:"2g" }} €</b><small>gebuchte Stunden × Stundenlohn</small></div>
   <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>QM</small><b>{% if d.qm == 1 %}✓ frei{% elif d.qm == 2 %}gesperrt{% else %}offen{% endif %}</b><small>Endkontrolle</small></div>
 </div>
 

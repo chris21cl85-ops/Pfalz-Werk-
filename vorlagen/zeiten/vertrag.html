@@ -1,0 +1,14 @@
+{% extends "basis.html" %}
+{% block titel %}Vertrag {{ ma.name }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'zeiten:vertraege' %}">Arbeitsverträge</a> › {{ ma.name }}{% endblock %}
+{% block inhalt %}
+<h1>{% if neu %}Neuer Vertrag{% else %}Vertrag {{ v.vertragsid }}{% endif %} · {{ ma.name }}</h1>
+<form method="post" class="karte">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="meldung error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0 18px">
+  {% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}
+  </div>
+  <p class="hilfe">Soll je Wochentag bestimmt Zeitkonto und Kalender. Zeitkonto Start = Übertrag (z. B. aus der Excel) zum Beginn der Zeiterfassung. Der Stundenlohn ergibt die Lohnkosten in der Nachkalkulation. Diese Daten sieht nur Chef, Admin und Buchhaltung.</p>
+  <p><button class="knopf" type="submit">Speichern</button> <a class="knopf zweit" href="{% url 'zeiten:vertraege' %}">Abbrechen</a></p>
+</form>
+{% endblock %}

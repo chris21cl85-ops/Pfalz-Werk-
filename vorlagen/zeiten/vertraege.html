@@ -1,0 +1,18 @@
+{% extends "basis.html" %}
+{% block titel %}Arbeitsverträge – PFALZ-WERK{% endblock %}
+{% block pfad %} › Arbeitsverträge{% endblock %}
+{% block inhalt %}
+<h1>Arbeitsverträge</h1>
+<p class="grau" style="margin-top:-12px">Wie Blatt „Arbeitsverträge“: Soll-Stunden je Wochentag, Urlaub, Zeitkonto-Startwert und Stundenlohn für die Lohnkosten. Nur Chef und Admin ändern.</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Mitarbeiter</th><th>Vertrag</th><th class="breit" style="text-align:right">Soll/Woche</th><th class="breit" style="text-align:right">Urlaub</th><th style="text-align:right">Stundenlohn</th><th>Hinweise</th></tr>
+  {% for z in zeilen %}<tr {% if darf %}class="klickbar" onclick="location.href='{% url 'zeiten:vertrag' z.ma.pk %}'"{% endif %}>
+    <td>{% if darf %}<a href="{% url 'zeiten:vertrag' z.ma.pk %}">{{ z.ma.name }}</a>{% else %}{{ z.ma.name }}{% endif %}<div class="hilfe">{{ z.ma.kuerzel }}</div></td>
+    <td>{% if z.v %}{{ z.v.vertragsid }} · {{ z.v.art }}<div class="hilfe">{{ z.v.status }}{% if z.v.eintritt %} · seit {{ z.v.eintritt|date:"d.m.Y" }}{% endif %}</div>{% else %}<span class="grau">–</span>{% endif %}</td>
+    <td class="breit nowrap" style="text-align:right">{% if z.v %}{{ z.v.soll_woche|floatformat:"-2" }} h{% endif %}</td>
+    <td class="breit nowrap" style="text-align:right">{% if z.v %}{{ z.v.urlaub_jahr|floatformat:"-1" }} T{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{% if z.v.stundenlohn %}{{ z.v.stundenlohn|floatformat:"2g" }} €{% elif z.ma.stundensatz %}<span class="hilfe">{{ z.ma.stundensatz|floatformat:"2g" }} € (Satz)</span>{% else %}–{% endif %}</td>
+    <td>{% for w in z.warn %}<div class="{% if 'fehlt' in w or 'endete' in w or 'kein' in w %}fehler{% endif %}">⚠ {{ w }}</div>{% empty %}<span style="color:var(--gruen)">✓</span>{% endfor %}</td></tr>
+  {% endfor %}
+</table></div>
+{% endblock %}
