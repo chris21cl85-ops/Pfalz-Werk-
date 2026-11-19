@@ -8,6 +8,7 @@
   <a class="knopf" href="{% url 'moebel:bearbeiten' p.pk %}">Bearbeiten</a>
   <a class="knopf zweit" href="{% url 'moebel:pdf' p.pk %}" target="_blank">Teileliste drucken (PDF)</a>
   <a class="knopf zweit" href="{% url 'moebel:etiketten' p.pk %}" target="_blank">Etiketten (PDF)</a>
+  {% if erg.ampel != 2 %}<a class="knopf zweit" href="{% url 'moebel:cnc' p.pk %}" title="Teileliste, Bohrbild, Parameter, DXF je Teil">CNC-Export (ZIP)</a>{% endif %}
   <form method="post" style="display:contents">{% csrf_token %}<button class="knopf zweit" type="submit" name="aktion" value="kopieren">Als Variante kopieren</button></form>
   <form method="post" style="display:contents" onsubmit="return confirm('Materialbedarf als „Geplant“ in die Stückliste von {{ p.projekt.projektnr }} übernehmen?{% if in_liste %} Die bisherigen geplanten Zeilen dieses Möbels werden ersetzt.{% endif %}')">{% csrf_token %}
     <button class="knopf zweit" type="submit" name="aktion" value="stueckliste" {% if erg.ampel == 2 %}disabled title="Ampel rot – erst die Fehler beheben"{% endif %}>In Stückliste übernehmen</button></form>

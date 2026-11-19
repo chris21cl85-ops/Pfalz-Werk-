@@ -251,6 +251,10 @@ class RegelFormular(forms.Form):
         "DAEMPF_RT_FREI": "Dämpfen: ab R/t ohne Biegeband", "DAEMPF_MIN_JE_MM": "Dämpfzeit je mm Dicke (min)",
         "RUECKFED": "Dämpfen: Rückfederung (%)", "KURZFASER_W": "Ausschneiden Massivholz: Kurzfaser ab (°)",
         "FORM_RAND": "Formenbau: Rand um das Formteil (mm)",
+        "LOCH_UNTEN": "Bohrbild: erstes Loch über Unterkante (mm)", "LOCH_HINTEN": "Bohrbild: hintere Lochreihe (mm)",
+        "TOPF_D": "Bohrbild: Topfbohrung Ø (mm)", "TOPF_TIEFE": "Bohrbild: Topfbohrung Tiefe (mm)",
+        "TOPF_ABST": "Bohrbild: Topfmitte von Türkante (mm)", "DUEBEL_D": "Bohrbild: Dübel Ø (mm)",
+        "DUEBEL_T_FL": "Bohrbild: Dübeltiefe Fläche (mm)", "DUEBEL_T_KA": "Bohrbild: Dübeltiefe Kante (mm)",
         "WARTE_STD": "Wartezeit Trocknen/Aushärten bei AG-Übernahme (Std.)", "CNC_JA": "Bohren/Fräsen auf CNC (1 = ja, 0 = von Hand)",
     }
 

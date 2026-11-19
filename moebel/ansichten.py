@@ -130,6 +130,24 @@ def pdf(request, pk):
 
 
 @rolle_erforderlich(*RECHTE)
+def cnc(request, pk):
+    """CNC-Export als ZIP (wie Makro: kein Export bei roter Ampel)."""
+    from kern.models import protokolliere
+
+    from . import cnc as cnc_export
+    position = get_object_or_404(MoebelPosition.objects.select_related("projekt"), pk=pk)
+    ergebnis = dienst.rechnen(position.eingaben)
+    if ergebnis["ampel"] == rechner.ROT:
+        messages.error(request, "Die Prüfung zeigt Rot – kein CNC-Export.")
+        return redirect(position)
+    inhalt, n = cnc_export.export_zip(position, ergebnis)
+    protokolliere("moebel_cnc_export", position.positions_id, benutzer=request.user, details=f"{n} DXF-Dateien")
+    antwort = HttpResponse(inhalt, content_type="application/zip")
+    antwort["Content-Disposition"] = f'attachment; filename="CNC_{cnc_export.dateiname(position.positions_id)}.zip"'
+    return antwort
+
+
+@rolle_erforderlich(*RECHTE)
 def etiketten(request, pk):
     position = get_object_or_404(MoebelPosition.objects.select_related("projekt"), pk=pk)
     antwort = HttpResponse(dienst.etiketten_pdf(position), content_type="application/pdf")

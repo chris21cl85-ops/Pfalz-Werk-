@@ -542,3 +542,34 @@ def test_import_quellwerte(tmp_path):
     ausfuehren(pfad, probelauf=False)
     rw = Regelwerk.laden()
     assert rw.quellwerte == [["MH-EI", 0.36]] and rw.als_regeln().material["fuellung"] == "FU-EI-06"
+
+
+# ------------------------------------------------------------------ Stufe 6: CNC-Export, Maßvorschläge
+def test_massvorschlag(stamm):
+    erg = dienst.rechnen(UNTERSCHRANK)
+    texte = [p["hinweis"] for p in erg["pruefungen"] if p["pruefung"] == "Maßvorschlag Tiefe"]
+    assert texte == ["Aus 2070 mm Plattenbreite gehen 3 Streifen zu je 560 mm – Tiefe bis 680 mm ohne Mehrverschnitt möglich."]
+
+
+def test_cnc_export(stamm, projekt, chef, chef_client):
+    import io
+    import zipfile
+    p = dienst.speichern(projekt=projekt, eingaben=UNTERSCHRANK, benutzer=chef)
+    antwort = chef_client.get(reverse("moebel:cnc", args=[p.pk]))
+    assert antwort["Content-Type"] == "application/zip"
+    z = zipfile.ZipFile(io.BytesIO(antwort.content))
+    namen = z.namelist()
+    assert {"Teileliste.csv", "Bohrbild.csv", "Parameterliste.csv", "LIESMICH.txt"} <= set(namen)
+    assert "P-2026-001-M01-1_Seite.dxf" in namen and len([n for n in namen if n.endswith(".dxf")]) == 8
+    bohr = z.read("Bohrbild.csv").decode("utf-8-sig").splitlines()
+    seite = [zeile for zeile in bohr if zeile.startswith("P-2026-001-M01-1;")]
+    assert len([x for x in seite if "Lochreihe" in x]) == 38 and len([x for x in seite if "Verbinder" in x]) == 10
+    assert len([x for x in seite if "Montageplatte" in x]) == 4 and any("Nut Rückwand" in x for x in seite)
+    assert len([x for x in bohr if ";Topfband" in x]) == 2
+    dxf = z.read("P-2026-001-M01-1_Seite.dxf").decode("ascii")
+    assert dxf.startswith("0\r\nSECTION") and "CIRCLE" in dxf and dxf.count("KONTUR") == 4 and dxf.endswith("EOF\r\n")
+    teile = z.read("Teileliste.csv").decode("utf-8-sig").splitlines()
+    assert teile[1].startswith("P-2026-001-M01-1;Seite;Korpus;2;720.0;560.0;19.0;720.0;559.2;PL-WEI-P2-19")
+    rot = dienst.speichern(projekt=projekt, eingaben={**UNTERSCHRANK, "mat_korpus": ""}, benutzer=chef)
+    antwort = chef_client.get(reverse("moebel:cnc", args=[rot.pk]), follow=True)
+    assert "kein CNC-Export" in antwort.content.decode()

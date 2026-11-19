@@ -74,6 +74,9 @@ STANDARD_REGELN = {
     "SEG_WINKEL_MAX": 30, "SEG_ZUGABE": 10, "KERF_B": 3, "KERF_REST": 2.5, "FORM_ZUGABE": 20, "FORM_LAGE": 1.5,
     "BIEG_R_FAKTOR": 8, "FURN_R_FAKTOR": 30, "LEIM_KG_M2": 0.2, "DAEMPF_RT_BAND": 3, "DAEMPF_RT_FREI": 30,
     "DAEMPF_MIN_JE_MM": 2.4, "RUECKFED": 5, "KURZFASER_W": 60, "FORM_RAND": 50,
+    # Stufe 6 (Stufe6): Bohrbild für den CNC-Export
+    "LOCH_UNTEN": 64, "LOCH_HINTEN": 37, "TOPF_D": 35, "TOPF_TIEFE": 13, "TOPF_ABST": 22.5, "DUEBEL_D": 8,
+    "DUEBEL_T_FL": 12, "DUEBEL_T_KA": 30,
 }
 STANDARD_BAENDER = [(900, 2), (1600, 3), (2000, 4), (2400, 5)]           # Türhöhe bis → Bänder
 STANDARD_FACHBODEN = [(16, 550), (19, 700), (22, 800), (25, 900), (99, 1000)]  # Stärke bis → Spannweite max
@@ -545,6 +548,8 @@ class Rechner:
                 if fl > 0 and (max(t["l"], t["b"]) > fl or min(t["l"], t["b"]) > fb):
                     self.pruef("Plattenformat", ROT, f"{t['teil']} ({zahl(t['l'])} x {zahl(t['b'])} mm) größer als Platte "
                                                      f"{zahl(fl)} x {zahl(fb)} mm")
+        # Stufe 6: fertigungsgerechte Maßvorschläge
+        self._massvorschlaege(tt, mat_k)
         # Stufe 5: Formteile dieser Position
         self._formteile()
         # Stufe 3: Oberfläche, Profil, Arbeitsgänge
@@ -648,6 +653,26 @@ class Rechner:
             self.pruef("Feldbreiten", ROT, hinw)
             return False
         return True
+
+    # ---------------------------------------------------------- Stufe 6: Maßvorschläge
+    def _massvorschlaege(self, tt, mat_k):
+        """Wie MassVorschlaege(): Tiefe so wählen, dass Streifen ohne Mehrverschnitt aus der Plattenbreite gehen."""
+        R = self.R
+        m = self.mat(mat_k)
+        fl, fb = platten_format(m.format if m else "")
+        if fb <= 0:
+            fb = R.r("PLATTE_B")
+        kerf = R.r("SAEGE")
+        nutz = fb - 2 * R.r("BESAEUM") + kerf
+        n = int(nutz / (tt + kerf))
+        if n < 1:
+            return
+        t_gr, t_kl = int(nutz / n - kerf), int(nutz / (n + 1) - kerf)
+        if t_gr - tt >= 10:
+            self.pruef("Maßvorschlag Tiefe", GRUEN, f"Aus {zahl(fb)} mm Plattenbreite gehen {n} Streifen zu je {zahl(tt)} mm – "
+                                                    f"Tiefe bis {t_gr} mm ohne Mehrverschnitt möglich.")
+        if 0 < tt - t_kl <= 20:
+            self.pruef("Maßvorschlag Tiefe", GRUEN, f"Mit Tiefe {t_kl} mm gehen {n + 1} statt {n} Streifen aus der Plattenbreite.")
 
     # ---------------------------------------------------------- Stufe 5: Formteile (Rundungen)
     def _formteile(self):

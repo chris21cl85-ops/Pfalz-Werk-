@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.3 (Etappe 5, Paket 5c).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.4 (Etappe 5, Paket 5d).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -687,10 +687,24 @@ Fassung „5.3“ herunterladen (ANLEITUNG Teil B).
 3. Bauweise „M Modulbau“ mit 2 Feldern → Modulseiten, Teile je Modul.
 4. Karte 7: Bogenzarge Formverleimung R 400, 90°, Höhe 120, Dicke 12, Pappelsperrholz → Lagen, Form, Leim.
 
+### Paket 5d: Möbelrechner CNC-Export + Maßvorschläge (Stufe 6) – GEBAUT 19.11.2026
+Vorlage: PW_Moebel_CNC_Export, BohrbildTeil, BohrPlus, Dxf*, MassVorschlaege, Stufe6.
+- Knopf „CNC-Export (ZIP)“ auf der Möbelseite (nicht bei roter Ampel): Teileliste.csv, Bohrbild.csv,
+  Parameterliste.csv (UTF-8, Semikolon, Dezimalpunkt wie Excel „0.0##“), je Plattenteil eine DXF (Kontur, Bohrungen
+  als Kreise je Durchmesser-Layer, Rückwandnut, Beschriftung) und LIESMICH. Die Excel schrieb einen Ordner neben die
+  Arbeitsmappe – im Browser kommt eine ZIP-Datei zum Herunterladen.
+- Bohrbild-Vorschlag: Seiten/Mittelwände Lochreihen vorn/hinten im Raster, Verbinder Boden/Deckel, Montageplatten,
+  Rückwandnut; Türen/Höhenfriese Topfbohrungen; Böden/Deckel/Traversen/Zwischenböden Dübel in der Kante.
+  8 neue Werkstatt-Regeln (LOCH_UNTEN, LOCH_HINTEN, TOPF_D, TOPF_TIEFE, TOPF_ABST, DUEBEL_D, DUEBEL_T_FL, DUEBEL_T_KA).
+- Maßvorschlag Tiefe (grüner Hinweis): wie viele Streifen aus der Plattenbreite gehen und welche Tiefe ohne
+  Mehrverschnitt möglich wäre.
+- Zuschnittliste fürs Handy folgt mit den Handy-Ansichten (Paket 8).
+- **Möbelrechner damit vollständig (Stufen 1–6)** bis auf Bauteilzerlegung und SQL-Sync der Excel.
+- 454 automatische Tests, alle grün.
+
 ## Nächstes Paket
-**5d Möbelrechner Stufe 6**: CNC-Export (Bohrbild als DXF/CSV je Teil) und fertigungsgerechte Maßvorschläge.
-Danach Kapazitätsplanung, Inventur, Handy-Ansichten (inkl. Zuschnittliste fürs Handy), Installer.
-Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**6 Kapazitätsplanung** (Personal-Gate, Einsatzplanung: Soll/gebucht/Rest je Mitarbeiter und Tag), dann 7 Inventur,
+8 Handy-Ansichten, 9 Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:
