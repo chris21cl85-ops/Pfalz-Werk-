@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 4.1 (Etappe 4, Paket 4a).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 4.2 (Etappe 4, Paket 4b).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -542,7 +542,7 @@ Liquidität), danach Verkaufsfassung/Installer (FEHLER Nr. 2).
 Die Excel hat keinen eigenen Stundenzettel: Projektstunden kamen nur aus „Produktion Arbeitsgänge“ (Ist-Std.),
 Soll und Urlaub aus „Arbeitsverträge“, Abwesenheiten aus „Zeitdaten“ (PW_Personal.bas). Das Programm führt das zusammen.
 
-### Paket 4a: Zeiterfassung + Arbeitsverträge – GEBAUT 19.11.2026, Abnahme offen
+### Paket 4a: Zeiterfassung + Arbeitsverträge – weitergegeben am 19.11.2026 (Chris: „mach weiter mit 4b“, Gesamttest am Schluss)
 Neue App `zeiten`.
 - **Arbeitsverträge** (Kachel unter Verwaltung; Chef/Admin ändern, Buchhaltung liest, Meister/Mitarbeiter nicht):
   Vertragsart, Status, Eintritt, Befristung, Probezeit, Soll Mo–Fr, Urlaub/Jahr, Zeitkonto-Startwert, Brutto/Monat,
@@ -576,12 +576,41 @@ entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi o
 6. Produktion: einen Arbeitsgang mit Stunden rückmelden → die Zeit steht danach auch in der Zeiterfassung;
    Kalkulation & Aufträge → „Ist-Kosten“ enthalten jetzt die Löhne.
 
+### Paket 4b: Auswertungen für den Chef – GEBAUT 19.11.2026, Abnahme offen
+Vorlage: Blätter „Cockpit“, „Finanz-Cockpit“ (Löhne zum Monatsende), „Kalkulationsvergleich“, Dashboards
+(Produktion/Material). Neue App `auswertung` (nur lesen).
+- Kachel „Auswertungen“ (Chef, Admin): Jahr wählbar (5 Jahre). Kennzahlen: Umsatz netto mit Vorjahresvergleich bis
+  zum gleichen Tag, Kosten (Eingangsrechnungen + Löhne), Ergebnis vor Gemeinkosten mit Marge, gebuchte Stunden mit
+  Anteil auf Projekte. Balken Umsatz/Kosten je Monat (ohne Internet, Zahlen auch als Tabelle).
+- **Nachkalkulation je Projekt** (wie „Kalkulationsvergleich“): Angebot, kalkulierte Kosten, Ist-Kosten, % verbraucht
+  mit Ampel (gelb ab 85 %, rot über 100 %), Stunden Ist/Soll, Erlös, DB. Projektseite: Kostenarten Material+Beschläge,
+  Lohn, Fremdleistungen, Maschine/Montage/Fahrt/Sonstiges – kalkuliert gegen Ist mit Abweichung.
+  (Die Excel unterschied Vor-/Zwischen-/Nachkalkulation als drei Spalten; im Programm gibt es eine Kalkulation
+  mit Art – verglichen wird sie mit dem echten Ist.)
+- **Stunden je Mitarbeiter** im Monat: Ist/Soll, Auslastung (inkl. Abwesenheit), Anteil auf Projekte, je Tätigkeit.
+- **Werkstatt**: Projekte je Schritt, QM beim ersten Mal bestanden (%), überfällige Arbeitsgänge, Montagen 14 Tage.
+- **Material**: Lagerwert zum EK, offene Bestellungen mit Wert, Artikel unter Mindestbestand.
+- **Finanzen**: Liquidität jetzt mit Löhnen (Brutto/Monat aktiver Arbeitsverträge zum Monatsende, wie Excel, ohne
+  Arbeitgeberanteile); Deckungsbeitrag je Projekt zieht Lohnkosten Ist ab.
+- Damit sind alle Kacheln gebaut (kein „kommt in Etappe …“ mehr).
+- 434 automatische Tests, alle grün.
+
+### So testest du es (Etappe 4, Paket 4b)
+Vorher: neue Fassung **von GitHub herunterladen** (ANLEITUNG.md Teil B: „Code“ → „Download ZIP“ →
+entpacken) und im NEUEN Ordner `PFALZ-WERK starten.bat` doppelklicken. Im Navi oben muss „Fassung 4.2“ stehen.
+1. Kachel „Auswertungen“ → stimmt der Umsatz des Jahres mit deinen Rechnungen überein? Monatsbalken ansehen.
+2. Nachkalkulation: ein Projekt mit Kalkulation antippen → Kalkuliert gegen Ist je Kostenart prüfen.
+3. Stunden: Monat eines Mitarbeiters mit der Zeiterfassung vergleichen.
+4. Finanzen → Liquidität: am Monatsende stehen „davon Löhne“ (Brutto aus den Arbeitsverträgen).
+
+## Gesamttest (Wunsch von Chris, 19.11.2026)
+Chris macht nach Etappe 4 einen vollständigen Test aller Bereiche. Bis dahin werden 4a und 4b ohne Einzelabnahme
+weitergegeben. Danach Fehler aus dem Gesamttest beheben.
+
 ## Nächstes Paket
-**Etappe 4, Paket 4b: Auswertungen für den Chef** – Vorlage Blätter „Cockpit“, „Dashboard Start/Steuerung/Planung/
-Produktion/Material“, „Finanz-Cockpit“, „Kalkulationsvergleich“; Löhne (Brutto aus Arbeitsverträgen zum Monatsende)
-in die Liquidität. Danach Verkaufsfassung/Installer. Offen als eigene Pakete: Möbelrechner Stufen 2–6,
-Excel-Inventur (Blätter 25–32, 62–68), Kapazitätsplanung (Personal-Gate).
-Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**Verkaufsfassung / Installer** (FEHLER Nr. 2: Start ohne installiertes Python) – nach dem Gesamttest mit Chris klären.
+Offen als eigene Pakete: Möbelrechner Stufen 2–6, Excel-Inventur (Blätter 25–32, 62–68), Kapazitätsplanung
+(Personal-Gate), Handy-Ansichten. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

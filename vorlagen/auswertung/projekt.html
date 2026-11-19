@@ -1,0 +1,25 @@
+{% extends "basis.html" %}
+{% block titel %}{{ p.projektnr }} – Nachkalkulation{% endblock %}
+{% block pfad %} › <a href="{% url 'auswertung:uebersicht' %}">Auswertungen</a> › {{ p.projektnr }}{% endblock %}
+{% block inhalt %}
+<style>.plus{color:var(--gruen);font-weight:600}.minus{color:var(--rot);font-weight:600}</style>
+<h1>{{ p.projektnr }} · {{ p.name }}</h1>
+<p class="grau" style="margin-top:-12px">Kunde {{ p.kunde.name }} · <a href="{% url 'kalkulation:projekt' p.pk %}">Kalkulation & Auftrag</a> · <a href="{% url 'produktion:projekt' p.pk %}">Produktion</a>
+  {% if v.k %} · Kalkulationsart {{ v.k.art }}{% endif %}</p>
+<div class="zahlen" style="margin-bottom:20px">
+  <div class="zahl"><small>Angebot netto</small><b>{% if v.angebot %}{{ v.angebot|floatformat:"2g" }} €{% else %}–{% endif %}</b><small>{% if v.marge_plan is not None %}geplante Marge {{ v.marge_plan|floatformat:1 }} %{% else %}–{% endif %}</small></div>
+  <div class="zahl warn"><small>Kosten Ist</small><b>{{ v.ist.gesamt|floatformat:"2g" }} €</b><small>{% if v.verbraucht is not None %}{{ v.verbraucht|floatformat:0 }} % der Kalkulation{% else %}keine Kalkulation{% endif %}</small></div>
+  <div class="zahl blau"><small>Erlös (gestellt)</small><b>{{ v.erloes|floatformat:"2g" }} €</b><small>DB <span class="{% if v.db < 0 %}minus{% else %}plus{% endif %}">{{ v.db|floatformat:"2g" }} €</span>{% if v.marge_ist is not None %} · {{ v.marge_ist|floatformat:1 }} %{% endif %}</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Stunden Ist / Soll</small><b>{{ v.ist_std|floatformat:"-1" }} / {% if v.soll_std %}{{ v.soll_std|floatformat:"-1" }}{% else %}–{% endif %}</b><small>{% if v.std_prozent is not None %}<span class="{% if v.std_prozent > 0 %}minus{% else %}plus{% endif %}">{{ v.std_prozent|floatformat:1 }} %</span> zur Kalkulation{% else %}Soll aus der Kalkulation{% endif %}</small></div>
+</div>
+<h2 class="abschnitt">Kalkulation gegen Ist</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Kostenart</th><th style="text-align:right">Kalkuliert</th><th style="text-align:right">Ist</th><th style="text-align:right">Abweichung</th><th style="text-align:right">%</th></tr>
+  {% for z in v.zeilen %}<tr {% if z.summe %}style="font-weight:700"{% endif %}><td>{{ z.name }}</td>
+    <td class="nowrap" style="text-align:right">{% if z.plan is not None %}{{ z.plan|floatformat:"2g" }} €{% else %}–{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ z.ist|floatformat:"2g" }} €</td>
+    <td class="nowrap {% if z.diff > 0 %}minus{% elif z.diff < 0 %}plus{% endif %}" style="text-align:right">{% if z.diff is not None %}{{ z.diff|floatformat:"2g" }} €{% else %}–{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{% if z.prozent is not None %}{{ z.prozent|floatformat:1 }} %{% else %}–{% endif %}</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">Ist: Material = Lagerentnahmen + Eingangsrechnungen „Material / Wareneingang“; Fremdleistungen = Eingangsrechnungen „Fremdleistung“; Sonstiges = übrige Eingangsrechnungen; Lohn = gebuchte Stunden × Stundenlohn. Kalkuliert: Beschläge zählen zum Material, Maschine/Montage/Fahrt zu Sonstiges. Rot = teurer als kalkuliert.</p>
+{% endblock %}

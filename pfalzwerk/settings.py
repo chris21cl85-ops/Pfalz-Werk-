@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     "produktion",
     "planung",
     "zeiten",
+    "auswertung",
 ]
 
 MIDDLEWARE = [

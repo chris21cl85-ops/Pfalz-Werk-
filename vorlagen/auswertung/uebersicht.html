@@ -1,0 +1,92 @@
+{% extends "basis.html" %}
+{% block titel %}Auswertungen {{ j.jahr }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › Auswertungen{% endblock %}
+{% block inhalt %}
+<style>
+.balken{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;align-items:end;height:220px;padding:14px 10px 0;border-bottom:1px solid var(--rand)}
+.monat{display:flex;gap:3px;align-items:flex-end;justify-content:center;height:100%}
+.monat .b{width:42%;border-radius:8px 8px 3px 3px;min-height:2px;transition:height .6s ease}
+.b.u{background:linear-gradient(180deg,var(--tuerkis),var(--gruen-tief))}.b.k{background:linear-gradient(180deg,#f6c76a,var(--bernstein))}
+.monat.zukunft{opacity:.35}
+.mnamen{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;padding:6px 10px;font-size:13px;color:#6f8a79;text-align:center}
+.legende span{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 6px 0 14px;vertical-align:-1px}
+.plus{color:var(--gruen);font-weight:600}.minus{color:var(--rot);font-weight:600}
+.ampel{display:inline-block;width:12px;height:12px;border-radius:50%}.ampel.gruen{background:var(--gruen)}.ampel.gelb{background:var(--bernstein)}.ampel.rot{background:var(--rot)}
+.zwei{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:20px;align-items:start}
+@media (max-width:760px){.zwei{grid-template-columns:1fr}.balken{gap:3px;height:160px}.mnamen{gap:3px;font-size:11px}}
+</style>
+<h1>Auswertungen</h1>
+<div class="leiste">{% for jj in jahre %}<a class="knopf {% if jj != j.jahr %}zweit{% endif %}" href="?jahr={{ jj }}">{{ jj }}</a>{% endfor %}
+  <span style="flex:1"></span><a class="knopf zweit" href="{% url 'finanzen:uebersicht' %}">💶 Finanzen & Liquidität</a></div>
+
+<div class="zahlen" style="margin-bottom:20px">
+  <div class="zahl"><small>Umsatz {{ j.jahr }} netto</small><b>{{ j.umsatz|floatformat:"0g" }} €</b>
+    <small>{% if j.wachstum is not None %}<span class="{% if j.wachstum < 0 %}minus{% else %}plus{% endif %}">{{ j.wachstum|floatformat:1 }} %</span> zum Vorjahr bis {{ j.vj_tag|date:"d.m." }}{% else %}Vorjahr bis {{ j.vj_tag|date:"d.m." }}: {{ j.vorjahr|floatformat:"0g" }} €{% endif %}</small></div>
+  <div class="zahl warn"><small>Kosten (Eingang + Lohn)</small><b>{{ j.eingang|add:j.lohn|floatformat:"0g" }} €</b><small>Eingangsrechnungen {{ j.eingang|floatformat:"0g" }} € · Löhne {{ j.lohn|floatformat:"0g" }} €</small></div>
+  <div class="zahl blau"><small>Ergebnis vor Gemeinkosten</small><b class="{% if j.ergebnis < 0 %}minus{% endif %}">{{ j.ergebnis|floatformat:"0g" }} €</b><small>{% if j.marge is not None %}{{ j.marge|floatformat:1 }} % vom Umsatz{% else %}–{% endif %}</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Gebuchte Stunden</small><b>{{ j.stunden|floatformat:"0g" }} h</b><small>{% if j.produktiv is not None %}{{ j.produktiv|floatformat:0 }} % auf Projekte{% else %}noch keine Buchungen{% endif %}</small></div>
+</div>
+
+<h2 class="abschnitt">Umsatz und Kosten je Monat {{ j.jahr }}</h2>
+<div class="karte">
+  <div class="balken">{% for m in j.monate %}<div class="monat {% if m.zukunft %}zukunft{% endif %}" title="{{ m.name }}: Umsatz {{ m.umsatz|floatformat:'0g' }} € · Kosten {{ m.eingang|add:m.lohn|floatformat:'0g' }} € · Ergebnis {{ m.ergebnis|floatformat:'0g' }} €">
+    <div class="b u" style="height:{{ m.h_umsatz }}%"></div><div class="b k" style="height:{{ m.h_kosten }}%"></div></div>{% endfor %}</div>
+  <div class="mnamen">{% for m in j.monate %}<div>{{ m.name }}</div>{% endfor %}</div>
+  <p class="legende hilfe"><span style="background:var(--tuerkis)"></span>Umsatz netto (gestellte Rechnungen)<span style="background:var(--bernstein)"></span>Kosten (Eingangsrechnungen + Löhne aus der Zeiterfassung)</p>
+  <details><summary class="hilfe" style="cursor:pointer">Zahlen als Tabelle</summary>
+  <div class="tabelle-rahmen" style="margin-top:8px"><table><tr><th>Monat</th><th style="text-align:right">Umsatz</th><th style="text-align:right">Eingang</th><th style="text-align:right">Löhne</th><th style="text-align:right">Ergebnis</th></tr>
+    {% for m in j.monate %}<tr><td>{{ m.name }}</td><td style="text-align:right">{{ m.umsatz|floatformat:"0g" }} €</td><td style="text-align:right">{{ m.eingang|floatformat:"0g" }} €</td><td style="text-align:right">{{ m.lohn|floatformat:"0g" }} €</td><td style="text-align:right" class="{% if m.ergebnis < 0 %}minus{% endif %}">{{ m.ergebnis|floatformat:"0g" }} €</td></tr>{% endfor %}</table></div></details>
+</div>
+
+<h2 class="abschnitt">Nachkalkulation je Projekt</h2>
+<p class="grau">{% if alle %}Alle Projekte. <a href="?jahr={{ j.jahr }}">Nur offene</a>{% else %}Offene Projekte. <a href="?jahr={{ j.jahr }}&alle=1">Auch abgeschlossene</a>{% endif %} · Ampel: verbrauchte Kosten gegen Kalkulation (gelb ab 85 %, rot über 100 %).</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th></th><th>Projekt</th><th style="text-align:right">Angebot</th><th class="breit" style="text-align:right">Kosten kalk.</th><th style="text-align:right">Kosten Ist</th><th style="text-align:right">verbraucht</th><th class="breit" style="text-align:right">Std. Ist / Soll</th><th class="breit" style="text-align:right">Erlös</th><th style="text-align:right">DB</th></tr>
+  {% for v in nk %}<tr class="klickbar" onclick="location.href='{% url 'auswertung:projekt' v.projekt.pk %}'">
+    <td><span class="ampel {{ v.ampel }}"></span></td>
+    <td><a href="{% url 'auswertung:projekt' v.projekt.pk %}">{{ v.projekt.projektnr }}</a><div class="hilfe">{{ v.projekt.name|truncatechars:34 }}</div></td>
+    <td class="nowrap" style="text-align:right">{% if v.angebot %}{{ v.angebot|floatformat:"0g" }} €{% else %}–{% endif %}</td>
+    <td class="nowrap breit" style="text-align:right">{% if v.k %}{{ v.plan.gesamt|floatformat:"0g" }} €{% else %}–{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ v.ist.gesamt|floatformat:"0g" }} €</td>
+    <td class="nowrap" style="text-align:right">{% if v.verbraucht is not None %}{{ v.verbraucht|floatformat:0 }} %{% else %}–{% endif %}</td>
+    <td class="nowrap breit" style="text-align:right">{{ v.ist_std|floatformat:"-1" }} / {% if v.soll_std %}{{ v.soll_std|floatformat:"-1" }}{% else %}–{% endif %}</td>
+    <td class="nowrap breit" style="text-align:right">{{ v.erloes|floatformat:"0g" }} €</td>
+    <td class="nowrap {% if v.db < 0 %}minus{% endif %}" style="text-align:right">{{ v.db|floatformat:"0g" }} €</td></tr>
+  {% empty %}<tr><td colspan="9">Noch keine Projekte mit Kalkulation, Kosten oder Stunden.</td></tr>{% endfor %}
+</table></div>
+<p class="hilfe">DB = Erlös (gestellte Rechnungen) − Ist-Kosten (Material/Entnahmen, Eingangsrechnungen, Löhne). Solange noch nicht alles abgerechnet ist, ist der DB natürlich niedrig.</p>
+
+<div class="zwei">
+<div>
+  <h2 class="abschnitt">Stunden · {{ stunden_name }}</h2>
+  <div class="tabelle-rahmen"><table>
+    <tr><th>Mitarbeiter</th><th style="text-align:right">Ist / Soll</th><th style="text-align:right">Auslastung</th><th style="text-align:right">auf Projekte</th></tr>
+    {% for s in stunden %}<tr><td><a href="{% url 'zeiten:mitarbeiter' s.ma.pk %}?monat={{ stunden_monat }}">{{ s.ma.name }}</a>
+      <div class="hilfe">{% for name, h in s.je %}{{ name }} {{ h|floatformat:"-1" }} h{% if not forloop.last %} · {% endif %}{% empty %}keine Buchungen{% endfor %}</div></td>
+      <td class="nowrap" style="text-align:right">{{ s.ist|floatformat:"-1" }} / {{ s.soll|floatformat:"-1" }}</td>
+      <td class="nowrap" style="text-align:right">{% if s.auslastung is not None %}{{ s.auslastung|floatformat:0 }} %{% else %}–{% endif %}</td>
+      <td class="nowrap" style="text-align:right">{% if s.produktiv is not None %}{{ s.produktiv|floatformat:0 }} %{% else %}–{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="4">Keine aktiven Mitarbeiter.</td></tr>{% endfor %}
+  </table></div>
+  <p class="hilfe">Auslastung = (gebuchte Stunden + Abwesenheit) / Soll bis heute. „auf Projekte“ = Anteil der Stunden mit Projekt.</p>
+</div>
+<div>
+  <h2 class="abschnitt">Werkstatt</h2>
+  <div class="karte">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">{% for name, n in w.phasen %}<span class="marke-inaktiv" style="font-size:15px">{{ name }}: <b>{{ n }}</b></span>{% endfor %}</div>
+    <p style="margin:12px 0 4px"><b>QM beim ersten Mal bestanden:</b> {% if w.qm_quote is not None %}{{ w.qm_quote|floatformat:0 }} % von {{ w.qm_projekte }} Projekt{{ w.qm_projekte|pluralize:"en" }}{% else %}noch keine Prüfungen{% endif %}</p>
+    <p style="margin:4px 0"><b>Überfällige Arbeitsgänge:</b> {% if w.ueberfaellig_anzahl %}<span class="minus">{{ w.ueberfaellig_anzahl }}</span>{% else %}keine{% endif %}</p>
+    {% for a in w.ueberfaellig %}<div class="hilfe">{{ a.plan_ende|date:"d.m." }} · <a href="{% url 'produktion:projekt' a.projekt.pk %}">{{ a.projekt.projektnr }}</a> {{ a.name }}{% if a.mitarbeiter %} · {{ a.mitarbeiter.name }}{% endif %}</div>{% endfor %}
+    <p style="margin:12px 0 4px"><b>Montagen nächste 14 Tage:</b> {{ w.montagen|length }}</p>
+    {% for m in w.montagen %}<div class="hilfe">{{ m.datum|date:"D d.m." }} · {{ m.projekt.projektnr }} {{ m.projekt.name|truncatechars:30 }} · {{ m.team.name|default:"–" }}</div>{% endfor %}
+  </div>
+  <h2 class="abschnitt">Material & Lager</h2>
+  <div class="karte">
+    <p style="margin:0 0 4px"><b>Lagerwert (EK):</b> {{ mat.lagerwert|floatformat:"2g" }} €</p>
+    <p style="margin:4px 0"><b>Offene Bestellungen:</b> {{ mat.bestellungen }} · {{ mat.bestellwert|floatformat:"0g" }} €</p>
+    <p style="margin:4px 0"><b>Unter Mindestbestand:</b> {% if mat.unter_anzahl %}<span class="minus">{{ mat.unter_anzahl }}</span> – <a href="{% url 'lager:vorschlag' %}">Bestellvorschläge</a>{% else %}keine{% endif %}</p>
+    {% for u in mat.unter %}<div class="hilfe">{{ u.m.materialnr }} {{ u.m.bezeichnung|truncatechars:34 }}: {{ u.bestand|floatformat:"-2" }} von {{ u.m.mindestbestand|floatformat:"-2" }} {{ u.m.einheit }}</div>{% endfor %}
+  </div>
+</div>
+</div>
+{% endblock %}

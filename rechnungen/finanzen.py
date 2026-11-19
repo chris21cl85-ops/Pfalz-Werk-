@@ -31,6 +31,31 @@ def vormonat(heute=None):
     return erster.year, erster.month
 
 
+def _monatsenden(start, ende):
+    """Letzte Monatstage im Zeitraum [start, ende)."""
+    d, tage = start, []
+    while d < ende:
+        if (d + dt.timedelta(days=1)).day == 1:
+            tage.append(d)
+        d += dt.timedelta(days=1)
+    return tage
+
+
+def loehne_zum(monatsende) -> Decimal:
+    """Wie Finanz-Cockpit: Brutto/Monat aller aktiven Arbeitsverträge, fällig zum Monatsende."""
+    from zeiten.models import Arbeitsvertrag
+    summe = NULL
+    erster = monatsende.replace(day=1)
+    for v in Arbeitsvertrag.objects.filter(status=Arbeitsvertrag.Status.AKTIV, brutto_monat__isnull=False,
+                                           mitarbeiter__aktiv=True):
+        if v.eintritt and v.eintritt > monatsende:
+            continue
+        if v.befristet_bis and v.befristet_bis < erster:
+            continue
+        summe += v.brutto_monat
+    return summe
+
+
 def uebersicht(heute=None) -> dict:
     """Kennzahlen, Liquidität 6 Wochen, Deckungsbeitrag je Projekt, offene Posten (wie Finanz-Cockpit)."""
     heute = heute or timezone.localdate()
@@ -54,9 +79,11 @@ def uebersicht(heute=None) -> dict:
         def drin(f):
             return f < ende if i == 0 else start <= f < ende
         ein = sum((r.offen for r in forderungen if drin(r.faellig)), NULL)
-        aus = sum((e.offen for e in verbindlichkeiten if drin(e.faellig)), NULL)
+        loehne = sum((loehne_zum(t) for t in _monatsenden(start, ende)), NULL)
+        aus = sum((e.offen for e in verbindlichkeiten if drin(e.faellig)), NULL) + loehne
         kumuliert += ein - aus
-        wochen.append({"start": start, "ein": ein, "aus": aus, "saldo": ein - aus, "kumuliert": kumuliert})
+        wochen.append({"start": start, "ein": ein, "aus": aus, "loehne": loehne, "saldo": ein - aus,
+                       "kumuliert": kumuliert})
 
     # Deckungsbeitrag je Projekt: Erlös (Rechnungen netto, Storno negativ) − Kosten (Eingangsrechnungen netto)
     db = defaultdict(lambda: {"erloes": NULL, "kosten": NULL})
@@ -65,7 +92,14 @@ def uebersicht(heute=None) -> dict:
     for e in belege:
         if e.projekt and not e.ist_storniert:
             db[e.projekt]["kosten"] += e.netto
-    projekte = sorted(({"projekt": p, **w, "db": w["erloes"] - w["kosten"]} for p, w in db.items()),
+    from projekte.models import Projekt
+    from zeiten.dienst import lohn_ist
+    for p in Projekt.objects.filter(zeitbuchungen__isnull=False).distinct():
+        db[p]  # Projekte nur mit Stunden auch zeigen
+    for p, w in db.items():
+        w["lohn"] = lohn_ist(p) if p is not None else NULL
+        w["kosten"] += w["lohn"]
+    projekte = sorted(({"projekt": p, **w, "db": w["erloes"] - w["kosten"]} for p, w in db.items() if p is not None),
                       key=lambda x: x["projekt"].projektnr, reverse=True)
 
     return {

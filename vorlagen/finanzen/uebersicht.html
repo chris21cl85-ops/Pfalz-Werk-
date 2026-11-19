@@ -26,11 +26,11 @@
     <tr><th>Woche ab</th><th style="text-align:right">Eingänge</th><th style="text-align:right">Ausgänge</th><th style="text-align:right">Saldo</th><th style="text-align:right">kumuliert</th></tr>
     {% for w in wochen %}<tr><td class="nowrap">{{ w.start|date:"d.m.Y" }}</td>
       <td class="nowrap" style="text-align:right">{{ w.ein|floatformat:"0g" }} €</td>
-      <td class="nowrap" style="text-align:right">{{ w.aus|floatformat:"0g" }} €</td>
+      <td class="nowrap" style="text-align:right">{{ w.aus|floatformat:"0g" }} €{% if w.loehne %}<div class="hilfe">davon Löhne {{ w.loehne|floatformat:"0g" }} €</div>{% endif %}</td>
       <td class="nowrap" style="text-align:right{% if w.saldo < 0 %};color:var(--rot){% endif %}">{{ w.saldo|floatformat:"0g" }} €</td>
       <td class="nowrap" style="text-align:right;font-weight:600{% if w.kumuliert < 0 %};color:var(--rot){% endif %}">{{ w.kumuliert|floatformat:"0g" }} €</td></tr>{% endfor %}
   </table></div>
-  <p class="hilfe">Woche 1 enthält auch alles Überfällige. Löhne sind noch nicht enthalten (kommen mit den Arbeitsverträgen).</p>
+  <p class="hilfe">Woche 1 enthält auch alles Überfällige. Löhne = Brutto/Monat aller aktiven Arbeitsverträge zum Monatsende (wie Excel; ohne Arbeitgeberanteile).</p>
 </div>
 <div>
   <h2 class="abschnitt">Deckungsbeitrag je Projekt</h2>
@@ -43,7 +43,7 @@
       <td class="nowrap" style="text-align:right;font-weight:600{% if p.db < 0 %};color:var(--rot){% endif %}">{{ p.db|floatformat:"0g" }} €</td></tr>
     {% empty %}<tr><td colspan="4">Noch keine Rechnungen oder Kosten zu Projekten.</td></tr>{% endfor %}
   </table></div>
-  <p class="hilfe">Erlös = Rechnungen netto (Storno abgezogen), Kosten = Eingangsrechnungen netto. Löhne folgen mit der Zeiterfassung.</p>
+  <p class="hilfe">Erlös = Rechnungen netto (Storno abgezogen), Kosten = Eingangsrechnungen netto + Lohnkosten Ist (Zeiterfassung).</p>
 </div>
 <div>
   <h2 class="abschnitt">Offene Forderungen</h2>
