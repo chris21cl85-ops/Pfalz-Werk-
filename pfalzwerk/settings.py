@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     "planung",
     "zeiten",
     "auswertung",
+    "inventur",
 ]
 
 MIDDLEWARE = [

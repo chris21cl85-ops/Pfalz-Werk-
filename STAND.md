@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.5 (Etappe 5, Paket 6 Kapazität).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.6 (Etappe 5, Paket 7 Inventur).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -718,9 +718,29 @@ P/Q (Verfügbarkeit, Planungshinweis), AA–AE (Dauer, Tagessoll, Gebucht, Rest)
   überplant – die alten Montage-Termine desselben Projekts zählen beim Umplanen nicht), Produktion einplanen.
 - 461 automatische Tests, alle grün.
 
+### Paket 7: Inventur – GEBAUT 19.11.2026
+Vorlage: `PW_Inventur.bas` (Drive 1xHUdPtnZzw1QKvy4E7cNctRfZZevlMaA) und Blätter Inventur Einstellungen/Erfassung
+(Formeln H–M), Nachzählung (J/K Vier-Augen), Abweichungen (H–O), Abschluss, Bericht, Historie. Neue App `inventur`.
+- Kachel „Inventur“ (alle lesen; zählen: Chef, Admin, Meister, Mitarbeiter; starten/freigeben/abschließen: Chef, Admin,
+  Meister; Buchhaltung nur lesen – wie Blatt „Inventur-Rechte“).
+- Anlegen: INV-JJJJ-NNN, Art (Voll-, Stichproben-, Teilinventur), Stichtag, Lagerbereich (alle oder ein Lagerplatz),
+  Verantwortlicher, Blindzählung, Toleranz % (2) und Wert € (50).
+- **Starten**: Soll-Bestand und EK aller aktiven Lagerartikel werden festgeschrieben (Snapshot); nur eine aktive Inventur.
+- **Zählen** (offene zuerst, Fokus auf der nächsten): Menge, 0-Knopf, Bemerkung; bei Blindzählung kein Soll sichtbar.
+  Status wie Excel: offen / OK / prüfen / Nachzählung (ab Toleranz % oder Wert; Soll 0 und Ist ≠ 0 = kritisch).
+- **Nachzählen** nur kritische, **Vier-Augen**: nicht derselbe Zähler. **Freigeben/Ablehnen** mit Ursache (Bruch/Verschnitt,
+  Falsch gebucht, Schwund, Zählfehler, Sonstiges) + Bemerkung, Prüfer und Wert.
+- **Abschluss** erst wenn alles gezählt, nachgezählt und entschieden: Korrekturbuchung je freigegebener Abweichung =
+  Freigabe-Ist − Soll (Snapshot) als Lagerbewegung „Korrektur“ mit Inventur-ID; Bewegungen während der Inventur
+  bleiben richtig. Danach gesperrt. **Bericht (PDF)** mit Kopfdaten, Kennzahlen, Abweichungen, Unterschriftszeilen;
+  die Liste aller Inventuren ersetzt das Blatt „Historie“. Alles im Protokoll.
+- Nicht übernommen: Zählaufträge je Zähler (alle zählen in einer Liste) und Snapshot-Archiv-Blätter.
+- 466 automatische Tests, alle grün.
+
 ## Nächstes Paket
-**7 Inventur** (Blätter Inventur Leitstand/Start/Zählaufträge/Erfassung/Nachzählung/Abweichungen/Abschluss/Bericht/
-Historie/Einstellungen), dann 8 Handy-Ansichten, 9 Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**8 Handy-Ansichten** (Vorlage PW_HandyAssistent.bas 1vaC_PIVAa2f-NBeEZ4BNMWgrSs5fZ8Ta, PW_Handy_Modul.bas
+1ttdjqDJplP3mclRdidVyAWW350-UF6on), dann **9 Fassung zum Installieren** (PW_Verkaufsversion.bas als Vorlage für
+Auslieferung). Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

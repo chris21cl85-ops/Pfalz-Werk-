@@ -1,0 +1,53 @@
+{% extends "basis.html" %}
+{% block titel %}{{ inv.invid }} – Inventur{% endblock %}
+{% block pfad %} › <a href="{% url 'inventur:liste' %}">Inventur</a> › {{ inv.invid }}{% endblock %}
+{% block inhalt %}
+<style>.inv-zeile{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(260px,2fr);gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--rand)}
+.inv-zeile:target,.inv-zeile.erste{background:rgba(240,164,66,.13)}.inv-zeile input{padding:9px;font-size:17px}
+.inline{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.inline input[name=menge]{max-width:110px}
+.ursachen label{display:inline-flex;gap:4px;align-items:center;margin:2px 8px 2px 0;font-weight:400;font-size:15px}
+@media (max-width:760px){.inv-zeile{grid-template-columns:1fr}}</style>
+<h1>{{ inv.invid }} · {{ inv.get_art_display }}</h1>
+<p class="grau" style="margin-top:-12px">Stichtag {{ inv.stichtag|date:"d.m.Y" }} · Bereich {{ inv.lagerbereich|default:"alle" }} · {{ inv.blind|yesno:"Blindzählung,offene Zählung" }} · Toleranz {{ inv.toleranz_prozent|floatformat:"-2" }} % / {{ inv.toleranz_wert|floatformat:"0" }} € · <b>{{ inv.status }}</b>{% if inv.hinweis %} · {{ inv.hinweis }}{% endif %}</p>
+{% if inv.status == "Vorbereitung" %}
+  <div class="meldung warning">⚠ {{ inv.invid }} ist noch in Vorbereitung. Erst starten – dann wird der Soll-Bestand festgeschrieben und gezählt.</div>
+  {% if leitung %}<form method="post">{% csrf_token %}<button class="knopf" name="aktion" value="starten" onclick="return confirm('Inventur jetzt starten? Der aktuelle Lagerbestand wird als Soll festgeschrieben.')">▶ Inventur starten</button></form>{% else %}<p>Starten darf nur Chef oder Meister.</p>{% endif %}
+{% else %}
+<div class="zahlen" style="margin-bottom:18px">
+  <div class="zahl"><small>Gezählt</small><b>{{ d.gezaehlt }} / {{ d.positionen }}</b><small>{{ d.abweichungen }} mit Abweichung</small></div>
+  <div class="zahl warn"><small>Nachzählungen offen</small><b>{{ d.nachzaehlung_offen }}</b><small>{{ d.kritisch }} kritisch</small></div>
+  <div class="zahl blau"><small>Freigaben offen</small><b>{{ d.freigaben_offen }}</b><small>Korrektur {{ d.wert|floatformat:"2g" }} €</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Status</small><b>{% if inv.status == "Abgeschlossen" %}✓ fertig{% elif d.bereit %}bereit{% else %}offen{% endif %}</b><small>{% if inv.abgeschlossen_am %}{{ inv.abgeschlossen_am|date:"d.m.Y" }}{% else %}Abschluss nur Chef/Meister{% endif %}</small></div>
+</div>
+<div class="leiste">{% for wert, text in modi %}<a class="knopf {% if wert != modus %}zweit{% endif %}" href="?modus={{ wert }}">{{ text }}</a>{% endfor %}
+  <span style="flex:1"></span><a class="knopf zweit" href="{% url 'inventur:bericht' inv.pk %}" target="_blank">Bericht (PDF)</a>
+  {% if leitung and inv.status == "Aktiv" %}<form method="post" style="display:contents">{% csrf_token %}<button class="knopf" name="aktion" value="abschliessen" {% if not d.bereit %}disabled title="Erst alles zählen, nachzählen und freigeben"{% endif %} onclick="return confirm('Inventur abschließen und {{ d.buchungen }} Korrektur(en) im Lager buchen?')">🔒 Abschließen & buchen</button></form>{% endif %}</div>
+<div class="karte" style="padding:0">
+  {% for p in zeigen %}<div class="inv-zeile {% if p.pk == erste_offene %}erste{% endif %}" id="p{{ p.pk }}">
+    <div><b>{{ p.material.materialnr }}</b> {{ p.material.bezeichnung }}<div class="hilfe">{{ p.lagerplatz|default:"ohne Lagerplatz" }} · {{ p.einheit }}{% if p.bemerkung %} · {{ p.bemerkung }}{% endif %}</div></div>
+    <div class="nowrap">{% if soll_zeigen %}Soll {{ p.soll|floatformat:"-3" }}<br>{% endif %}{% if p.gezaehlt %}Ist {{ p.ist|floatformat:"-3" }}{% if p.nach_ist is not None %} → {{ p.nach_ist|floatformat:"-3" }}{% endif %}{% if soll_zeigen and p.differenz %} <span class="{% if p.differenz < 0 %}fehler{% endif %}">({{ p.differenz|floatformat:"-3" }})</span>{% endif %}<div class="hilfe">{{ p.status }}{% if p.zaehler %} · {{ p.zaehler }}{% endif %}</div>{% else %}<span class="grau">offen</span>{% endif %}</div>
+    <div>
+      {% if inv.status == "Aktiv" %}
+        {% if modus == "zaehlen" and darf_zaehlen and p.nach_ist is None and not p.freigabe %}
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="zaehlen"><input type="hidden" name="position" value="{{ p.pk }}">
+          <input name="menge" inputmode="decimal" placeholder="Menge" value="{% if p.gezaehlt %}{{ p.ist|floatformat:'-3' }}{% endif %}" {% if p.pk == erste_offene %}autofocus{% endif %}> {{ p.einheit }}
+          <input name="bemerkung" placeholder="Bemerkung" style="max-width:160px"><button class="knopf">{% if p.gezaehlt %}Ändern{% else %}Speichern{% endif %}</button>
+          <button class="knopf zweit" type="submit" onclick="this.form.menge.value='0'">0</button></form>
+        {% elif modus == "nach" and darf_zaehlen and p.nachzaehlung_offen %}
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="aktion" value="nach"><input type="hidden" name="position" value="{{ p.pk }}">
+          <input name="menge" inputmode="decimal" placeholder="Nachzählung" {% if p.pk == erste_offene %}autofocus{% endif %}> {{ p.einheit }}
+          <button class="knopf">Speichern</button></form><div class="hilfe">Erstzähler {{ p.zaehler }} – Nachzählung durch einen anderen (Vier-Augen).</div>
+        {% elif modus == "frei" and leitung and p.freigabe_offen %}
+        <form method="post">{% csrf_token %}<input type="hidden" name="position" value="{{ p.pk }}">
+          <div class="ursachen">{% for u in ursachen %}<label><input type="radio" name="ursache" value="{{ u }}" required> {{ u }}</label>{% endfor %}</div>
+          <div class="inline"><input name="text" placeholder="Bemerkung (optional)" style="max-width:220px">
+          <button class="knopf" name="aktion" value="frei">Freigeben ({{ p.wert_freigabe|floatformat:"2g" }} €)</button><button class="knopf zweit" name="aktion" value="ablehnen">Ablehnen</button></div></form>
+        {% endif %}
+      {% endif %}
+      {% if p.freigabe %}<div class="hilfe">{{ p.freigabe }} · {{ p.ursache }} · {{ p.pruefer }}{% if p.buchung %} · gebucht {{ p.korrektur|floatformat:"-3" }}{% endif %}</div>{% endif %}
+    </div></div>
+  {% empty %}<p style="padding:14px">{% if modus == "nach" %}Keine kritischen Abweichungen – nichts nachzuzählen.{% elif modus == "frei" %}Nichts freizugeben.{% else %}Keine Positionen.{% endif %}</p>{% endfor %}
+</div>
+<p class="hilfe">Bei Blindzählung sieht der Zähler das Soll nicht. Kritisch (ab Toleranz) → Nachzählung durch einen zweiten Mitarbeiter. Abweichungen werden mit Ursache freigegeben oder abgelehnt; beim Abschluss wird die Differenz zum festgeschriebenen Soll als Korrektur ins Lager gebucht.</p>
+{% endif %}
+{% endblock %}

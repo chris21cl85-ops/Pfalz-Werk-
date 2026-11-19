@@ -1,0 +1,23 @@
+{% extends "basis.html" %}
+{% block titel %}Inventur – PFALZ-WERK{% endblock %}
+{% block pfad %} › Inventur{% endblock %}
+{% block inhalt %}
+<h1>Inventur</h1>
+<p class="grau" style="margin-top:-12px">Zählen → Nachzählen (Vier-Augen) → Freigeben → Korrektur buchen → Abschluss.</p>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Inventur</th><th>Stichtag</th><th class="breit">Bereich</th><th>Status</th><th style="text-align:right">Gezählt</th><th class="breit" style="text-align:right">Abweichungen</th><th class="breit" style="text-align:right">Wertdifferenz</th></tr>
+  {% for x in inventuren %}<tr class="klickbar" onclick="location.href='{% url 'inventur:detail' x.i.pk %}'">
+    <td><a href="{% url 'inventur:detail' x.i.pk %}">{{ x.i.invid }}</a><div class="hilfe">{{ x.i.get_art_display }}</div></td>
+    <td>{{ x.i.stichtag|date:"d.m.Y" }}</td><td class="breit">{{ x.i.lagerbereich|default:"Alle" }}</td><td>{{ x.i.status }}</td>
+    <td style="text-align:right">{{ x.d.gezaehlt }} / {{ x.d.positionen }}</td><td class="breit" style="text-align:right">{{ x.d.abweichungen }}</td>
+    <td class="breit nowrap" style="text-align:right">{{ x.d.wert|floatformat:"2g" }} €</td></tr>
+  {% empty %}<tr><td colspan="7">Noch keine Inventur angelegt.</td></tr>{% endfor %}
+</table></div>
+{% if leitung %}
+<form method="post" class="karte">{% csrf_token %}<h3 style="margin-top:0">+ Neue Inventur</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 18px">
+  {% for feld in form %}<div><label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</div>{% endfor %}
+  </div><p class="hilfe">Gezählt werden alle aktiven Lagerartikel (im Material „Lagerartikel“ angekreuzt), auf Wunsch nur ein Lagerbereich. Ab der Toleranz (Prozent oder Wert) muss ein zweiter Mitarbeiter nachzählen.</p>
+  <button class="knopf" type="submit">Anlegen</button></form>
+{% endif %}
+{% endblock %}
