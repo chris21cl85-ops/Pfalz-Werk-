@@ -76,6 +76,20 @@ jobs:
           if ($LASTEXITCODE) { exit 1 }
           "NR=$nr" | Out-File -Append $env:GITHUB_ENV
 
+      - name: Setup probeweise installieren und starten
+        shell: pwsh
+        env:
+          PFALZWERK_LOKAL: ${{ runner.temp }}\daten2
+        run: |
+          $ziel = "$env:RUNNER_TEMP\installiert"
+          Start-Process "dist\PFALZ-WERK-Setup-$env:NR.exe" -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=`"$ziel`"" -Wait
+          if (-not (Test-Path "$ziel\python\python.exe")) { Write-Error "Installation fehlt"; exit 1 }
+          & "$ziel\python\python.exe" "$ziel\manage.py" check
+          if ($LASTEXITCODE) { exit 1 }
+          & "$ziel\python\python.exe" "$ziel\manage.py" migrate --noinput -v 0
+          if ($LASTEXITCODE) { exit 1 }
+          Write-Host "Installation ok: $ziel"
+
       - name: Als Release veröffentlichen
         shell: pwsh
         env:

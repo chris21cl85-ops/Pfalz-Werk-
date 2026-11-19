@@ -768,11 +768,14 @@ aus „sauber“: Programm und Daten sind getrennt, ein neuer Rechner startet mi
   Datenordner (Dokumente → PFALZ-WERK-Daten) und werden nie angefasst.
 - **Automatischer Bau auf GitHub** (`.github/workflows/fassung.yml`, Windows-Rechner von GitHub, bei jedem Hochladen):
   1. alle Tests unter Windows, 2. Fassung zusammenbauen, 3. Probestart mit dem eingebetteten Python (Pakete laden,
-  `check`, Datenbank anlegen, Server starten, Anmeldeseite abrufen), 4. Setup bauen, 5. als Release
+  `check`, Datenbank anlegen, Server starten, Anmeldeseite abrufen), 4. Setup bauen, 5. Setup still installieren und das installierte
+  Programm prüfen, 6. als Release
   „PFALZ-WERK Fassung x.y“ veröffentlichen (Setup .exe + ZIP).
 - Anleitung für Chris: ANLEITUNG.md, neuer Abschnitt „Setup-Programm“ (Teile A/B nur noch für die Quelltext-Variante).
-- Hier im Container nicht prüfbar: python.org ist gesperrt, und es gibt kein Windows. Der Bau läuft deshalb auf GitHub.
-- Tests 9 neue (`tests/test_verteilung.py`).
+- Hier im Container nicht prüfbar (python.org gesperrt, kein Windows) – deshalb auf GitHub. Erster Lauf 19.11.: Tests unter
+  Windows grün, Probestart ok, Setup gebaut, Release `fassung-5.8` mit Setup (34 MB) und ZIP (46 MB).
+  Nicht automatisch prüfbar: Doppelklick-Start mit Browser und die Chef-Abfrage im schwarzen Fenster → Chris' Test.
+- 10 neue Tests (`tests/test_verteilung.py`), 483 automatische Tests, alle grün (hier und unter Windows).
 
 ## Nächstes Paket
 Etappe 5 ist damit fertig gebaut. Als Nächstes steht Chris' **vollständiger Test** an (Pakete 5a–9 nach den
