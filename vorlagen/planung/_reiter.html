@@ -2,5 +2,6 @@
   <a class="knopf {% if aktiv != 'kalender' %}zweit{% endif %}" href="{% url 'planung:kalender' %}">📅 Woche</a>
   <a class="knopf {% if aktiv != 'montageplan' %}zweit{% endif %}" href="{% url 'planung:montageplan' %}">🚚 Montageplan</a>
   <a class="knopf {% if aktiv != 'teams' %}zweit{% endif %}" href="{% url 'planung:teams' %}">👥 Teams</a>
+  <a class="knopf {% if aktiv != 'kapazitaet' %}zweit{% endif %}" href="{% url 'planung:kapazitaet' %}">📊 Kapazität</a>
   <a class="knopf {% if aktiv != 'abwesenheiten' %}zweit{% endif %}" href="{% url 'planung:abwesenheiten' %}">🌴 Abwesenheiten</a>
 </div>

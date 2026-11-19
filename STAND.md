@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.4 (Etappe 5, Paket 5d).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.5 (Etappe 5, Paket 6 Kapazität).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -702,9 +702,25 @@ Vorlage: PW_Moebel_CNC_Export, BohrbildTeil, BohrPlus, Dxf*, MassVorschlaege, St
 - **Möbelrechner damit vollständig (Stufen 1–6)** bis auf Bauteilzerlegung und SQL-Sync der Excel.
 - 454 automatische Tests, alle grün.
 
+### Paket 6: Kapazitätsplanung – GEBAUT 19.11.2026
+Vorlage: Blätter „Einsatzplanung“ (O–V, X–AG), „Personal-Leitstand“, Zeitplan-Formeln M (Terminkonflikt),
+P/Q (Verfügbarkeit, Planungshinweis), AA–AE (Dauer, Tagessoll, Gebucht, Rest), Zeitdaten F/G/I (Umfang, Einheit, Auswirkung).
+- Reiter „📊 Kapazität“ unter Montage & Kalender (Chef, Admin, Meister): Tag wählbar; je Mitarbeiter Soll (Vertrag),
+  Abwesenheit, gebucht, Rest, Status (verfügbar / knapp unter 2 h / überplant / abwesend / keine Sollzeit) mit
+  Planungshinweis (einplanbar / nur kurze Aufgabe / nicht einplanen), was geplant ist, überschneidende Termine rot.
+  Kennzahlen: verfügbar, Soll/gebucht, freie Stunden, Auslastung, Terminkonflikte. Wochenübersicht Mo–Fr mit freien
+  Stunden je Mitarbeiter (Farben).
+- Neu gegenüber der Excel: eingeplante Arbeitsgänge der Produktion zählen als gebucht (Plan-Stunden gleich auf die
+  Werktage verteilt); fertige nicht.
+- Abwesenheiten mit **Stunden je Tag** (z. B. Berufsschule 4 h) = reduziert statt ganzer Tag; Import aus Zeitdaten F/G/I.
+  Nur freigegebene Abwesenheiten mindern die Kapazität (wie Excel).
+- Warnungen: Termin eintragen (überplant, Überschneidung, abwesend, keine Sollzeit), Montage planen (Teammitglied
+  überplant – die alten Montage-Termine desselben Projekts zählen beim Umplanen nicht), Produktion einplanen.
+- 461 automatische Tests, alle grün.
+
 ## Nächstes Paket
-**6 Kapazitätsplanung** (Personal-Gate, Einsatzplanung: Soll/gebucht/Rest je Mitarbeiter und Tag), dann 7 Inventur,
-8 Handy-Ansichten, 9 Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**7 Inventur** (Blätter Inventur Leitstand/Start/Zählaufträge/Erfassung/Nachzählung/Abweichungen/Abschluss/Bericht/
+Historie/Einstellungen), dann 8 Handy-Ansichten, 9 Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

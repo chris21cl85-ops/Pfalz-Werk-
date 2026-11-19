@@ -1,0 +1,40 @@
+{% extends "basis.html" %}
+{% block titel %}Kapazität {{ tag|date:"d.m.Y" }} – PFALZ-WERK{% endblock %}
+{% block pfad %} › <a href="{% url 'planung:kalender' %}">Montage & Kalender</a> › Kapazität{% endblock %}
+{% block inhalt %}
+<style>.reiter{margin-bottom:14px}.minus{color:var(--rot);font-weight:600}
+.wz{text-align:center;border-radius:10px;padding:6px 4px;font-weight:600}
+.wz.g{background:#e3f2e8}.wz.y{background:#fbefd5}.wz.r{background:#f9e0db;color:#9c3a22}.wz.n{background:#eef1ef;color:#8a9a90}</style>
+{% include "planung/_reiter.html" with aktiv="kapazitaet" %}
+<h1>Kapazität · {{ tag|date:"l, d.m.Y" }}</h1>
+<div class="leiste">
+  <a class="knopf zweit" href="?datum={{ vor }}">← Tag</a><a class="knopf zweit" href="?">Heute</a><a class="knopf zweit" href="?datum={{ nach }}">Tag →</a>
+  <form method="get" style="display:flex;gap:8px"><input type="date" name="datum" value="{{ tag|date:'Y-m-d' }}" onchange="this.form.submit()" style="max-width:190px"></form>
+</div>
+<div class="zahlen" style="margin-bottom:18px">
+  <div class="zahl"><small>Verfügbar</small><b>{{ t.verfuegbar }} / {{ t.aktiv }}</b><small>{{ t.abwesend }} abwesend · {{ t.ueberplant }} überplant</small></div>
+  <div class="zahl blau"><small>Soll / gebucht</small><b>{{ t.soll|floatformat:"-1" }} / {{ t.gebucht|floatformat:"-1" }} h</b><small>Termine + Werkstatt</small></div>
+  <div class="zahl warn"><small>Freie Kapazität</small><b>{{ t.rest|floatformat:"-1" }} h</b><small>{% if t.auslastung is not None %}Auslastung {{ t.auslastung }} %{% endif %}</small></div>
+  <div class="zahl" style="--leuchten:rgba(167,139,250,.38)"><small>Terminkonflikte</small><b class="{% if t.konflikte %}minus{% endif %}">{{ t.konflikte }}</b><small>überschneidende Termine</small></div>
+</div>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Mitarbeiter</th><th style="text-align:right">Soll</th><th class="breit">Abwesenheit</th><th style="text-align:right">Gebucht</th><th style="text-align:right">Rest</th><th>Status</th><th class="breit">Was ist geplant</th></tr>
+  {% for z in t.zeilen %}<tr><td>{{ z.ma.name }}<div class="hilfe">{{ z.ma.rolle|default:"" }}</div></td>
+    <td class="nowrap" style="text-align:right">{{ z.soll|floatformat:"-2" }} h</td>
+    <td class="breit">{% if z.abwesenheit %}{{ z.abwesenheit }}{% if z.abw_h and z.abw_h != z.soll %} ({{ z.abw_h|floatformat:"-2" }} h){% endif %}{% else %}–{% endif %}</td>
+    <td class="nowrap" style="text-align:right">{{ z.gebucht|floatformat:"-2" }} h</td>
+    <td class="nowrap" style="text-align:right"><b>{{ z.rest|floatformat:"-2" }} h</b></td>
+    <td class="nowrap">{{ z.status }}<div class="hilfe">{{ z.planung }}</div></td>
+    <td class="breit">{% for x in z.termine %}<div class="{% if x.pk in z.konflikt_ids %}minus{% endif %}">{% if x.beginn %}{{ x.beginn|time:"H:i" }}–{{ x.ende|time:"H:i" }} {% endif %}{{ x.aufgabe }}{% if x.pk in z.konflikt_ids %} ⚠ Überschneidung{% endif %}</div>{% endfor %}
+      {% for w in z.werkstatt %}<div class="hilfe">🔨 {{ w.text }} · {{ w.stunden|floatformat:"-2" }} h</div>{% endfor %}
+      {% if not z.termine and not z.werkstatt %}<span class="grau">frei</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7">Keine aktiven Mitarbeiter.</td></tr>{% endfor %}
+</table></div>
+<h2 class="abschnitt">Woche ab {{ mo|date:"d.m." }} – freie Stunden</h2>
+<div class="tabelle-rahmen"><table>
+  <tr><th>Mitarbeiter</th>{% for d in wochentage %}<th style="text-align:center"><a href="?datum={{ d|date:'Y-m-d' }}">{{ d|date:"D d.m." }}</a></th>{% endfor %}</tr>
+  {% for w in woche %}<tr><td>{{ w.ma.name }}</td>
+    {% for k in w.tage %}<td><div class="wz {% if k.status == '🟢 verfügbar' %}g{% elif k.status == '🟡 knapp' %}y{% elif k.soll == 0 and k.status != '🔴 abwesend' %}n{% else %}r{% endif %}" title="{{ k.status }} · Soll {{ k.soll|floatformat:'-2' }} h · gebucht {{ k.gebucht|floatformat:'-2' }} h">{% if k.status == '🔴 abwesend' %}{{ k.abwesenheit }}{% elif k.soll == 0 %}–{% else %}{{ k.rest|floatformat:"-1" }} h{% endif %}</div></td>{% endfor %}</tr>{% endfor %}
+</table></div>
+<p class="hilfe">Soll aus dem Arbeitsvertrag; Abwesenheit freigegeben (ganzer Tag oder Stunden); gebucht = Termine (Kalender, Montagen) + eingeplante Arbeitsgänge der Produktion (Plan-Stunden auf die Werktage verteilt). Grün = verfügbar, gelb = unter 2 h frei, rot = abwesend oder überplant. Beim Eintragen von Terminen, Montagen und beim Einplanen warnt das Programm automatisch.</p>
+{% endblock %}

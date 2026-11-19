@@ -9,7 +9,7 @@
   <tr><th>Mitarbeiter</th><th>Zeitraum</th><th>Art</th><th>Status</th><th class="breit">Hinweis</th>{% if leitung %}<th></th>{% endif %}</tr>
   {% for a in liste %}<tr><td>{{ a.mitarbeiter.name }}<div class="hilfe">{{ a.zid }}</div></td>
     <td class="nowrap">{{ a.von|date:"d.m.Y" }}{% if a.bis != a.von %} – {{ a.bis|date:"d.m.Y" }}{% endif %}<div class="hilfe">{{ a.tage }} Tag{{ a.tage|pluralize:"e" }}</div></td>
-    <td>{{ a.art }}</td>
+    <td>{{ a.art }}{% if a.stunden %}<div class="hilfe">{{ a.stunden|floatformat:"-2" }} h je Tag</div>{% endif %}</td>
     <td>{% if a.status == "Freigegeben" %}<span style="color:var(--gruen);font-weight:600">✓ Freigegeben</span>{% elif a.status == "Abgelehnt" %}<span class="grau">Abgelehnt</span>{% else %}<b>Beantragt</b>{% endif %}</td>
     <td class="breit">{{ a.hinweis|default:"–" }}</td>
     {% if leitung %}<td><form method="post" class="inline" style="display:flex;gap:6px">{% csrf_token %}<input type="hidden" name="aktion" value="status"><input type="hidden" name="abwesenheit" value="{{ a.pk }}">

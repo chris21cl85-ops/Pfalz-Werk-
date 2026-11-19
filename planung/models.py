@@ -59,6 +59,8 @@ class Abwesenheit(models.Model):
     art = models.CharField("Zeitart", max_length=20, choices=Art.choices, default=Art.URLAUB)
     status = models.CharField("Status", max_length=20, choices=Status.choices, default=Status.BEANTRAGT)
     hinweis = models.CharField("Hinweis", max_length=250, blank=True)
+    stunden = models.DecimalField("Stunden je Tag (leer = ganzer Tag)", max_digits=4, decimal_places=2, null=True,
+                                  blank=True)  # Zeitdaten: Einheit „Std“, Auswirkung „Reduziert“
     erfasst_von = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
                                     related_name="+")
     erfasst_am = models.DateTimeField(auto_now_add=True)
@@ -74,6 +76,10 @@ class Abwesenheit(models.Model):
     @property
     def tage(self) -> int:
         return (self.bis - self.von).days + 1
+
+    @property
+    def ganztags(self) -> bool:
+        return not self.stunden
 
 
 class Montage(models.Model):

@@ -39,11 +39,11 @@ def abwesend(mitarbeiter, tag: date) -> str:
     return (a.art + (" (beantragt)" if a.status == Abwesenheit.Status.BEANTRAGT else "")) if a else ""
 
 
-def abwesenheit_erfassen(*, mitarbeiter, von, bis, art, status, hinweis="", benutzer) -> Abwesenheit:
+def abwesenheit_erfassen(*, mitarbeiter, von, bis, art, status, hinweis="", benutzer, stunden=None) -> Abwesenheit:
     if bis < von:
         raise PlanungsFehler("„Bis“ liegt vor „Von“.")
     a = Abwesenheit.objects.create(zid=naechste_id(Abwesenheit, "zid", "ZD-"), mitarbeiter=mitarbeiter, von=von, bis=bis,
-                                   art=art, status=status, hinweis=hinweis, erfasst_von=benutzer)
+                                   art=art, status=status, hinweis=hinweis, erfasst_von=benutzer, stunden=stunden or None)
     protokolliere("abwesenheit_erfasst", a.zid, benutzer=benutzer,
                   details=f"{mitarbeiter.name}: {art} {von:%d.%m.%Y}–{bis:%d.%m.%Y} ({status})")
     return a
@@ -99,6 +99,15 @@ def montage_pruefen(projekt, *, datum, beginn, ende, team, fahrzeug) -> list[str
     weg = [f"{m.name} ({a})" for m in mitglieder if (a := abwesend(m, datum))]
     if weg:
         warn.append("Abwesend: " + ", ".join(weg))
+    from datetime import datetime as _dt
+    from decimal import Decimal as _D
+
+    from .kapazitaet import warnung_fuer
+    dauer = _D((_dt.combine(datum, ende) - _dt.combine(datum, beginn)).seconds / 3600).quantize(_D("0.01"))
+    for m in mitglieder:
+        w = warnung_fuer(m, datum, zusatz_h=dauer, ohne_projekt=projekt)
+        if w and "abwesend" not in w:  # Abwesenheit steht schon oben
+            warn.append(w)
     andere = Montage.objects.filter(datum=datum).exclude(projekt=projekt).select_related("projekt", "team")
     for m in andere:
         if m.team_id == team.pk:

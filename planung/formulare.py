@@ -27,10 +27,14 @@ class AbwesenheitFormular(forms.Form):
     bis = forms.DateField(label="Bis (gleicher Tag = eintägig)", widget=DATUM, required=False)
     art = forms.ChoiceField(label="Zeitart", choices=Abwesenheit.Art.choices)
     status = forms.ChoiceField(label="Status", choices=Abwesenheit.Status.choices[:2], initial="Freigegeben")
+    stunden = forms.DecimalField(label="Stunden je Tag (leer = ganzer Tag)", required=False, min_value=0.25, max_value=12,
+                                 decimal_places=2)
     hinweis = forms.CharField(label="Hinweis", max_length=250, required=False)
 
     def __init__(self, *args, leitung=True, eigener=None, **kwargs):
         super().__init__(*args, **kwargs)
+        from rechnungen.formulare import komma_felder
+        komma_felder(self, ["stunden"])
         if not leitung:  # Mitarbeiter beantragen nur für sich
             del self.fields["status"]
             self.fields["mitarbeiter"].queryset = Mitarbeiter.objects.filter(pk=getattr(eigener, "pk", None))

@@ -97,12 +97,23 @@ class TeamImporter(Importer):
         return "neu"
 
 
+def _stunden(z):
+    """Zeitdaten: Einheit „Std“ und Auswirkung „Reduziert“ → Stunden je Tag, sonst ganzer Tag."""
+    from material.importer import als_zahl
+    umfang = als_zahl(z["umfang"])
+    if als_text(z["einheit"]).lower().startswith("std") and als_text(z["auswirkung"]) == "Reduziert" \
+            and umfang and umfang is not False and umfang > 0:
+        return umfang
+    return None
+
+
 @registrieren
 class ZeitdatenImporter(Importer):
     blatt = "Zeitdaten"
     titel = "Abwesenheiten (Zeitdaten)"
     reihenfolge = 91
-    spalten = {"A": "id", "B": "ma", "C": "von", "D": "bis", "E": "art", "H": "status", "L": "hinweis"}
+    spalten = {"A": "id", "B": "ma", "C": "von", "D": "bis", "E": "art", "F": "umfang", "G": "einheit", "H": "status",
+               "I": "auswirkung", "L": "hinweis"}
     startzeile = 4
     endzeile = 350
 
@@ -125,7 +136,8 @@ class ZeitdatenImporter(Importer):
             zid=zid or naechste_id(Abwesenheit, "zid", "ZD-"), mitarbeiter=ma, von=von, bis=bis,
             art=art if art in Abwesenheit.Art.values else Abwesenheit.Art.SONSTIGES,
             status=status if status in Abwesenheit.Status.values else Abwesenheit.Status.FREIGEGEBEN,
-            hinweis=(als_text(z["hinweis"]) or ("" if art in Abwesenheit.Art.values else art))[:250])
+            hinweis=(als_text(z["hinweis"]) or ("" if art in Abwesenheit.Art.values else art))[:250],
+            stunden=_stunden(z))
         return "neu"
 
 

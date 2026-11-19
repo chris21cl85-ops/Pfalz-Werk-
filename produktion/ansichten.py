@@ -63,9 +63,12 @@ def projekt(request, pk):
                     n = dienst.einplanen(p, f.cleaned_data["start"], f.cleaned_data["mitarbeiter"], request.user)
                     messages.success(request, f"{n} Arbeitsgänge ab {f.cleaned_data['start']:%d.%m.%Y} eingeplant.")
                     from planung.dienst import abwesend
+                    from planung.kapazitaet import warnung_fuer
                     ma, start = f.cleaned_data["mitarbeiter"], dienst.werktag(f.cleaned_data["start"], 0)
                     if ma and (grund := abwesend(ma, start)):
                         messages.warning(request, f"⚠ {ma.name} ist am {start:%d.%m.} abwesend ({grund}).")
+                    elif ma and (w := warnung_fuer(ma, start)):
+                        messages.warning(request, "⚠ " + w)
                     return redirect("produktion:projekt", p.pk)
             elif aktion == "route":
                 f = formulare["route"] = RouteFormular(request.POST, prefix="ro")

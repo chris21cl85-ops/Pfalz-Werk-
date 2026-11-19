@@ -51,6 +51,11 @@ def kalender(request):
                 messages.error(request, str(fehler))
             else:
                 messages.success(request, f"{len(neu)} Termin(e) am {d['datum']:%d.%m.%Y} eingetragen.")
+                from .kapazitaet import warnung_fuer
+                for t in neu:
+                    w = warnung_fuer(t.mitarbeiter, t.datum)
+                    if w:
+                        messages.warning(request, "⚠ " + w)
                 return redirect(f"{request.path}?woche={dienst.montag(d['datum']).isoformat()}&ansicht={ansicht}")
     k = dienst.kalender(mo, ansicht)
     termine = (Termin.objects.filter(datum__range=(mo, k["fr"]), abgesagt=False, aus_montage=False)
@@ -59,6 +64,21 @@ def kalender(request):
         "k": k, "ansicht": ansicht, "ansichten": ANSICHTEN, "leitung": leitung, "form": form, "termine": termine,
         "vor": (mo - timedelta(days=7)).isoformat(), "nach": (mo + timedelta(days=7)).isoformat(),
         "heute": dienst.montag(timezone.localdate()).isoformat(), "heute_tag": timezone.localdate()})
+
+
+@rolle_erforderlich(*WERKSTATT_LEITUNG)
+def kapazitaet(request):
+    """Wie Einsatzplanung / Personal-Leitstand: Tag je Mitarbeiter + Wochenübersicht der Rest-Stunden."""
+    from . import kapazitaet as k
+    try:
+        tag = date.fromisoformat(request.GET.get("datum", ""))
+    except ValueError:
+        tag = timezone.localdate()
+    mo = dienst.montag(tag)
+    return render(request, "planung/kapazitaet.html", {
+        "t": k.tag_alle(tag), "tag": tag, "woche": k.woche(mo), "mo": mo,
+        "wochentage": [mo + timedelta(days=i) for i in range(5)],
+        "vor": (tag - timedelta(days=1)).isoformat(), "nach": (tag + timedelta(days=1)).isoformat()})
 
 
 @rolle_erforderlich(*ALLE)
@@ -128,7 +148,7 @@ def abwesenheiten(request):
             d = form.cleaned_data
             a = dienst.abwesenheit_erfassen(mitarbeiter=d["mitarbeiter"], von=d["von"], bis=d["bis"], art=d["art"],
                                             status=d.get("status") or Abwesenheit.Status.BEANTRAGT, hinweis=d["hinweis"],
-                                            benutzer=request.user)
+                                            benutzer=request.user, stunden=d.get("stunden"))
             messages.success(request, f"{a.zid} eingetragen ({a.status}).")
             return redirect("planung:abwesenheiten")
     liste = Abwesenheit.objects.select_related("mitarbeiter")
