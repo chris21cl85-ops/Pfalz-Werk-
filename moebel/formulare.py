@@ -18,6 +18,8 @@ ABWEICHUNGEN = [("FUGE_AUSSEN", "Fuge außen (mm)"), ("FUGE_MITTE", "Fuge Mitte 
 ZAHLEN = ["anzahl", "breite", "hoehe", "tiefe", "sockel_h", "raumhoehe", "schnellfaktor"] + \
     [f"abw_{k}" for k, _ in ABWEICHUNGEN]
 ZONEN_ZEILEN = 12  # wie Zonentabelle A39:E58 (dort 20 Zeilen)
+FORM_ZEILEN = 6
+FORM_FELDER = ["bezeichnung", "verfahren", "radius", "winkel", "hoehe", "dicke", "material", "anzahl", "lagenmass", "form_da"]
 
 
 def _materialwahl(nur, aktuell=""):
@@ -56,6 +58,8 @@ class MoebelFormular(forms.Form):
     sockel_h = forms.DecimalField(label="Sockelhöhe (mm, leer = Regel)", required=False, min_value=0, decimal_places=1)
     tueren = forms.ChoiceField(label="Türen", choices=[(x, x) for x in rechner.TUEREN])
     tuerart = forms.ChoiceField(label="Türart", choices=[(x, x) for x in rechner.TUERARTEN])
+    tuerkonstruktion = forms.ChoiceField(label="Türkonstruktion", required=False,
+                                         choices=[(x, x) for x in rechner.TUERKONSTRUKTIONEN])
     fachboeden = forms.IntegerField(label="Fachböden (Anzahl)", min_value=0, max_value=20, initial=1)
     verbindung = forms.ChoiceField(label="Korpusverbindung", choices=[(x, x) for x in rechner.VERBINDUNGEN])
     beschlagsystem = forms.ChoiceField(label="Beschlagsystem")
@@ -117,6 +121,22 @@ class MoebelFormular(forms.Form):
             self.fields[f"z{i}_fachboeden"] = forms.IntegerField(min_value=0, max_value=10, required=False)
             for teil in ("feld", "zone", "hoehe", "fachboeden"):
                 self.fields[f"z{i}_{teil}"].widget.attrs.update({"inputmode": "numeric", "style": "min-width:0"})
+        for i, ft in enumerate((e.get("formteile") or [])[:FORM_ZEILEN]):
+            for feld in FORM_FELDER:
+                if ft.get(feld) not in (None, ""):
+                    initial[f"f{i}_{feld}"] = ft.get(feld)
+        for i in range(FORM_ZEILEN):
+            self.fields[f"f{i}_bezeichnung"] = forms.CharField(required=False, max_length=80)
+            self.fields[f"f{i}_verfahren"] = forms.ChoiceField(required=False, choices=[("", "–")] + [(x, x) for x in rechner.FORMVERFAHREN])
+            for feld, maxi in (("radius", 10000), ("winkel", 360), ("hoehe", 5000), ("dicke", 500), ("lagenmass", 100)):
+                self.fields[f"f{i}_{feld}"] = forms.DecimalField(required=False, min_value=0, max_value=maxi, decimal_places=2)
+            self.fields[f"f{i}_material"] = forms.CharField(required=False, max_length=40,
+                                                            widget=forms.TextInput(attrs={"list": "materialnummern"}))
+            self.fields[f"f{i}_anzahl"] = forms.IntegerField(required=False, min_value=1, max_value=999)
+            self.fields[f"f{i}_form_da"] = forms.ChoiceField(required=False, choices=[("Nein", "Nein"), ("Ja", "Ja")])
+            for feld in ("radius", "winkel", "hoehe", "dicke", "lagenmass", "anzahl"):
+                self.fields[f"f{i}_{feld}"].widget.attrs.update({"inputmode": "decimal", "style": "min-width:0"})
+        self.initial.update({k: v for k, v in initial.items() if k.startswith("f") and k[1:2].isdigit()})
         if not mit_projekt:
             del self.fields["projekt"]
         leer = [("", "– ohne –")]
@@ -135,9 +155,13 @@ class MoebelFormular(forms.Form):
         if e.get("beschlagsystem") and e["beschlagsystem"] not in systeme:
             systeme.append(e["beschlagsystem"])
         self.fields["beschlagsystem"].choices = [(s, s) for s in systeme]
-        komma_felder(self, ZAHLEN + [f"z{i}_hoehe" for i in range(ZONEN_ZEILEN)])
+        komma_felder(self, ZAHLEN + [f"z{i}_hoehe" for i in range(ZONEN_ZEILEN)]
+                     + [f"f{i}_{k}" for i in range(FORM_ZEILEN) for k in ("radius", "winkel", "hoehe", "dicke", "lagenmass")])
         for feld in ("fachboeden",):
             self.fields[feld].widget.attrs["inputmode"] = "numeric"
+
+    def formteil_zeilen(self):
+        return [[self[f"f{i}_{t}"] for t in FORM_FELDER] for i in range(FORM_ZEILEN)]
 
     def zonen_zeilen(self):
         """Für die Vorlage: je Zeile die fünf Felder."""
@@ -173,6 +197,18 @@ class MoebelFormular(forms.Form):
                 e["zonen"].append({"feld": d.get(f"z{i}_feld") or 1, "zone": d.get(f"z{i}_zone") or (i + 1),
                                    "art": d[f"z{i}_art"], "hoehe": z(d.get(f"z{i}_hoehe")) or 0,
                                    "fachboeden": d.get(f"z{i}_fachboeden") or 0})
+        e["tuerkonstruktion"] = d.get("tuerkonstruktion") or "Platte"
+        e["formteile"] = []
+        for i in range(FORM_ZEILEN):
+            if d.get(f"f{i}_verfahren") or (d.get(f"f{i}_bezeichnung") or "").strip():
+                ft = {k: d.get(f"f{i}_{k}") for k in FORM_FELDER}
+                for k in ("radius", "winkel", "hoehe", "dicke", "lagenmass"):
+                    ft[k] = z(ft[k]) or 0
+                ft["anzahl"] = ft["anzahl"] or 1
+                ft["bezeichnung"] = (ft["bezeichnung"] or "").strip()
+                ft["material"] = (ft["material"] or "").strip()
+                ft["form_da"] = ft["form_da"] or "Nein"
+                e["formteile"].append(ft)
         e["abweichungen"] = {k: z(d.get(f"abw_{k}")) for k, _ in ABWEICHUNGEN if d.get(f"abw_{k}") not in (None, "")}
         return e
 
@@ -201,6 +237,20 @@ class RegelFormular(forms.Form):
         "BOX_RW_ABZUG": "Metallbox: Rückwand = lichte Weite minus (mm)", "BOX_RW_H": "Metallbox: Rückwandhöhe (mm)",
         "ERGO_SK_MAX": "Ergonomie: Schubkasten-Oberkante max. (mm)", "ERGO_UNTEN": "Ergonomie: Schubkasten sehr tief unter (mm)",
         "ERGO_FACH_MAX": "Ergonomie: Fach darüber nur mit Tritt (mm)",
+        "MH_LAM_B": "Massivholz: Ziel-Lamellenbreite (mm)", "MH_LAM_MAX": "Massivholz: breiter → Leimholz (mm)",
+        "MH_RESERVE": "Massivholz: Reserve Grobvolumen (%)", "MH_DELTA_U": "Massivholz: Holzfeuchte-Änderung (%)",
+        "MH_QUELL_MAX": "Massivholz: Hinweis ab Quellmaß (mm)", "MH_ZUG_L": "Massivholz: Zugabe Länge (mm)",
+        "MH_ZUG_B": "Massivholz: Zugabe Breite je Lamelle (mm)", "MH_ZUG_D": "Massivholz: Zugabe Dicke (mm)",
+        "RAHMEN_B": "Rahmen + Füllung: Friesbreite (mm)", "RAHMEN_ZAPFEN": "Rahmen: Zapfentiefe je Seite (mm)",
+        "FUELL_NUT": "Füllung: Nuttiefe (mm)", "FUELL_LUFT": "Füllung: Luft je Seite (mm)",
+        "SEG_WINKEL_MAX": "Segmentbau: größter Segmentwinkel (°)", "SEG_ZUGABE": "Segment/Rohling: Zugabe (mm)",
+        "KERF_B": "Einsägen: Schnittbreite (mm)", "KERF_REST": "Einsägen: Reststeg außen (mm)",
+        "FORM_ZUGABE": "Formteile: Zugabe je Ende (mm)", "FORM_LAGE": "Formverleimung: Lagendicke ohne Stärke (mm)",
+        "BIEG_R_FAKTOR": "Biegeplatte: Mindestradius = Faktor × Lage", "FURN_R_FAKTOR": "Formverleimung: Mindestradius = Faktor × Lage",
+        "LEIM_KG_M2": "Leimauftrag je Fuge (kg/m²)", "DAEMPF_RT_BAND": "Dämpfen: kleinstes R/t mit Biegeband",
+        "DAEMPF_RT_FREI": "Dämpfen: ab R/t ohne Biegeband", "DAEMPF_MIN_JE_MM": "Dämpfzeit je mm Dicke (min)",
+        "RUECKFED": "Dämpfen: Rückfederung (%)", "KURZFASER_W": "Ausschneiden Massivholz: Kurzfaser ab (°)",
+        "FORM_RAND": "Formenbau: Rand um das Formteil (mm)",
         "WARTE_STD": "Wartezeit Trocknen/Aushärten bei AG-Übernahme (Std.)", "CNC_JA": "Bohren/Fräsen auf CNC (1 = ja, 0 = von Hand)",
     }
 

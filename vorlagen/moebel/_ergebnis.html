@@ -49,6 +49,16 @@
 </table></div>
 {% endif %}
 
+{% if erg.formteile %}
+<h3>Formteile</h3>
+<div class="tabelle-rahmen"><table>
+  <tr><th></th><th>Formteil</th><th class="breit">Bogen innen / außen</th><th class="breit">Sehne / Stich</th><th>Lagen / Segmente</th><th>Zuschnitt</th><th>Hinweis</th></tr>
+  {% for f in erg.formteile %}<tr><td>{% if f.status == 2 %}🔴{% elif f.status == 1 %}🟡{% else %}🟢{% endif %}</td>
+    <td>{{ f.bezeichnung }}<div class="hilfe">{{ f.verfahren }}</div></td>
+    <td class="breit nowrap">{% if f.bogen_innen is not None %}{{ f.bogen_innen|floatformat:"-1" }} / {{ f.bogen_aussen|floatformat:"-1" }} mm{% endif %}</td>
+    <td class="breit nowrap">{{ f.sehne_stich }}{% if f.sehne_stich %} mm{% endif %}</td><td>{{ f.lagen }}</td><td>{{ f.zuschnitt }}</td><td>{{ f.hinweis }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
 {% if erg.varianten %}
 <h3>Teilungsregeln im Vergleich (Fronthöhen unten → oben)</h3>
 <div class="tabelle-rahmen"><table>

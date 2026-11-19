@@ -17,7 +17,11 @@ TYP_VORGABEN = {  # wie TypVorgabe(): B, H, T, oberer Abschluss, Sockel, Türen
     "Regal": (800, 1800, 300, "Deckel", "ohne Sockel", "keine Tür / offen"),
 }
 TYPEN = list(TYP_VORGABEN)
-BAUWEISEN = [("A", "A Seiten durchgehend"), ("B", "B Boden und Deckel durchgehend"), ("C", "C Boden durchgehend")]
+BAUWEISEN = [("A", "A Seiten durchgehend"), ("B", "B Boden und Deckel durchgehend"), ("C", "C Boden durchgehend"),
+             ("M", "M Modulbau (je Feld ein Korpus)")]
+TUERKONSTRUKTIONEN = ["Platte", "Rahmen + Füllung"]
+FORMVERFAHREN = ["Ausschneiden", "Segmentbau", "Eingesägt (Kerben)", "Biegeplatte (Biege-MDF/-Sperrholz)",
+                 "Formverleimung (Lagen)", "Dämpfen (Massivholz)"]
 RUECKWANDARTEN = ["eingenutet", "eingefälzt", "aufgeschraubt", "eingestellt", "ohne"]
 SOCKEL = ["Stellfüße mit Blende", "Sockelkasten", "ohne Sockel", "ohne Sockel (hängend)"]
 TUEREN = ["automatisch", "1 Tür", "2 Türen", "keine Tür / offen"]
@@ -63,6 +67,13 @@ STANDARD_REGELN = {
     "ERGO_FACH_MAX": 1900,
     # Stufe 3
     "WARTE_STD": 12, "CNC_JA": 1,
+    # Stufe 4 (RegelnStufe4): Massivholz, Rahmen + Füllung
+    "MH_LAM_B": 80, "MH_LAM_MAX": 120, "MH_RESERVE": 10, "MH_DELTA_U": 4, "MH_QUELL_MAX": 2, "MH_ZUG_L": 100,
+    "MH_ZUG_B": 7, "MH_ZUG_D": 7, "RAHMEN_B": 60, "RAHMEN_ZAPFEN": 10, "FUELL_NUT": 10, "FUELL_LUFT": 2,
+    # Stufe 5 (RegelnStufe5): Formteile
+    "SEG_WINKEL_MAX": 30, "SEG_ZUGABE": 10, "KERF_B": 3, "KERF_REST": 2.5, "FORM_ZUGABE": 20, "FORM_LAGE": 1.5,
+    "BIEG_R_FAKTOR": 8, "FURN_R_FAKTOR": 30, "LEIM_KG_M2": 0.2, "DAEMPF_RT_BAND": 3, "DAEMPF_RT_FREI": 30,
+    "DAEMPF_MIN_JE_MM": 2.4, "RUECKFED": 5, "KURZFASER_W": 60, "FORM_RAND": 50,
 }
 STANDARD_BAENDER = [(900, 2), (1600, 3), (2000, 4), (2400, 5)]           # Türhöhe bis → Bänder
 STANDARD_FACHBODEN = [(16, 550), (19, 700), (22, 800), (25, 900), (99, 1000)]  # Stärke bis → Spannweite max
@@ -77,7 +88,8 @@ STANDARD_SYSTEME = {
 }
 STANDARD_MATERIAL = {"korpus": "PL-WEI-P2-19", "front": "PL-WEI-P2-19", "rueckwand": "HDF-08",
                      "kante_korpus": "ABS-W-08", "kante_front": "ABS-W-20",
-                     "kasten": "MPX-BI-15", "kastenboden": "HDF-08"}  # B95/B96: Holzkasten
+                     "kasten": "MPX-BI-15", "kastenboden": "HDF-08",  # B95/B96: Holzkasten
+                     "fuellung": "", "form": "MDF-ROH-19", "leim": "KL-PVAC-D3"}  # B97 Füllung, B98 Form, B99 Leim
 
 GRUEN, GELB, ROT = 0, 1, 2
 
@@ -104,6 +116,14 @@ class Regeln:
     nennlaengen: list = field(default_factory=lambda: list(STANDARD_NENNLAENGEN))
     material: dict = field(default_factory=lambda: dict(STANDARD_MATERIAL))
     oberflaechen: list = field(default_factory=lambda: [list(x) for x in STANDARD_OBERFLAECHEN])
+    quellwerte: list = field(default_factory=list)  # [Holzart-Anfang der Material-Nr., tangential % je % Holzfeuchte]
+
+    def quellwert(self, nr):
+        """Wie QuellWert(): erster Eintrag, dessen Schlüssel der Anfang der Material-Nr. ist."""
+        for schluessel, wert in self.quellwerte:
+            if schluessel and float(wert or 0) > 0 and str(nr).upper().startswith(str(schluessel).upper()):
+                return float(wert)
+        return 0.0
 
     def oberflaeche(self, name):
         return next((o for o in self.oberflaechen if o and o[0] == name), None)
@@ -166,6 +186,10 @@ def ist_m2(einheit: str) -> bool:
     return (einheit or "").strip().lower() in ("m²", "m2", "qm")
 
 
+def ist_m3(einheit: str) -> bool:
+    return (einheit or "").strip().lower() in ("m³", "m3", "cbm")
+
+
 def aufrunden(x):
     return math.ceil(x - 1e-9)
 
@@ -213,6 +237,8 @@ class Rechner:
         self.bedarf, self.bedarf_grund = {}, {}
         self.varianten, self.verb_extra = [], 0
         self.ag = {}  # AG-Code → Bereich (wie gAG im Makro)
+        self.quell_fehlt, self.formteile = "", []
+        self.modul, self.wf, self.n_f, self.ib_k = False, [], 1, 0
 
     # ---------------------------------------------------------- Hilfen
     def mat(self, nr):
@@ -246,12 +272,16 @@ class Rechner:
         zl = l - kanten_dicke(kb1) - kanten_dicke(kb2) + (fz if kb1 else 0) + (fz if kb2 else 0)
         zb = b - kanten_dicke(kl1) - kanten_dicke(kl2) + (fz if kl1 else 0) + (fz if kl2 else 0)
         m = self.mat(mat)
+        massiv = bool(m and ist_m3(m.einheit))
+        if massiv:
+            hinweis = "; ".join(x for x in (self._massiv(mat, l, b, self.staerke(mat), menge, name, gruppe), hinweis) if x)
         self.teile.append({
             "teil": name, "gruppe": gruppe, "menge": menge, "l": round(l, 1), "b": round(b, 1), "dicke": self.staerke(mat),
             "zl": round(zl, 1), "zb": round(zb, 1), "material": mat, "kl1": kl1, "kl2": kl2, "kb1": kb1, "kb2": kb2,
             "maser": maser, "bearbeitung": bearb, "ort": ort, "diagonale": round(math.hypot(l, b), 1) if diag else None,
             "m2": round(l * b * menge / 1_000_000, 4), "hinweis": hinweis, "einheit": m.einheit if m else ""})
-        self.bedarf_plus(mat, l * b * menge / 1_000_000, "Fläche netto")
+        if not massiv:  # Massivholz ist schon als Grobvolumen gebucht
+            self.bedarf_plus(mat, l * b * menge / 1_000_000, "Fläche netto")
         for kante, laenge in ((kl1, l), (kl2, l), (kb1, b), (kb2, b)):
             if kante:
                 self.bedarf_plus(kante, (laenge + self.R.r("KANTEN_ZUGABE")) * menge / 1000, "Kantenlänge inkl. Zugabe")
@@ -365,30 +395,35 @@ class Rechner:
         bearb_seite = "; ".join(bearb)
         nut = "Nut wie Seite" if rw_art == "eingenutet" else ""
 
+        # ---- Felder / Modulbau vorab (Stufe 2/4)
+        self.modul = bw == "M" and zonen
+        if zonen and not self.feldbreiten(ib, s, felder, zonen_liste):
+            return self._abschluss(anz, ohne_bedarf=True)
+
         # ---- Korpus
         self.teil("Seite", "Korpus", 2, h_seite, tt, mat_k, k_k, maser="senkrecht", bearb=bearb_seite, ort="Korpus")
         if boden_durch:
-            self.teil("Boden", "Korpus", 1, b, tb, mat_k, k_k, "", k_k, k_k, "quer", nut, "Korpus")
+            self.kt(1, "Boden", "Korpus", 1, b, tb, mat_k, k_k, "", k_k, k_k, "quer", nut, "Korpus")
         else:
-            self.teil("Boden", "Korpus", 1, ib, tb, mat_k, k_k, maser="quer", bearb=nut, ort="Korpus")
+            self.kt(1, "Boden", "Korpus", 1, ib, tb, mat_k, k_k, maser="quer", bearb=nut, ort="Korpus")
         if abschluss == "Traversen":
-            self.teil("Traverse vorn", "Korpus", 1, ib, trav, mat_k, k_k, maser="quer", ort="Korpus")
-            self.teil("Traverse hinten", "Korpus", 1, ib, trav, mat_k, maser="quer", bearb=nut, ort="Korpus")
+            self.kt(1, "Traverse vorn", "Korpus", 1, ib, trav, mat_k, k_k, maser="quer", ort="Korpus")
+            self.kt(1, "Traverse hinten", "Korpus", 1, ib, trav, mat_k, maser="quer", bearb=nut, ort="Korpus")
         elif deckel_durch:
-            self.teil("Deckel", "Korpus", 1, b, tb, mat_k, k_k, "", k_k, k_k, "quer", nut, "Korpus")
+            self.kt(1, "Deckel", "Korpus", 1, b, tb, mat_k, k_k, "", k_k, k_k, "quer", nut, "Korpus")
         else:
-            self.teil("Deckel", "Korpus", 1, ib, tb, mat_k, k_k, maser="quer", bearb=nut, ort="Korpus")
+            self.kt(1, "Deckel", "Korpus", 1, ib, tb, mat_k, k_k, maser="quer", bearb=nut, ort="Korpus")
 
         # ---- Rückwand
         if rw_da and mat_r:
             if rw_art == "eingenutet":
-                self.teil("Rückwand", "Korpus", 1, ih + 2 * nut_t - 2, ib + 2 * nut_t - 2, mat_r, bearb="in Nut schieben", ort="Korpus")
+                self.kt(2, "Rückwand", "Korpus", 1, ih + 2 * nut_t - 2, ib + 2 * nut_t - 2, mat_r, bearb="in Nut schieben", ort="Korpus")
             elif rw_art == "eingefälzt":
-                self.teil("Rückwand", "Korpus", 1, ih + 2 * falz - 2, ib + 2 * falz - 2, mat_r, bearb="in Falz schrauben", ort="Korpus")
+                self.kt(2, "Rückwand", "Korpus", 1, ih + 2 * falz - 2, ib + 2 * falz - 2, mat_r, bearb="in Falz schrauben", ort="Korpus")
             elif rw_art == "aufgeschraubt":
-                self.teil("Rückwand", "Korpus", 1, hk - 4, b - 4, mat_r, bearb="hinten aufschrauben", ort="Korpus")
+                self.kt(2, "Rückwand", "Korpus", 1, hk - 4, b - 4, mat_r, bearb="hinten aufschrauben", ort="Korpus")
             elif rw_art == "eingestellt":
-                self.teil("Rückwand", "Korpus", 1, ih, ib, mat_r, maser="senkrecht",
+                self.kt(2, "Rückwand", "Korpus", 1, ih, ib, mat_r, maser="senkrecht",
                           bearb="zwischen Seiten, Verbinder wie Boden", ort="Korpus")
             if rw_art in ("aufgeschraubt", "eingefälzt"):
                 nr, abst = R.verbinder_id("Rückwandschraube")
@@ -437,7 +472,8 @@ class Rechner:
             boden = -1 if haengend else hs + (s + fe if tuerart == "Einlage" else 0)
             self._zonen(dict(b=b, hk=hk, s=s, ib=ib, ih=ih, ti=ti, fa=fa, fm=fm, fo=fo, fe=fe, tb_max=tb_max,
                              mat_k=mat_k, mat_f=mat_f, k_k=k_k, k_f=k_f, sys=sys, tuerart=tuerart, front_da=front_da,
-                             n_fb=n_fb, verb=verb, boden=boden, felder=felder, zonen=zonen_liste))
+                             n_fb=n_fb, verb=verb, boden=boden, felder=felder, zonen=zonen_liste, h_seite=h_seite, tt=tt,
+                             bearb_seite=bearb_seite))
 
         # ---- Fronten (ohne Aufteilung)
         if front_da and not zonen:
@@ -450,9 +486,9 @@ class Rechner:
             band_je = R.band_anzahl(fh)
             if band_je > 0 and wb > tb_max:
                 band_je += 1
-            self.teil("Tür (links/rechts)" if nt == 2 else "Tür", "Front", nt, fh, wb, mat_f, k_f, k_f, k_f, k_f,
-                      "senkrecht", f"Topfbohrung Ø35, Bandmitte {zahl(R.r('BAND_MITTE'))} mm von oben/unten; Griffbohrung",
-                      "Front", diag=True, hinweis="Anschlag links/rechts festlegen" if nt == 1 else "")
+            self.tuer_teile(nt, fh, wb, "Front", "Tür (links/rechts)" if nt == 2 else "Tür",
+                            f"Topfbohrung Ø35, Bandmitte {zahl(R.r('BAND_MITTE'))} mm von oben/unten; Griffbohrung",
+                            "Anschlag links/rechts festlegen" if nt == 1 else "", mat_f, k_f)
             self.beschlag("Topfband", "Beschlag", band_je * nt, R.system_wert(sys, 1), "Front")
             self.beschlag("Montageplatte", "Beschlag", band_je * nt, R.system_wert(sys, 2), "Front")
             self.beschlag("Griff", "Beschlag", nt, R.system_wert(sys, 8), "Front")
@@ -480,6 +516,8 @@ class Rechner:
         anzahl += 4 * (aufrunden(trav / abst) + 1) if abschluss == "Traversen" else 2 * (aufrunden(tb / abst) + 1)
         if rw_art == "eingestellt":
             anzahl += 4 * (aufrunden(ih / abst) + 1) / 2
+        if self.modul:
+            anzahl *= self.n_f
         anzahl += self.verb_extra  # Mittelwände und Zwischenböden
         self.beschlag(f"Verbinder {verb}", "Verbinder", anzahl, nr, "Korpus")
 
@@ -507,11 +545,261 @@ class Rechner:
                 if fl > 0 and (max(t["l"], t["b"]) > fl or min(t["l"], t["b"]) > fb):
                     self.pruef("Plattenformat", ROT, f"{t['teil']} ({zahl(t['l'])} x {zahl(t['b'])} mm) größer als Platte "
                                                      f"{zahl(fl)} x {zahl(fb)} mm")
+        # Stufe 5: Formteile dieser Position
+        self._formteile()
         # Stufe 3: Oberfläche, Profil, Arbeitsgänge
         self._oberflaechen(mat_k, mat_r)
         self._profil()
         self._arbeitsgaenge()
+        if self.quell_fehlt:
+            self.pruef("Quellmaß", GELB, f"Für {self.quell_fehlt} fehlt das Quellmaß in den Werkstatt-Regeln (Tabelle "
+                                         "Quellwerte) – Holzart und Wert eintragen.")
         return self._abschluss(anz)
+
+    # ---------------------------------------------------------- Stufe 4: Massivholz, Rahmen + Füllung, Modulbau
+    def _massiv(self, mat, l, b, dicke, menge, teil, gruppe):
+        """Wie MassivInfo(): Lamellen, Grobvolumen (Zugaben + Reserve) als Bedarf, Quellmaß."""
+        R = self.R
+        n_lam = aufrunden(b / R.r("MH_LAM_B")) if b > R.r("MH_LAM_MAX") else 1
+        lam_b = b / n_lam
+        grob = (n_lam * (l + R.r("MH_ZUG_L")) * (lam_b + R.r("MH_ZUG_B")) * (dicke + R.r("MH_ZUG_D")) * menge / 1e9
+                * (1 + R.r("MH_RESERVE") / 100))
+        self.bedarf_plus(mat, grob, "Grobvolumen inkl. Zugaben und Reserve")
+        for code in ("MH-010", "MH-020", "MH-030", "MH-040"):
+            self.ag_plus(code, "Massivholz")
+        txt = "Faser längs"
+        if n_lam > 1:
+            txt += f"; Leimholz aus {n_lam} Lamellen à {zahl(round(lam_b, 1))} mm (Jahresringe wechselnd)"
+            for code in ("MH-050", "MH-060", "WZ-010"):
+                self.ag_plus(code, "Leimholz")
+        q = R.quellwert(mat)
+        if q > 0:
+            dq = b * q / 100 * R.r("MH_DELTA_U")
+            txt += f"; arbeitet quer ca. {zahl(round(dq, 1))} mm"
+            if dq > R.r("MH_QUELL_MAX") and gruppe in ("Korpus", "Front", "Innenausbau"):
+                self.pruef(f"Quellmaß {teil}", GELB, f"{zahl(round(dq, 1))} mm quer zur Faser bei {zahl(R.r('MH_DELTA_U'))} % "
+                                                     "Holzfeuchte-Änderung – beweglich befestigen (Langloch, Gratleiste, "
+                                                     "Nutklotz) bzw. Rahmen + Füllung.")
+        else:
+            self.quell_fehlt = mat
+        return txt
+
+    def quellmass(self, mat, breite):
+        m = self.mat(mat)
+        if not m or not ist_m3(m.einheit):
+            return 0.0
+        return breite * self.R.quellwert(mat) / 100 * self.R.r("MH_DELTA_U")
+
+    def tuer_teile(self, menge, fh, wb, ort, name, bearb, hinweis, mat_f, k_f):
+        """Wie TuerTeile(): Tür als Platte oder Rahmen + Füllung."""
+        R = self.R
+        if "rahmen" not in (self.e.get("tuerkonstruktion") or "Platte").lower():
+            self.teil(name, "Front", menge, fh, wb, mat_f, k_f, k_f, k_f, k_f, "senkrecht", bearb, ort, diag=True, hinweis=hinweis)
+            return
+        rb, zp, fn, fl = R.r("RAHMEN_B"), R.r("RAHMEN_ZAPFEN"), R.r("FUELL_NUT"), R.r("FUELL_LUFT")
+        if wb - 2 * rb < 80 or fh - 2 * rb < 80:
+            self.pruef(f"Rahmen {ort}", GELB, "Tür zu klein für Rahmen + Füllung – als Platte gerechnet.")
+            self.teil(name, "Front", menge, fh, wb, mat_f, k_f, k_f, k_f, k_f, "senkrecht", bearb, ort, diag=True, hinweis=hinweis)
+            return
+        self.teil(f"{name} – Höhenfries", "Front", 2 * menge, fh, rb, mat_f, maser="senkrecht",
+                  bearb=f"Schlitz für Querfries; Nut {zahl(fn)} mm für Füllung; {bearb}", ort=ort, hinweis=hinweis)
+        self.teil(f"{name} – Querfries", "Front", 2 * menge, wb - 2 * rb + 2 * zp, rb, mat_f, maser="quer",
+                  bearb=f"Zapfen {zahl(zp)} mm beidseitig; Nut {zahl(fn)} mm", ort=ort)
+        fm = R.material.get("fuellung") or mat_f
+        self.teil(f"{name} – Füllung", "Front", menge, fh - 2 * rb + 2 * (fn - fl), wb - 2 * rb + 2 * (fn - fl), fm,
+                  maser="senkrecht", bearb=f"schwimmend in Nut, {zahl(fl)} mm Luft je Seite", ort=ort, diag=True)
+        dq = self.quellmass(fm, wb - 2 * rb + 2 * fn)
+        if dq > 2 * fl:
+            self.pruef(f"Füllung {ort}", GELB, f"Füllung arbeitet quer ca. {zahl(round(dq, 1))} mm, Luft nur 2 x {zahl(fl)} mm "
+                                               "– mehr Luft oder Plattenfüllung.")
+        self.ag_plus("BE-010", "Rahmen + Füllung")
+
+    def kt(self, dim, name, gruppe, menge, l, b, mat, kl1="", kl2="", kb1="", kb2="", maser="", bearb="", ort=""):
+        """Wie KT(): Korpusteil; im Modulbau je Feld ein eigenes Teil (um Innenbreite − Feldbreite kleiner)."""
+        if not self.modul:
+            self.teil(name, gruppe, menge, l, b, mat, kl1, kl2, kb1, kb2, maser, bearb, ort)
+            return
+        for f, w in enumerate(self.wf):
+            d = self.ib_k - w
+            if dim == 1:
+                self.teil(f"{name} Modul {f + 1}", gruppe, menge, l - d, b, mat, kl1, kl2, kb1, kb2, maser, bearb, f"Modul {f + 1}")
+            else:
+                self.teil(f"{name} Modul {f + 1}", gruppe, menge, l, b - d, mat, kl1, kl2, kb1, kb2, maser, bearb, f"Modul {f + 1}")
+
+    def feldbreiten(self, ib, s, felder, zonen):
+        """Wie FeldBreiten(): Felderzahl, lichte Feldbreiten (feste Werte aus „400;Rest“, Rest gleich)."""
+        n_f = felder
+        groesstes = max([int(z.get("feld") or 1) for z in zonen], default=1)
+        if groesstes > n_f:
+            self.pruef("Felder", GELB, f"Zone in Feld {groesstes} – Felderzahl auf {groesstes} erhöht.")
+            n_f = groesstes
+        n_f = min(n_f, 9)
+        self.n_f, self.ib_k = n_f, ib
+        innen = ib - (n_f - 1) * s * (2 if self.modul else 1)
+        tok = [t.strip() for t in str(self.e.get("feldbreiten") or "").replace(",", ".").split(";")]
+        fest = []
+        for i in range(n_f):
+            try:
+                fest.append(float(tok[i]) if i < len(tok) and tok[i] else 0)
+            except ValueError:
+                fest.append(0)
+        self.wf, hinw = teilen(innen, fest, "gleich", self.R.r("RASTER"))
+        if hinw:
+            self.pruef("Feldbreiten", ROT, hinw)
+            return False
+        return True
+
+    # ---------------------------------------------------------- Stufe 5: Formteile (Rundungen)
+    def _formteile(self):
+        """Wie FormteileRechnen()/FormteilZeile(): jede Formteil-Zeile der Position rechnen."""
+        for zeile in self.e.get("formteile") or []:
+            if (zeile.get("verfahren") or zeile.get("bezeichnung") or "").strip():
+                self.formteile.append(self._formteil(zeile))
+        if self.formteile:
+            self.kennzahlen["Formteile"] = len(self.formteile)
+
+    def _formteil(self, z):
+        R = self.R
+        bez = (z.get("bezeichnung") or "").strip() or f"Formteil {len(self.formteile) + 1}"
+        verf = (z.get("verfahren") or "").lower()
+        ri, a, h, tk = (float(z.get(k) or 0) for k in ("radius", "winkel", "hoehe", "dicke"))
+        mat = (z.get("material") or "").strip()
+        n = float(z.get("anzahl") or 1) or 1
+        lm = float(z.get("lagenmass") or 0)
+        form_da = str(z.get("form_da") or "").lower() in ("ja", "true", "1")
+        ort = f"Formteil {bez}"
+        erg = {"bezeichnung": bez, "verfahren": z.get("verfahren") or "", "bogen_innen": None, "bogen_aussen": None,
+               "sehne_stich": "", "lagen": "", "zuschnitt": "", "status": GRUEN, "hinweis": ""}
+
+        def ende(status, text):
+            erg["status"], erg["hinweis"] = max(erg["status"], status), text
+            if erg["status"] > GRUEN:
+                self.pruef(f"Formteil {bez}", erg["status"], text)
+            return erg
+
+        if ri <= 0 or a <= 0 or a > 360 or h <= 0 or tk <= 0:
+            return ende(ROT, "Radius, Winkel (bis 360°), Höhe und Dicke eintragen.")
+        m = self.mat(mat)
+        if m is None:
+            return ende(ROT, "Material-Nr. fehlt im Materialstamm.")
+        m3 = ist_m3(m.einheit)
+        ra, rad = ri + tk, math.radians(a)
+        li, la, ln = ri * rad, ra * rad, (ri + tk / 2) * rad
+        sehne = 2 * ra * math.sin(rad / 2) if a <= 180 else 2 * ra
+        stich = ra * (1 - math.cos(rad / 2))
+        zug = R.r("FORM_ZUGABE")
+        erg.update(bogen_innen=round(li, 1), bogen_aussen=round(la, 1), sehne_stich=f"{zahl(round(sehne, 1))} / {zahl(round(stich, 1))}")
+        st, txt = GRUEN, ""
+        if "ausschn" in verf:
+            if a > 180:
+                return ende(ROT, "Ausschneiden über 180° nicht sinnvoll – Segmentbau wählen.")
+            d = self.staerke(mat)
+            lag = aufrunden(h / d) if d > 0 else 1
+            lb, bb = sehne + 2 * R.r("SEG_ZUGABE"), ra - ri * math.cos(rad / 2) + R.r("SEG_ZUGABE")
+            self.teil(f"{bez} (Rohling)", "Formteil", n * lag, lb, bb, mat, maser="quer" if m3 else "",
+                      bearb=f"Bogen R {zahl(ri)} / {zahl(ra)} mm, {zahl(a)}° aussägen", ort=ort)
+            erg.update(lagen=f"{lag} Lage(n)", zuschnitt=f"{round(lb)} x {round(bb)} mm")
+            txt = f"Ausnutzung {rad / 2 * (ra * ra - ri * ri) / (lb * bb) * 100:.0f} %"
+            if m3 and a > R.r("KURZFASER_W"):
+                st = GELB
+                txt += "; Kurzfaser an den Enden – bruchgefährdet, besser Segmentbau oder Formverleimung"
+            self.ag_plus("CNC-020" if R.r("CNC_JA") > 0 else "BE-010", "Formteile")
+            self.ag_plus("SL-010", "Formteile")
+        elif "segment" in verf:
+            d = lm or self.staerke(mat)
+            if d <= 0:
+                return ende(ROT, "Lagendicke fehlt (Materialstärke oder Lagenmaß).")
+            lag = aufrunden(h / d)
+            n_seg = aufrunden(a / R.r("SEG_WINKEL_MAX"))
+            beta = rad / n_seg
+            lb = 2 * ra * math.sin(beta / 2) + R.r("SEG_ZUGABE")
+            bb = ra - ri * math.cos(beta / 2) + R.r("SEG_ZUGABE") / 2
+            anz = lag * n_seg + lag // 2
+            self.teil(f"{bez} Segment", "Formteil", n * anz, lb, bb, mat, maser="quer" if m3 else "",
+                      bearb=f"Segmentwinkel {zahl(round(math.degrees(beta), 1))}°, Lagen um halbes Segment versetzt verleimen", ort=ort)
+            erg.update(lagen=f"{lag} Lagen x {n_seg} Segmente", zuschnitt=f"{round(lb)} x {round(bb)} mm")
+            txt = f"{anz} Segmente je Teil (jede 2. Lage mit Halbsegmenten an den Enden)"
+            for code in ("BE-010", "MH-060", "WZ-010", "SL-010"):
+                self.ag_plus(code, "Formteile")
+        elif "einges" in verf or "kerb" in verf:
+            tiefe = tk - R.r("KERF_REST")
+            n_k = aufrunden(rad * tiefe / R.r("KERF_B"))
+            abst = la / n_k
+            self.teil(bez, "Formteil", n, la + 2 * zug, h, mat,
+                      bearb=f"{n_k} Sägeschnitte {zahl(R.r('KERF_B'))} mm breit, {zahl(tiefe)} mm tief, Abstand "
+                            f"{zahl(round(abst, 1))} mm (Innenseite)", ort=ort)
+            erg.update(lagen=f"{n_k} Kerben", zuschnitt=f"{round(la + 2 * zug)} x {round(h)} x {zahl(tk)} mm")
+            txt = f"Kerbenabstand {zahl(round(abst, 1))} mm"
+            if abst < 2 * R.r("KERF_B"):
+                st, txt = ROT, "Radius zu klein für Einsägen (Kerbenabstand unter 2 x Schnittbreite)."
+            d = self.staerke(mat)
+            if d > 0 and abs(d - tk) > 0.5:
+                st = max(st, GELB)
+                txt += f"; Materialstärke {zahl(d)} mm <> Dicke {zahl(tk)} mm"
+            self.ag_plus("BE-010", "Formteile")
+            self.ag_plus("SL-010", "Formteile")
+        elif "biege" in verf or "formverl" in verf:
+            d = lm or self.staerke(mat) or R.r("FORM_LAGE")
+            lag = aufrunden(tk / d)
+            rmin = (R.r("BIEG_R_FAKTOR") if "biege" in verf else R.r("FURN_R_FAKTOR")) * d
+            if ri < rmin:
+                st, txt = ROT, f"Radius {zahl(ri)} mm unter Mindestradius {zahl(rmin)} mm bei {zahl(d)} mm Lagen."
+            if lag <= 6:
+                for k in range(1, lag + 1):
+                    rk = ri + (k - 0.5) * d
+                    self.teil(f"{bez} Lage {k}", "Formteil", n, rk * rad + 2 * zug, h + 2 * zug, mat,
+                              bearb=f"Lage {k} von {lag} (innen nach außen)", ort=ort)
+            else:
+                self.teil(f"{bez} Lagen", "Formteil", n * lag, (ra - d / 2) * rad + 2 * zug, h + 2 * zug, mat,
+                          bearb=f"{lag} Lagen, Länge nach außen zunehmend (hier Außenlage)", ort=ort)
+            leim = R.material.get("leim", "")
+            if leim and self.mat(leim) and lag > 1:
+                self.bedarf_plus(leim, ln * h / 1e6 * (lag - 1) * n * R.r("LEIM_KG_M2"), "Leim Formverleimung")
+            if not form_da:
+                self._formbau(bez, sehne, stich, tk, h)
+            erg.update(lagen=f"{lag} Lagen à {zahl(d)} mm",
+                       zuschnitt=f"Lagen {round(ri * rad + 2 * zug)} … {round(ra * rad + 2 * zug)} x {round(h + 2 * zug)} mm")
+            if st == GRUEN:
+                txt = f"Mindestradius {zahl(rmin)} mm eingehalten; Presszeit lt. Leim, Rückfederung gering"
+            for code in ("MH-060", "WZ-010", "SL-010"):
+                self.ag_plus(code, "Formteile")
+        elif "mpf" in verf:
+            rt = ri / tk
+            zeit = tk * R.r("DAEMPF_MIN_JE_MM")
+            if not m3:
+                st, txt = GELB, "Dämpfen nur für Massivholz (Material in m³). "
+            if rt < R.r("DAEMPF_RT_BAND"):
+                st = ROT
+                txt += f"R/t = {zahl(round(rt, 1))} zu klein – auch mit Biegeband nicht biegbar."
+            elif rt < R.r("DAEMPF_RT_FREI"):
+                txt += f"Nur mit Biegeband (Zugband) biegen, R/t = {zahl(round(rt, 1))}. "
+            self.teil(f"{bez} (Biegerohling)", "Formteil", n, la + 2 * zug + R.r("FORM_RAND"), h + 10, mat, maser="längs",
+                      bearb=f"Dämpfen ca. {round(zeit)} min; Form-Radius {round(ri * (1 - R.r('RUECKFED') / 100))} mm "
+                            "(Rückfederung)", ort=ort)
+            if not form_da:
+                self._formbau(bez, sehne, stich, tk, h)
+            erg.update(lagen="1 Rohling", zuschnitt=f"{round(la + 2 * zug + R.r('FORM_RAND'))} x {round(h + 10)} x {zahl(tk)} mm")
+            txt += f"Dämpfzeit ca. {round(zeit)} min"
+            for code in ("MH-020", "MH-040", "WZ-010", "SL-010"):
+                self.ag_plus(code, "Formteile")
+        else:
+            return ende(ROT, "Verfahren wählen.")
+        return ende(st, txt.strip())
+
+    def _formbau(self, bez, sehne, stich, tk, h):
+        """Wie FormBau(): Form (Positiv + Negativ) aus verleimten Plattenlagen."""
+        R = self.R
+        fm = R.material.get("form", "")
+        if not fm or self.mat(fm) is None:
+            self.pruef("Formenbau", GELB, "Formmaterial in den Werkstatt-Regeln (Standardmaterial „form“) eintragen bzw. im "
+                                          "Materialstamm anlegen.")
+            return
+        d = self.staerke(fm) or 19
+        lag = aufrunden((h + 2 * R.r("FORM_ZUGABE")) / d)
+        self.teil(f"Form {bez}", "Formenbau", lag, sehne + 2 * R.r("FORM_RAND"), stich + tk + 2 * R.r("FORM_RAND"), fm,
+                  bearb=f"{lag} Lagen verleimen, entlang Bogen trennen (Positiv/Negativ), Fuge = Teildicke {zahl(tk)} mm",
+                  ort="Formenbau")
+        self.ag_plus("CNC-020" if R.r("CNC_JA") > 0 else "BE-010", "Formenbau")
 
     # ---------------------------------------------------------- Stufe 3: Oberfläche, Profil, Arbeitsgänge
     def ag_plus(self, code, bereich):
@@ -612,33 +900,21 @@ class Rechner:
         k_verb = e.get("kastenverbindung") or "Dübel"
         nr_v, abst = R.verbinder_id(k["verb"])
         zonen = [dict(z) for z in k["zonen"]]
-        n_f = k["felder"]
-        groesstes = max([int(z.get("feld") or 1) for z in zonen], default=1)
-        if groesstes > n_f:
-            self.pruef("Felder", GELB, f"Zone in Feld {groesstes} – Felderzahl auf {groesstes} erhöht.")
-            n_f = groesstes
-        n_f = min(n_f, 9)
-        # Feldbreiten: feste Werte aus „400;Rest“, freie gleich verteilt
-        innen = ib - (n_f - 1) * s
-        tok = [t.strip() for t in str(e.get("feldbreiten") or "").replace(",", ".").split(";")]
-        fest = []
-        for i in range(n_f):
-            try:
-                fest.append(float(tok[i]) if i < len(tok) and tok[i] else 0)
-            except ValueError:
-                fest.append(0)
-        wf, hinw = teilen(innen, fest, "gleich", R.r("RASTER"))
-        if hinw:
-            self.pruef("Feldbreiten", ROT, hinw)
-            return
+        n_f, wf, modul = self.n_f, self.wf, self.modul
         if not zonen:  # je Feld eine Tür bzw. ein offenes Fach mit den Fachböden aus der Eingabe
             zonen = [{"feld": f, "zone": 1, "art": "Tür" if k["front_da"] else "Fach offen", "hoehe": 0,
                       "fachboeden": k["n_fb"]} for f in range(1, n_f + 1)]
-        if n_f > 1:
+        if n_f > 1 and modul:
+            self.teil("Modulseite", "Korpus", 2 * (n_f - 1), k["h_seite"], k["tt"], k["mat_k"], k["k_k"], maser="senkrecht",
+                      bearb=k["bearb_seite"], ort="Module")
+            self.beschlag("Korpusverbinder", "Verbinder", 4 * (n_f - 1), self._mat_oder_leer("BL-KORPUSVERB"), "Module",
+                          "Module untereinander verschrauben")
+            self.ag_plus("MO-010", "Module verbinden")
+        elif n_f > 1:
             self.teil("Mittelwand", "Korpus", n_f - 1, k["ih"], k["ti"], k["mat_k"], k["k_k"], maser="senkrecht",
                       bearb=f"Lochreihen beidseitig; Verbinder {k['verb']}", ort="Korpus")
             self.verb_extra += (n_f - 1) * 2 * (aufrunden(k["ti"] / abst) + 1)
-        summe = 2 * s + (n_f - 1) * s + sum(wf)
+        summe = 2 * s + (n_f - 1) * s * (2 if modul else 1) + sum(wf)
         liste = " / ".join(zahl(w) for w in wf)
         self.kennzahlen["Feldbreiten licht"] = liste + " mm"
         for i, w in enumerate(wf):
@@ -647,7 +923,8 @@ class Rechner:
         if abs(summe - k["b"]) > 0.05:
             self.pruef("Querschnitt Felder", ROT, f"Seiten + Mittelwände + Felder = {zahl(summe)} statt {zahl(k['b'])} mm")
         else:
-            self.pruef("Querschnitt Felder", GRUEN, f"{n_f + 1} x {zahl(s)} + {liste} = {zahl(k['b'])} mm")
+            self.pruef("Querschnitt Felder", GRUEN, f"{2 + (n_f - 1) * (2 if modul else 1)} x {zahl(s)} + {liste} = "
+                                                    f"{zahl(k['b'])} mm" + (" (Modulbau)" if modul else ""))
 
         for f in range(1, n_f + 1):
             eigene = sorted([z for z in zonen if min(int(z.get("feld") or 1), n_f) == f],
@@ -664,7 +941,7 @@ class Rechner:
                 fuge_z = s + 2 * k["fe"] if mit_zb else k["fm"]
                 verfueg = k["ih"] - 2 * k["fe"] - (n - 1) * fuge_z
             else:
-                front_b = (w + (s if f == 1 else s / 2) + (s if f == n_f else s / 2)
+                front_b = (w + (s if f == 1 or modul else s / 2) + (s if f == n_f or modul else s / 2)
                            - (k["fa"] / 2 if f == 1 else k["fm"] / 2) - (k["fa"] / 2 if f == n_f else k["fm"] / 2))
                 fuge_z = k["fm"]
                 verfueg = k["hk"] - k["fo"] - (n - 1) * fuge_z
@@ -720,9 +997,9 @@ class Rechner:
                     band_je = R.band_anzahl(fh)
                     if band_je > 0 and wb > k["tb_max"]:
                         band_je += 1
-                    self.teil("Tür (links/rechts)" if nt == 2 else "Tür", "Front", nt, fh, wb, k["mat_f"], k["k_f"], k["k_f"],
-                              k["k_f"], k["k_f"], "senkrecht",
-                              f"Topfbohrung Ø35, Bandmitte {zahl(R.r('BAND_MITTE'))} mm von oben/unten; Griffbohrung", ort, diag=True)
+                    self.tuer_teile(nt, fh, wb, ort, "Tür (links/rechts)" if nt == 2 else "Tür",
+                                    f"Topfbohrung Ø35, Bandmitte {zahl(R.r('BAND_MITTE'))} mm von oben/unten; Griffbohrung",
+                                    "", k["mat_f"], k["k_f"])
                     self.beschlag("Topfband", "Beschlag", band_je * nt, R.system_wert(k["sys"], 1), ort)
                     self.beschlag("Montageplatte", "Beschlag", band_je * nt, R.system_wert(k["sys"], 2), ort)
                     self.beschlag("Griff", "Beschlag", nt, R.system_wert(k["sys"], 8), ort)
@@ -817,6 +1094,7 @@ class Rechner:
         ampel = max((p["status"] for p in self.pruefungen), default=GRUEN)
         return {"teile": self.teile, "pruefungen": self.pruefungen, "kennzahlen": self.kennzahlen, "bedarf": bedarf,
                 "varianten": self.varianten, "arbeitsgaenge": [[c, b] for c, b in self.ag.items()],
+                "formteile": self.formteile,
                 "ampel": ampel, "kosten": round(sum(x["kosten"] or 0 for x in bedarf), 2)}
 
     def bedarf_final(self):

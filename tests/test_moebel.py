@@ -435,3 +435,110 @@ def test_import_oberflaechen(tmp_path):
     mappe.save(pfad)
     ausfuehren(pfad, probelauf=False)
     assert Regelwerk.laden().oberflaechen == [["Wachs", "SL-020;OF-010", "OF-WACHS", 0.05, "", 0, 1, "180", ""]]
+
+
+# ------------------------------------------------------------------ Stufe 4/5: Massivholz, Rahmen, Modulbau, Formteile
+@pytest.fixture
+def massiv(stamm):
+    Material.objects.create(materialnr="MH-EI-26", bezeichnung="Eiche massiv 26", einheit="m³", staerke_mm=Decimal("26"),
+                            ek_netto=Decimal("2400"))
+    Material.objects.create(materialnr="SPH-PO-04", bezeichnung="Pappelsperrholz 4", einheit="m²", staerke_mm=Decimal("4"),
+                            ek_netto=Decimal("9"))
+    Material.objects.create(materialnr="MDF-ROH-19", bezeichnung="MDF roh 19", einheit="m²", staerke_mm=Decimal("19"),
+                            ek_netto=Decimal("7"))
+    Material.objects.create(materialnr="KL-PVAC-D3", bezeichnung="Weißleim D3", einheit="kg", ek_netto=Decimal("6"))
+    Material.objects.create(materialnr="MH-BU-52", bezeichnung="Buche massiv 52", einheit="m³", staerke_mm=Decimal("52"),
+                            ek_netto=Decimal("1800"))
+
+
+def test_massivholz_lamellen_grobvolumen_quellmass(massiv):
+    regal = {**UNTERSCHRANK, "typ": "Regal", "hoehe": 1800, "tiefe": 300, "breite": 800, "abschluss": "Deckel",
+             "sockel": "ohne Sockel", "tueren": "keine Tür / offen", "mat_korpus": "MH-EI-26", "kante_korpus": "",
+             "fachboeden": 0, "rueckwand_art": "ohne"}
+    erg = dienst.rechnen(regal)
+    seite = teil(erg, "Seite")
+    assert "Leimholz aus 4 Lamellen à 75 mm" in seite["hinweis"]
+    assert any("fehlt das Quellmaß" in p["hinweis"] for p in erg["pruefungen"])
+    holz = next(b for b in erg["bedarf"] if b["material"] == "MH-EI-26")
+    grob_seite = 4 * (1800 + 100) * (75 + 7) * (26 + 7) * 2 / 1e9 * 1.1
+    assert holz["menge"] > grob_seite and "Grobvolumen" in holz["grund"]
+    assert {"MH-050", "MH-060", "WZ-010"} <= set(dict(erg["arbeitsgaenge"]))
+    rw = Regelwerk.laden()
+    rw.quellwerte = [["MH-EI", 0.36]]
+    rw.save()
+    erg = dienst.rechnen(regal)
+    assert "arbeitet quer ca. 4,3 mm" in teil(erg, "Seite")["hinweis"]  # 300 × 0,36 % × 4 %
+    assert any(p["pruefung"] == "Quellmaß Seite" and p["status"] == rechner.GELB for p in erg["pruefungen"])
+
+
+def test_rahmen_und_fuellung(stamm):
+    erg = dienst.rechnen({**UNTERSCHRANK, "tuerkonstruktion": "Rahmen + Füllung"})
+    namen = {t["teil"]: t for t in erg["teile"]}
+    assert (namen["Tür – Höhenfries"]["menge"], namen["Tür – Höhenfries"]["l"], namen["Tür – Höhenfries"]["b"]) == (2, 717, 60)
+    assert (namen["Tür – Querfries"]["l"], namen["Tür – Füllung"]["l"], namen["Tür – Füllung"]["b"]) == (497, 613, 493)
+    assert "Tür" not in namen and "BE-010" in dict(erg["arbeitsgaenge"])
+
+
+def test_modulbau(stamm):
+    e = {**UNTERSCHRANK, "breite": 1200, "bauweise": "M", "felder": 2}
+    erg = dienst.rechnen(e)
+    assert teil(erg, "Modulseite")["menge"] == 2 and not any(t["teil"] == "Mittelwand" for t in erg["teile"])
+    assert teil(erg, "Boden Modul 1")["l"] == 562 and teil(erg, "Boden Modul 2")["l"] == 562
+    assert teil(erg, "Korpusverbinder")["menge"] == 4 and erg["kennzahlen"]["Feldbreiten licht"] == "562 / 562 mm"
+    tueren = [t for t in erg["teile"] if t["teil"] == "Tür"]
+    assert [t["b"] for t in tueren] == [597, 597]
+    q = next(p for p in erg["pruefungen"] if p["pruefung"] == "Querschnitt Felder")
+    assert q["status"] == rechner.GRUEN and "(Modulbau)" in q["hinweis"]
+
+
+def test_formteile(massiv):
+    e = {**UNTERSCHRANK, "formteile": [
+        {"bezeichnung": "Bogenzarge", "verfahren": "Formverleimung (Lagen)", "radius": 400, "winkel": 90, "hoehe": 120,
+         "dicke": 12, "material": "SPH-PO-04", "anzahl": 1, "form_da": "Nein"},
+        {"bezeichnung": "Korpusrundung", "verfahren": "Eingesägt (Kerben)", "radius": 300, "winkel": 90, "hoehe": 720,
+         "dicke": 19, "material": "PL-WEI-P2-19", "anzahl": 1},
+        {"bezeichnung": "Handlauf", "verfahren": "Dämpfen (Massivholz)", "radius": 600, "winkel": 90, "hoehe": 60,
+         "dicke": 45, "material": "MH-BU-52", "anzahl": 1, "form_da": "Ja"},
+        {"bezeichnung": "Fehler", "verfahren": "Segmentbau", "radius": 0, "winkel": 90, "hoehe": 10, "dicke": 10}]}
+    erg = dienst.rechnen(e)
+    f = {x["bezeichnung"]: x for x in erg["formteile"]}
+    assert f["Bogenzarge"]["lagen"] == "3 Lagen à 4 mm" and f["Bogenzarge"]["status"] == rechner.GRUEN
+    assert [t["teil"] for t in erg["teile"] if t["teil"].startswith("Bogenzarge Lage")] == [f"Bogenzarge Lage {i}" for i in (1, 2, 3)]
+    assert teil(erg, "Form Bogenzarge")["material"] == "MDF-ROH-19"
+    assert any(b["material"] == "KL-PVAC-D3" for b in erg["bedarf"])
+    assert f["Korpusrundung"]["lagen"] == "9 Kerben" and f["Korpusrundung"]["hinweis"].startswith("Kerbenabstand 55,7")
+    assert "Nur mit Biegeband" in f["Handlauf"]["hinweis"] and "108 min" in f["Handlauf"]["hinweis"]
+    assert not any(t["teil"] == "Form Handlauf" for t in erg["teile"])  # Form vorhanden
+    assert f["Fehler"]["status"] == rechner.ROT and erg["ampel"] == rechner.ROT
+    assert erg["kennzahlen"]["Formteile"] == 4
+
+
+def test_formular_formteil_und_tuer(massiv, projekt, chef_client):
+    daten = {k: v for k, v in UNTERSCHRANK.items()}
+    daten.update({"projekt": projekt.pk, "breite": "600", "hoehe": "820", "tiefe": "560", "anzahl": "1",
+                  "tuerkonstruktion": "Rahmen + Füllung", "f0_bezeichnung": "Bogenzarge",
+                  "f0_verfahren": "Formverleimung (Lagen)", "f0_radius": "400", "f0_winkel": "90", "f0_hoehe": "120",
+                  "f0_dicke": "12,5", "f0_material": "SPH-PO-04", "f0_anzahl": "2", "f0_form_da": "Nein", "aktion": "speichern"})
+    chef_client.post(reverse("moebel:neu"), daten)
+    p = MoebelPosition.objects.get()
+    assert p.eingaben["tuerkonstruktion"] == "Rahmen + Füllung" and p.eingaben["formteile"][0]["dicke"] == 12.5
+    assert p.ergebnis["formteile"][0]["bezeichnung"] == "Bogenzarge"
+    seite = chef_client.get(reverse("moebel:bearbeiten", args=[p.pk])).content.decode()
+    assert 'value="12,5"' in seite and "materialnummern" in seite
+    assert "Formteile" in chef_client.get(p.get_absolute_url()).content.decode()
+
+
+def test_import_quellwerte(tmp_path):
+    from openpyxl.utils import column_index_from_string as c
+    mappe = Workbook()
+    ws = mappe.active
+    ws.title = "Möbel-Regeln"
+    ws.cell(row=4, column=c("AI"), value="MH-EI")
+    ws.cell(row=4, column=c("AJ"), value=0.36)
+    ws.cell(row=97, column=1, value="Füllungsmaterial (leer = Frontmaterial)")
+    ws.cell(row=97, column=2, value="FU-EI-06")
+    pfad = tmp_path / "pw.xlsx"
+    mappe.save(pfad)
+    ausfuehren(pfad, probelauf=False)
+    rw = Regelwerk.laden()
+    assert rw.quellwerte == [["MH-EI", 0.36]] and rw.als_regeln().material["fuellung"] == "FU-EI-06"

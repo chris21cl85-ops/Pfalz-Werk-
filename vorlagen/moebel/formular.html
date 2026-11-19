@@ -27,6 +27,7 @@
   <div class="karte"><h3 style="margin-top:0">4 · Türen & Innenleben</h3><div class="raster">
     {% include "moebel/_feld.html" with feld=form.tueren %}{% include "moebel/_feld.html" with feld=form.tuerart %}
     {% include "moebel/_feld.html" with feld=form.fachboeden %}{% include "moebel/_feld.html" with feld=form.beschlagsystem %}
+    {% include "moebel/_feld.html" with feld=form.tuerkonstruktion %}
   </div></div>
   <div class="karte"><h3 style="margin-top:0">5 · Oberfläche & Kalkulation</h3><div class="raster">
     {% include "moebel/_feld.html" with feld=form.oberflaeche_korpus %}{% include "moebel/_feld.html" with feld=form.oberflaeche_front %}
@@ -44,6 +45,13 @@
     {% for zeile in form.zonen_zeilen %}<tr class="zone{% if forloop.counter > 4 and not zeile.2.value %} leer{% endif %}">{% for feld in zeile %}<td>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</td>{% endfor %}</tr>{% endfor %}
   </table></div>
   <p><button type="button" class="knopf zweit" id="mehr-zonen">+ weitere Zonen</button></p></div>
+  <details class="karte" {% for z in form.formteil_zeilen %}{% if z.1.value %}open{% endif %}{% endfor %}><summary style="cursor:pointer;font-weight:600">7 · Formteile / Rundungen (z. B. Bogenzarge, Korpusrundung, Handlauf)</summary>
+    <div class="tabelle-rahmen" style="margin-top:8px"><table id="formteile">
+      <tr><th>Bezeichnung</th><th>Verfahren</th><th>Radius innen</th><th>Winkel °</th><th>Höhe (Achse)</th><th>Dicke (radial)</th><th>Material-Nr.</th><th>Anzahl</th><th>Lagen-/Segmentmaß</th><th>Form vorhanden?</th></tr>
+      {% for zeile in form.formteil_zeilen %}<tr>{% for feld in zeile %}<td>{{ feld }}{% for x in feld.errors %}<div class="fehler">{{ x }}</div>{% endfor %}</td>{% endfor %}</tr>{% endfor %}
+    </table></div>
+    <datalist id="materialnummern">{% for nr in materialnummern %}<option value="{{ nr }}">{% endfor %}</datalist>
+    <p class="hilfe">Alle Maße in mm. Viertelgewendelt = 90°, halbgewendelt = 180°. Lagen-/Segmentmaß leer = Materialstärke. „Form vorhanden? Nein“ rechnet die Form (Positiv/Negativ) aus Formmaterial mit.</p></details>
   <details class="karte" {% for f in abweichungen %}{% if f.value %}open{% endif %}{% endfor %}><summary style="cursor:pointer;font-weight:600">Abweichende Regeln nur für dieses Möbel (selten nötig)</summary>
     <div class="raster" style="margin-top:8px">{% for f in abweichungen %}{% include "moebel/_feld.html" with feld=f %}{% endfor %}</div>
     <p class="hilfe">Leer lassen = Werkstatt-Regel gilt.</p></details>
@@ -55,7 +63,7 @@
 </form>
 {% if vorschau %}<h2 class="abschnitt" id="vorschau">Vorschau – noch nicht gespeichert</h2>{% include "moebel/_ergebnis.html" with erg=vorschau %}{% endif %}
 {{ vorgaben|json_script:"typ-vorgaben" }}
-<style>#zonen td{padding:4px 6px}#zonen input,#zonen select{padding:8px;font-size:15px}tr.zone.leer{display:none}
+<style>#zonen td,#formteile td{padding:4px 6px}#zonen input,#zonen select,#formteile input,#formteile select{padding:8px;font-size:15px;min-width:0}#formteile td:first-child input{min-width:130px}tr.zone.leer{display:none}
 @media (min-width:760px){.knopfleiste{position:sticky;bottom:10px;padding:12px 14px;z-index:5;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-radius:16px;box-shadow:0 6px 24px rgba(19,54,42,.12);margin-right:90px}}
 .raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 18px}</style>
 <script>

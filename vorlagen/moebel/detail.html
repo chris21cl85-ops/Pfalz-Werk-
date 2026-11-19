@@ -32,6 +32,9 @@
     {% for z in e.zonen %}<div><small class="grau">Feld {{ z.feld }} · Zone {{ z.zone }}</small><div>{{ z.art }}{% if z.hoehe %} · {{ z.hoehe }} mm{% endif %}{% if z.fachboeden %} · {{ z.fachboeden }} Fachb.{% endif %}</div></div>{% endfor %}
     {% if "Schubkasten" in e.zonen|stringformat:"s" %}<div><small class="grau">Schubkästen</small><div>{{ e.kastensystem }} · {{ e.kastenverbindung }}</div></div>{% endif %}{% endif %}
     {% if e.oberflaeche_korpus or e.oberflaeche_front %}<div><small class="grau">Oberfläche Korpus / Front</small><div>{{ e.oberflaeche_korpus|default:"–" }} / {{ e.oberflaeche_front|default:"–" }}</div></div>{% endif %}
+    {% if e.tuerkonstruktion and e.tuerkonstruktion != "Platte" %}<div><small class="grau">Türkonstruktion</small><div>{{ e.tuerkonstruktion }}</div></div>{% endif %}
+    {% if e.bauweise == "M" %}<div><small class="grau">Bauweise</small><div>Modulbau (je Feld ein Korpus)</div></div>{% endif %}
+    {% for f in e.formteile %}<div><small class="grau">Formteil</small><div>{{ f.bezeichnung|default:"–" }} · {{ f.verfahren }} · R {{ f.radius }} / {{ f.winkel }}°</div></div>{% endfor %}
     {% if e.kantenprofil and e.kantenprofil != "gerade" %}<div><small class="grau">Kantenprofil Front</small><div>{{ e.kantenprofil }}</div></div>{% endif %}
     {% if e.plattenbedarf == "Verschnittfaktor" %}<div><small class="grau">Plattenbedarf</small><div>Verschnittfaktor</div></div>{% endif %}
     {% for text, wert in abweichungen %}<div><small class="grau">Abweichung</small><div>{{ text }}: {{ wert }}</div></div>{% endfor %}

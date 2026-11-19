@@ -7,6 +7,8 @@ from konten.models import Rolle
 from konten.rechte import rolle_erforderlich
 from projekte.models import Projekt
 
+from material.models import Material
+
 from . import dienst, rechner
 from .formulare import ABWEICHUNGEN, MoebelFormular, RegelFormular
 from .models import MoebelPosition, Regelwerk
@@ -67,6 +69,7 @@ def _formularseite(request, position=None):
     return render(request, "moebel/formular.html", {
         "form": form, "position": position, "neu": neu, "vorschau": vorschau,
         "abweichungen": [form[f"abw_{k}"] for k, _ in ABWEICHUNGEN],
+        "materialnummern": list(Material.objects.filter(aktiv=True).order_by("materialnr").values_list("materialnr", flat=True)),
         "vorgaben": {t: list(v) for t, v in rechner.TYP_VORGABEN.items()}})
 
 

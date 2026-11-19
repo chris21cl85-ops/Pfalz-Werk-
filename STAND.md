@@ -12,7 +12,7 @@ Letzte Aktualisierung: 19.11.2026
 - In jeder „So testest du es“-Anleitung zuerst den Download-Schritt nennen (ANLEITUNG Teil B) – die Startdatei
   lädt keine neue Fassung (am 13.11. bei Fassung 2.0–2.2 vergessen → Chris sah weiter 1.8).
 - Bei jeder Auslieferung die Fassungsnummer in `kern/kontext.py` (FASSUNG) erhöhen – Chris sieht sie im Navi
-  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.2 (Etappe 5, Paket 5b).
+  oben und kann so prüfen, ob die neue Fassung läuft. Aktuell: Fassung 5.3 (Etappe 5, Paket 5c).
 - **Excel-Aufbau aller 120 Blätter** (von Chris, Stand 04.11.2026): `doku/EXCEL_AUFBAU_aller_Blaetter.txt` –
   vor jedem neuen Paket dort nachsehen, statt Chris nach Bildschirmfotos zu fragen.
 - Grundanleitung zum Installieren, Herunterladen und Starten: `ANLEITUNG.md`.
@@ -662,10 +662,35 @@ Fassung „5.2“ herunterladen (ANLEITUNG Teil B).
 2. Speichern einer schon übernommenen Position → Warnung „nach der Übernahme geändert“, Änderungsliste unten.
 3. Werkstatt-Regeln → Tabelle Oberflächen ansehen; CNC_JA auf 0 → Arbeitsgänge mit „Fräsen / Bohren / Dübeln“.
 
+### Paket 5c: Möbelrechner Massivholz, Rahmen + Füllung, Modulbau, Formteile (Stufe 4/5) – GEBAUT 19.11.2026
+Vorlage: MassivInfo, QuellWert/QuellMass, TuerTeile, KT, FeldBreiten (Modul), FormteilZeile, FormBau, RegelnStufe4/5.
+- **Massivholz** (Material mit Einheit m³): Leimholz aus Lamellen (breiter als 120 mm → Lamellen à ca. 80 mm),
+  Bedarf als Grobvolumen mit Zugaben (Länge/Breite/Dicke) + Reserve, Arbeitsgänge Massivholz/Leimholz,
+  Quellmaß quer zur Faser mit Warnung (bewegliche Befestigung) – Quellwerte-Tabelle in den Werkstatt-Regeln
+  (Import Möbel-Regeln AI:AJ, z. B. MH-EI → 0,36). Fehlt der Wert → gelber Hinweis.
+  (Die Excel nahm die Zugaben aus dem Blatt „Bauteilzerlegung“, falls dort ausgefüllt; das Programm nutzt die Regeln.)
+- **Türkonstruktion** Platte oder **Rahmen + Füllung** (Karte 4): Höhen- und Querfriese mit Zapfen, Füllung in Nut mit
+  Luft, Prüfung Füllung arbeitet quer; Füllungsmaterial aus den Regeln (leer = Frontmaterial).
+- **Modulbau** (Bauweise M): je Feld ein eigener Korpus – Boden/Deckel/Traversen/Rückwand je Modul, Modulseiten statt
+  Mittelwand, Korpusverbinder (BL-KORPUSVERB), Verbinder je Modul, Fronten je Modul.
+- **Formteile** (Karte 7, bis 6 je Möbel): Ausschneiden, Segmentbau, Eingesägt (Kerben), Biegeplatte, Formverleimung,
+  Dämpfen – Bogen innen/außen, Sehne/Stich, Lagen/Segmente/Kerben, Zuschnitt, Prüfung (Mindestradius, R/t, Kurzfaser,
+  Kerbenabstand), Teile in der Teileliste, Leim, Formenbau (Positiv/Negativ aus Formmaterial), Arbeitsgänge.
+- 27 neue Werkstatt-Regeln (Massivholz, Rahmen, Formteile); Standardmaterial Füllung/Form/Leim (Import Zeilen 97–99).
+- Nicht übernommen: Blatt „Bauteilzerlegung“ (eigenes Werkzeug der Excel) und der Knopf „An Bauteilzerlegung“.
+- 452 automatische Tests, alle grün.
+
+### So testest du es (Etappe 5, Paket 5c)
+Fassung „5.3“ herunterladen (ANLEITUNG Teil B).
+1. Möbel mit Korpusmaterial aus Massivholz (Einheit m³) → Hinweise Lamellen/Quellmaß, Bedarf in m³.
+2. Türkonstruktion „Rahmen + Füllung“ → Friese und Füllung in der Teileliste.
+3. Bauweise „M Modulbau“ mit 2 Feldern → Modulseiten, Teile je Modul.
+4. Karte 7: Bogenzarge Formverleimung R 400, 90°, Höhe 120, Dicke 12, Pappelsperrholz → Lagen, Form, Leim.
+
 ## Nächstes Paket
-**5c Möbelrechner Stufe 4/5**: Massivholz (Zugaben, Quellmaß, m³), Rahmen + Füllung, Modulbau (Bauweise M),
-Formteile (Rundungen), Bauteilzerlegung. Danach 5d CNC-Export, dann Kapazitätsplanung, Inventur, Handy-Ansichten,
-Installer. Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
+**5d Möbelrechner Stufe 6**: CNC-Export (Bohrbild als DXF/CSV je Teil) und fertigungsgerechte Maßvorschläge.
+Danach Kapazitätsplanung, Inventur, Handy-Ansichten (inkl. Zuschnittliste fürs Handy), Installer.
+Drive-Ordner-ID 1dl_KNq7_YZOrSU2ZJVyOGWRQLiT7bmv3.
 
 ### Vorlage Mitarbeiter (aus Makros MeinTag_Sync2 und Vertragsfreigabe, 13.11.2026)
 - Mitarbeiterliste steht im Blatt **„Dashboard Steuerung“**, Zeilen 6–205:

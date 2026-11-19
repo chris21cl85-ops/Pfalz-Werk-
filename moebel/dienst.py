@@ -49,6 +49,7 @@ BESCHRIFTUNG = {
     "kastensystem": "Schubkastensystem", "kastenverbindung": "Kastenverbindung", "zonen": "Zonen",
     "oberflaeche_korpus": "Oberfläche Korpus", "oberflaeche_front": "Oberfläche Front", "kantenprofil": "Kantenprofil",
     "plattenbedarf": "Plattenbedarf", "schnellfaktor": "Schnellpreis-Faktor", "abweichungen": "Abweichende Regeln",
+    "tuerkonstruktion": "Türkonstruktion", "formteile": "Formteile",
 }
 
 
@@ -56,6 +57,9 @@ def _wert(k, v):
     if k == "zonen":
         return ", ".join(f"F{z.get('feld')}Z{z.get('zone')} {z.get('art')}" + (f" {z.get('hoehe')}" if z.get("hoehe") else "")
                          for z in v or []) or "–"
+    if k == "formteile":
+        return ", ".join(f"{f.get('bezeichnung') or '?'} {f.get('verfahren')} R{f.get('radius')}/{f.get('winkel')}°"
+                         for f in v or []) or "–"
     if isinstance(v, dict):
         return ", ".join(f"{a}={b}" for a, b in v.items()) or "–"
     return "–" if v in (None, "") else str(v)

@@ -17,6 +17,7 @@
   <div class="karte"><h3 style="margin-top:0">Fachboden-Spannweite</h3>{% for x in r.fachboden %}<div>Stärke bis {{ x.0 }} mm → max. {{ x.1 }} mm</div>{% endfor %}</div>
   <div class="karte"><h3 style="margin-top:0">Verbinder</h3>{% for name, v in r.verbinder.items %}<div>{{ name }}: {{ v.0 }} · Abstand {{ v.1 }} mm</div>{% endfor %}</div>
   <div class="karte"><h3 style="margin-top:0">Nennlängen Schubkasten</h3><div>{% for n in r.nennlaengen %}{{ n|floatformat:"0" }}{% if not forloop.last %} · {% endif %}{% endfor %} mm</div></div>
+  <div class="karte"><h3 style="margin-top:0">Quellwerte Massivholz</h3>{% for q in r.quellwerte %}<div>{{ q.0 }}…: {{ q.1 }} % je % Holzfeuchte</div>{% empty %}<div class="grau">noch keine – in der Excel „Möbel-Regeln“ Spalte AI (Anfang der Material-Nr., z. B. MH-EI) und AJ (tangential %) eintragen und importieren</div>{% endfor %}</div>
   <div class="karte"><h3 style="margin-top:0">Standardmaterial</h3>{% for name, nr in r.standardmaterial.items %}<div>{{ name }}: {{ nr }}</div>{% endfor %}</div>
 </div>
 <div class="karte"><h3 style="margin-top:0">Oberflächen</h3>

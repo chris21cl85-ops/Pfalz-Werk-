@@ -53,6 +53,7 @@ class Regelwerk(models.Model):
     standardmaterial = models.JSONField(default=standard_material)
     nennlaengen = models.JSONField(default=standard_nennlaengen)
     oberflaechen = models.JSONField(default=standard_oberflaechen)
+    quellwerte = models.JSONField(default=leere_liste)  # Möbel-Regeln AI:AJ
     im_programm_geaendert = models.BooleanField(default=False)
     geaendert_am = models.DateTimeField(auto_now=True)
 
@@ -77,7 +78,8 @@ class Regelwerk(models.Model):
                               verbinder={k: tuple(v) for k, v in self.verbinder.items()}, systeme=dict(self.systeme),
                               nennlaengen=[float(x) for x in (self.nennlaengen or rechner.STANDARD_NENNLAENGEN)],
                               material={**rechner.STANDARD_MATERIAL, **(self.standardmaterial or {})},
-                              oberflaechen=self.oberflaechen or [list(x) for x in rechner.STANDARD_OBERFLAECHEN])
+                              oberflaechen=self.oberflaechen or [list(x) for x in rechner.STANDARD_OBERFLAECHEN],
+                              quellwerte=[list(x) for x in (self.quellwerte or [])])
 
 
 class MoebelPosition(models.Model):
